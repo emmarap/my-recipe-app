@@ -113,14 +113,10 @@ body { font-family: 'DM Sans', sans-serif; background: #0f0e0c; color: #f0ebe3; 
 .photo-viewer img { max-width: 100%; max-height: 80vh; object-fit: contain; }
 .pv-close { position: absolute; top: 52px; right: 20px; background: rgba(255,255,255,0.1); border: none; color: #fff; font-size: 20px; width: 40px; height: 40px; border-radius: 50%; cursor: pointer; }
 .pv-del { position: absolute; bottom: 52px; background: rgba(220,80,60,0.3); border: 1px solid rgba(220,80,60,0.5); color: #fff; font-size: 13px; padding: 10px 24px; border-radius: 20px; cursor: pointer; }
-#resetBtn { position: fixed; bottom: 120px; right: 20px; z-index: 9999; background: #c9a96e; color: #0f0e0c; border: none; padding: 12px 18px; border-radius: 10px; font-family: 'DM Sans', sans-serif; font-size: 13px; font-weight: 600; cursor: pointer; box-shadow: 0 4px 20px rgba(0,0,0,0.4); }
+#resetBtn { position: fixed; bottom: 30px; right: 20px; z-index: 9999; background: #c9a96e; color: #0f0e0c; border: none; padding: 12px 18px; border-radius: 10px; font-family: 'DM Sans', sans-serif; font-size: 13px; font-weight: 600; cursor: pointer; box-shadow: 0 4px 20px rgba(0,0,0,0.4); }
 </style>
 </head>
 <body>
-
-<!-- RESET BUTTON - always visible -->
-
-<button id="resetBtn">⚠️ Reset</button>
 
 <!-- HOME -->
 
@@ -136,7 +132,7 @@ body { font-family: 'DM Sans', sans-serif; background: #0f0e0c; color: #f0ebe3; 
     </div>
   </div>
   <div class="cat-bar" id="catBar"></div>
-  <div class="scrollable"><div class="recipe-list" id="recipeList"></div></div>
+  <div class="scrollable"><div class="recipe-list" id="recipeList"></div><div style="padding:0 24px 40px;text-align:center"><button id="resetBtn" style="background:rgba(201,169,110,0.1);border:1px solid rgba(201,169,110,0.2);color:rgba(201,169,110,0.5);padding:10px 20px;border-radius:10px;font-family:DM Sans,sans-serif;font-size:12px;cursor:pointer;width:100%">⚠️ Reset App Data</button></div></div>
 </div>
 
 <!-- SCAN -->
