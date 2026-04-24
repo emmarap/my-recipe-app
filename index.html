@@ -101,11 +101,11 @@ body { font-family: 'DM Sans', sans-serif; background: #0f0e0c; color: #f0ebe3; 
         <div class="home-label">Your Collection</div>
         <h1 class="home-title">My <em>Recipes</em></h1>
       </div>
-      <button class="add-btn" onclick="showScreen('scanScreen')">+</button>
+      <button class="add-btn" id="addBtn">+</button>
     </div>
     <div class="search-bar">
       <span class="search-icon">🔍</span>
-      <input class="search-input" id="searchInput" type="search" placeholder="Search recipes…" oninput="renderList()">
+      <input class="search-input" id="searchInput" type="search" placeholder="Search recipes…">
     </div>
   </div>
   <div class="categories" id="categoryBar"></div>
@@ -114,15 +114,15 @@ body { font-family: 'DM Sans', sans-serif; background: #0f0e0c; color: #f0ebe3; 
 
 <div class="screen hidden" id="scanScreen">
   <div class="scan-header">
-    <button class="back-btn" onclick="showScreen('homeScreen')">←</button>
+    <button class="back-btn" id="backBtn">←</button>
     <div class="scan-header-text">
       <div class="scan-label">New Recipe</div>
       <h2>Scan a photo</h2>
     </div>
   </div>
-  <div class="scan-body" id="scanBody">
+  <div class="scan-body">
     <label class="upload-zone" id="uploadZone">
-      <input type="file" accept="image/*" id="fileInput" style="display:none" onchange="handleFile(this.files[0])">
+      <input type="file" accept="image/*" id="fileInput" style="display:none">
       <div class="upload-icon">📷</div>
       <h3>Upload a recipe photo</h3>
       <p>Tap to choose from your library</p>
@@ -130,9 +130,8 @@ body { font-family: 'DM Sans', sans-serif; background: #0f0e0c; color: #f0ebe3; 
     <div id="previewSection" style="display:none">
       <img class="preview-img" id="previewImg" src="" alt="">
       <div class="preview-meta" id="previewMeta"></div>
-      <label class="change-link">Change photo<input type="file" accept="image/*" style="display:none" onchange="handleFile(this.files[0])"></label>
-   <button class="primary-btn" id="scanBtn"><span>✦</span> Extract Recipe</button>
-
+      <label class="change-link">Change photo<input type="file" accept="image/*" id="changeInput" style="display:none"></label>
+      <button class="primary-btn" id="scanBtn">✦ Extract Recipe</button>
     </div>
     <div class="status-msg" id="scanStatus" style="display:none"></div>
     <div class="error-msg" id="scanError" style="display:none"></div>
@@ -142,100 +141,102 @@ body { font-family: 'DM Sans', sans-serif; background: #0f0e0c; color: #f0ebe3; 
 
 <div class="screen hidden" id="detailScreen">
   <div class="detail-header">
-    <button class="back-btn" onclick="showScreen('homeScreen')">←</button>
+    <button class="back-btn" id="detailBackBtn">←</button>
     <div class="detail-header-text">
       <div class="detail-label" id="detailLabel"></div>
       <div class="detail-title" id="detailHeaderTitle"></div>
     </div>
-    <button class="delete-btn" onclick="deleteCurrentRecipe()">🗑</button>
+    <button class="delete-btn" id="deleteBtn">🗑</button>
   </div>
   <div class="detail-body" id="detailBody"></div>
 </div>
 
 <script>
-const CATEGORIES = ['All','Breakfast','Lunch','Dinner','Dessert','Snack','Drink','Baking','Other'];
-let recipes = [];
+var CATEGORIES = ['All','Breakfast','Lunch','Dinner','Dessert','Snack','Drink','Baking','Other'];
+var recipes = [];
 try { recipes = JSON.parse(localStorage.getItem('recipes') || '[]'); } catch(e) { recipes = []; }
-let activeCategory = 'All';
-let currentRecipeId = null;
-let currentFile = null;
-let pendingRecipe = null;
+var activeCategory = 'All';
+var currentRecipeId = null;
+var currentB64 = null;
+var pendingRecipe = null;
 
 function showScreen(id) {
-  document.querySelectorAll('.screen').forEach(s => s.classList.toggle('hidden', s.id !== id));
+  document.querySelectorAll('.screen').forEach(function(s) {
+    s.classList.toggle('hidden', s.id !== id);
+  });
   if (id === 'homeScreen') renderList();
   if (id === 'scanScreen') resetScan();
 }
 
-function buildCategories() {
-  document.getElementById('categoryBar').innerHTML = CATEGORIES.map(c =>
-    `<button class="cat-btn ${c===activeCategory?'active':''}" onclick="setCategory('${c}')">${c}</button>`
-  ).join('');
-}
+document.getElementById('addBtn').addEventListener('click', function() { showScreen('scanScreen'); });
+document.getElementById('backBtn').addEventListener('click', function() { showScreen('homeScreen'); });
+document.getElementById('detailBackBtn').addEventListener('click', function() { showScreen('homeScreen'); });
+document.getElementById('searchInput').addEventListener('input', renderList);
+document.getElementById('deleteBtn').addEventListener('click', deleteCurrentRecipe);
 
-function setCategory(cat) {
-  activeCategory = cat;
-  renderList();
+document.getElementById('fileInput').addEventListener('change', function() {
+  if (this.files && this.files[0]) handleFile(this.files[0]);
+});
+document.getElementById('changeInput').addEventListener('change', function() {
+  if (this.files && this.files[0]) handleFile(this.files[0]);
+});
+document.getElementById('scanBtn').addEventListener('click', function() { scanRecipe(); });
+
+function buildCategories() {
+  document.getElementById('categoryBar').innerHTML = CATEGORIES.map(function(c) {
+    return '<button class="cat-btn ' + (c===activeCategory?'active':'') + '" data-cat="' + c + '">' + c + '</button>';
+  }).join('');
+  document.querySelectorAll('.cat-btn').forEach(function(btn) {
+    btn.addEventListener('click', function() { activeCategory = this.dataset.cat; renderList(); });
+  });
 }
 
 function renderList() {
   buildCategories();
-  const q = document.getElementById('searchInput').value.toLowerCase().trim();
-  const list = document.getElementById('recipeList');
-  const filtered = recipes.filter(r => {
-    const matchCat = activeCategory === 'All' || r.category === activeCategory;
-    const matchQ = !q || r.title.toLowerCase().includes(q) || (r.category||'').toLowerCase().includes(q);
+  var q = document.getElementById('searchInput').value.toLowerCase().trim();
+  var list = document.getElementById('recipeList');
+  var filtered = recipes.filter(function(r) {
+    var matchCat = activeCategory === 'All' || r.category === activeCategory;
+    var matchQ = !q || r.title.toLowerCase().includes(q) || (r.category||'').toLowerCase().includes(q);
     return matchCat && matchQ;
   });
   if (!filtered.length) {
-    list.innerHTML = `<div class="empty-state">
-      <div class="empty-icon">📖</div>
-      <div class="empty-title">${recipes.length ? 'No matches' : 'No recipes yet'}</div>
-      <div class="empty-sub">${recipes.length ? 'Try a different category' : 'Tap + to scan your first recipe'}</div>
-    </div>`;
+    list.innerHTML = '<div class="empty-state"><div class="empty-icon">📖</div><div class="empty-title">' + (recipes.length ? 'No matches' : 'No recipes yet') + '</div><div class="empty-sub">' + (recipes.length ? 'Try a different category' : 'Tap + to scan your first recipe') + '</div></div>';
     return;
   }
-  list.innerHTML = filtered.map(r => `
-    <div class="recipe-card" onclick="openRecipe('${r.id}')">
-      <div class="recipe-card-header">
-        <div class="recipe-card-title">${r.title}</div>
-        <span class="recipe-cat-tag">${r.category||'Other'}</span>
-      </div>
-      <div class="recipe-card-meta">${r.ingredients.length} ingredients · ${r.method.length} steps</div>
-    </div>
-  `).join('');
+  list.innerHTML = filtered.map(function(r) {
+    return '<div class="recipe-card" data-id="' + r.id + '"><div class="recipe-card-header"><div class="recipe-card-title">' + r.title + '</div><span class="recipe-cat-tag">' + (r.category||'Other') + '</span></div><div class="recipe-card-meta">' + r.ingredients.length + ' ingredients · ' + r.method.length + ' steps</div></div>';
+  }).join('');
+  document.querySelectorAll('.recipe-card').forEach(function(card) {
+    card.addEventListener('click', function() { openRecipe(this.dataset.id); });
+  });
 }
 
 function openRecipe(id) {
-  const r = recipes.find(r => r.id === id);
+  var r = recipes.find(function(r) { return r.id === id; });
   if (!r) return;
   currentRecipeId = id;
   document.getElementById('detailLabel').textContent = r.category || 'Recipe';
   document.getElementById('detailHeaderTitle').textContent = r.title;
-  document.getElementById('detailBody').innerHTML = `
-    <div class="detail-full-title">${r.title}</div>
-    <span class="detail-cat-tag">${r.category||'Other'}</span>
-    <div class="detail-section">
-      <div class="detail-section-header"><div class="detail-section-label">Ingredients</div><div class="detail-section-line"></div></div>
-      ${r.ingredients.map(i=>`<div class="ingredient-row"><div class="ingredient-dot"></div><div class="ingredient-text">${i}</div></div>`).join('')}
-    </div>
-    <div class="detail-section">
-      <div class="detail-section-header"><div class="detail-section-label">Method</div><div class="detail-section-line"></div></div>
-      ${r.method.map((s,i)=>`<div class="method-row"><div class="step-num">${String(i+1).padStart(2,'0')}</div><div class="step-text">${s}</div></div>`).join('')}
-    </div>
-  `;
+  document.getElementById('detailBody').innerHTML =
+    '<div class="detail-full-title">' + r.title + '</div>' +
+    '<span class="detail-cat-tag">' + (r.category||'Other') + '</span>' +
+    '<div class="detail-section"><div class="detail-section-header"><div class="detail-section-label">Ingredients</div><div class="detail-section-line"></div></div>' +
+    r.ingredients.map(function(i) { return '<div class="ingredient-row"><div class="ingredient-dot"></div><div class="ingredient-text">' + i + '</div></div>'; }).join('') + '</div>' +
+    '<div class="detail-section"><div class="detail-section-header"><div class="detail-section-label">Method</div><div class="detail-section-line"></div></div>' +
+    r.method.map(function(s, i) { return '<div class="method-row"><div class="step-num">' + String(i+1).padStart(2,'0') + '</div><div class="step-text">' + s + '</div></div>'; }).join('') + '</div>';
   showScreen('detailScreen');
 }
 
 function deleteCurrentRecipe() {
   if (!currentRecipeId || !confirm('Delete this recipe?')) return;
-  recipes = recipes.filter(r => r.id !== currentRecipeId);
+  recipes = recipes.filter(function(r) { return r.id !== currentRecipeId; });
   localStorage.setItem('recipes', JSON.stringify(recipes));
   showScreen('homeScreen');
 }
 
 function resetScan() {
-  currentFile = null; pendingRecipe = null;
+  currentB64 = null; pendingRecipe = null;
   document.getElementById('uploadZone').style.display = 'block';
   document.getElementById('previewSection').style.display = 'none';
   document.getElementById('scanStatus').style.display = 'none';
@@ -247,12 +248,13 @@ function resetScan() {
 
 function handleFile(file) {
   if (!file || !file.type.startsWith('image/')) return;
-  currentFile = file;
-  const reader = new FileReader();
+  var reader = new FileReader();
   reader.onload = function() {
+    var dataUrl = reader.result;
+    currentB64 = dataUrl.split(',')[1];
     document.getElementById('uploadZone').style.display = 'none';
     document.getElementById('previewSection').style.display = 'block';
-    document.getElementById('previewImg').src = reader.result;
+    document.getElementById('previewImg').src = dataUrl;
     document.getElementById('previewMeta').textContent = file.name + ' · ' + (file.size/1024).toFixed(0) + 'KB';
     document.getElementById('scanError').style.display = 'none';
     document.getElementById('extractedSection').style.display = 'none';
@@ -262,111 +264,75 @@ function handleFile(file) {
   reader.readAsDataURL(file);
 }
 
-
-function compressImage(file, maxPx, quality) {
-  return new Promise((res, rej) => {
-    const reader = new FileReader();
-    reader.onerror = () => rej(new Error('Read failed'));
-    reader.onload = () => {
-      const img = new Image();
-      img.onerror = () => rej(new Error('Image failed'));
-      img.onload = () => {
-        const scale = Math.min(1, maxPx / Math.max(img.width, img.height));
-        const w = Math.round(img.width * scale), h = Math.round(img.height * scale);
-        const c = document.createElement('canvas');
-        c.width = w; c.height = h;
-        c.getContext('2d').drawImage(img, 0, 0, w, h);
-        res(c.toDataURL('image/jpeg', quality).split(',')[1]);
-      };
-      img.src = reader.result;
-    };
-    reader.readAsDataURL(file);
-  });
-}
-
-async function scanRecipe() {
-  if (!currentFile) { alert('No file'); return; }
-  const btn = document.getElementById('scanBtn');
-  const status = document.getElementById('scanStatus');
-  const errEl = document.getElementById('scanError');
+function scanRecipe() {
+  if (!currentB64) {
+    document.getElementById('scanError').style.display = 'block';
+    document.getElementById('scanError').textContent = 'Please select a photo first.';
+    return;
+  }
+  var btn = document.getElementById('scanBtn');
+  var status = document.getElementById('scanStatus');
+  var errEl = document.getElementById('scanError');
   btn.disabled = true;
-  btn.innerHTML = '<span class="spinner"></span> Reading…';
+  btn.textContent = 'Reading…';
   status.style.display = 'block';
-  status.textContent = 'Compressing image…';
+  status.textContent = 'Sending to Claude…';
   errEl.style.display = 'none';
 
-  try {
-    alert('Step 1: starting compression');
-    const b64 = await compressImage(currentFile, 1024, 0.82);
-    alert('Step 2: compressed, length=' + b64.length);
-    status.textContent = 'Sending to Claude…';
+  var payload = JSON.stringify({ imageBase64: currentB64, mediaType: 'image/jpeg' });
 
-    alert('Step 3: about to fetch');
-    const resp = await fetch('/api/scan', {
-      method: 'POST',
-      headers: { 'content-type': 'application/json' },
-      body: JSON.stringify({ imageBase64: b64, mediaType: 'image/jpeg' })
-    });
-    alert('Step 4: fetch done, status=' + resp.status);
-
-    const rawText = await resp.text();
-    alert('Step 5: body=' + rawText.slice(0, 100));
-
-    let data;
-    try { data = JSON.parse(rawText); }
-    catch(e) { throw new Error('Server returned unexpected response: ' + rawText.slice(0, 200)); }
-
-    if (data.error) throw new Error(data.error);
-    if (!data.received && !data.recipe) throw new Error('Unexpected: ' + rawText.slice(0, 200));
-
-    if (data.received) {
-      alert('Image reached server! Length: ' + data.imageLength);
-      return;
+  fetch('/api/scan', {
+    method: 'POST',
+    headers: { 'content-type': 'application/json' },
+    body: payload
+  })
+  .then(function(resp) { return resp.text(); })
+  .then(function(rawText) {
+    var data;
+    try { data = JSON.parse(rawText); } catch(e) {
+      throw new Error('Unexpected server response: ' + rawText.slice(0, 150));
     }
-
+    if (data.error) throw new Error(data.error);
+    if (!data.recipe) throw new Error('No recipe returned: ' + rawText.slice(0, 150));
     pendingRecipe = data.recipe;
     status.style.display = 'none';
     showExtracted(pendingRecipe);
-
-  } catch(err) {
+  })
+  .catch(function(err) {
     status.style.display = 'none';
     errEl.style.display = 'block';
     errEl.textContent = '⚠️ ' + (err.message || String(err));
-  } finally {
+  })
+  .finally(function() {
     btn.disabled = false;
-    btn.innerHTML = '<span>✦</span> Extract Recipe';
-  }
+    btn.textContent = '✦ Extract Recipe';
+  });
 }
 
-
 function showExtracted(r) {
-  const sec = document.getElementById('extractedSection');
+  var sec = document.getElementById('extractedSection');
   sec.style.display = 'block';
-  sec.innerHTML = `
-    <div class="extracted-card">
-      <div class="ext-label">Extracted Recipe</div>
-      <div class="ext-title">${r.title}</div>
-      <div class="ext-cat">${r.category||'Other'}</div>
-      <div class="ext-section-label">Ingredients</div>
-      ${r.ingredients.map(i=>`<div class="ext-item">· ${i}</div>`).join('')}
-      <div class="ext-section-label">Method</div>
-      ${r.method.map((s,i)=>`<div class="ext-item">${i+1}. ${s}</div>`).join('')}
-      <button class="save-btn" onclick="saveRecipe()">✓ Save to My Recipes</button>
-    </div>
-  `;
+  sec.innerHTML = '<div class="extracted-card">' +
+    '<div class="ext-label">Extracted Recipe</div>' +
+    '<div class="ext-title">' + r.title + '</div>' +
+    '<div class="ext-cat">' + (r.category||'Other') + '</div>' +
+    '<div class="ext-section-label">Ingredients</div>' +
+    r.ingredients.map(function(i) { return '<div class="ext-item">· ' + i + '</div>'; }).join('') +
+    '<div class="ext-section-label">Method</div>' +
+    r.method.map(function(s, i) { return '<div class="ext-item">' + (i+1) + '. ' + s + '</div>'; }).join('') +
+    '<button class="save-btn" id="saveBtn">✓ Save to My Recipes</button>' +
+    '</div>';
+  document.getElementById('saveBtn').addEventListener('click', saveRecipe);
   sec.scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
 
 function saveRecipe() {
   if (!pendingRecipe) return;
-  const recipe = { ...pendingRecipe, id: Date.now().toString(), savedAt: new Date().toISOString() };
+  var recipe = Object.assign({}, pendingRecipe, { id: Date.now().toString(), savedAt: new Date().toISOString() });
   recipes.unshift(recipe);
   localStorage.setItem('recipes', JSON.stringify(recipes));
   showScreen('homeScreen');
 }
-document.getElementById('scanBtn').addEventListener('click', function() {
-  scanRecipe().catch(function(e) { alert('Uncaught: ' + e.message); });
-});
 
 renderList();
 </script>
