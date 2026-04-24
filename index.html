@@ -279,13 +279,15 @@ function scanRecipe() {
   status.textContent = 'Sending to Claude…';
   errEl.style.display = 'none';
 
-  var payload = JSON.stringify({ imageBase64: currentB64, mediaType: 'image/jpeg' });
+  var formData = new FormData();
+formData.append('imageBase64', currentB64);
+formData.append('mediaType', 'image/jpeg');
 
-  fetch('/api/scan', {
+fetch('/api/scan', {
     method: 'POST',
-    headers: { 'content-type': 'application/json' },
-    body: payload
+    body: formData
   })
+
   .then(function(resp) { return resp.text(); })
   .then(function(rawText) {
     var data;
