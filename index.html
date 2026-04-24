@@ -333,12 +333,23 @@ document.getElementById(‘delBtn’).addEventListener(‘click’,deleteRecipe)
 document.getElementById(‘fileInput’).addEventListener(‘change’,function(){if(this.files&&this.files[0])handleFile(this.files[0]);});
 document.getElementById(‘changeInput’).addEventListener(‘change’,function(){if(this.files&&this.files[0])handleFile(this.files[0]);});
 document.getElementById(‘scanBtn’).addEventListener(‘click’,doScan);
-document.getElementById(‘resetBtn’).addEventListener(‘click’,function(){if(confirm(‘Clear all data and reset?’)){localStorage.clear();location.reload();}});
 document.getElementById(‘addCatConfirm’).addEventListener(‘click’,function(){var v=document.getElementById(‘newCatInput’).value.trim();if(!v||categories.indexOf(v)!==-1)return;categories.push(v);persist();document.getElementById(‘newCatInput’).value=’’;renderCatModal();});
 document.getElementById(‘catModalClose’).addEventListener(‘click’,function(){document.getElementById(‘catModalBg’).classList.remove(‘open’);renderHome();});
 
+// Wire up reset first, before anything can crash
+document.getElementById(‘resetBtn’).addEventListener(‘click’,function(){localStorage.clear();location.reload();});
+
+try {
 loadData();
+} catch(e) {
+document.getElementById(‘recipeList’).innerHTML = ’<div style="padding:20px;color:red;font-size:12px">loadData crashed: ’ + e.message + ‘</div>’;
+}
+
+try {
 renderHome();
+} catch(e) {
+document.getElementById(‘recipeList’).innerHTML += ’<div style="padding:20px;color:red;font-size:12px">renderHome crashed: ’ + e.message + ‘</div>’;
+}
 </script>
 
 </body>
