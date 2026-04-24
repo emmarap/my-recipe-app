@@ -173,14 +173,13 @@ document.getElementById('backBtn').addEventListener('click', function() { showSc
 document.getElementById('detailBackBtn').addEventListener('click', function() { showScreen('homeScreen'); });
 document.getElementById('searchInput').addEventListener('input', renderList);
 document.getElementById('deleteBtn').addEventListener('click', deleteCurrentRecipe);
-
 document.getElementById('fileInput').addEventListener('change', function() {
   if (this.files && this.files[0]) handleFile(this.files[0]);
 });
 document.getElementById('changeInput').addEventListener('change', function() {
   if (this.files && this.files[0]) handleFile(this.files[0]);
 });
-document.getElementById('scanBtn').addEventListener('click', function() { scanRecipe(); });
+document.getElementById('scanBtn').addEventListener('click', scanRecipe);
 
 function buildCategories() {
   document.getElementById('categoryBar').innerHTML = CATEGORIES.map(function(c) {
@@ -197,7 +196,7 @@ function renderList() {
   var list = document.getElementById('recipeList');
   var filtered = recipes.filter(function(r) {
     var matchCat = activeCategory === 'All' || r.category === activeCategory;
-    var matchQ = !q || r.title.toLowerCase().includes(q) || (r.category||'').toLowerCase().includes(q);
+    var matchQ = !q || r.title.toLowerCase().indexOf(q) !== -1 || (r.category||'').toLowerCase().indexOf(q) !== -1;
     return matchCat && matchQ;
   });
   if (!filtered.length) {
@@ -213,24 +212,23 @@ function renderList() {
 }
 
 function openRecipe(id) {
-  var r = recipes.find(function(r) { return r.id === id; });
+  var r = null;
+  for (var i = 0; i < recipes.length; i++) { if (recipes[i].id === id) { r = recipes[i]; break; } }
   if (!r) return;
   currentRecipeId = id;
   document.getElementById('detailLabel').textContent = r.category || 'Recipe';
   document.getElementById('detailHeaderTitle').textContent = r.title;
-  document.getElementById('detailBody').innerHTML =
-    '<div class="detail-full-title">' + r.title + '</div>' +
-    '<span class="detail-cat-tag">' + (r.category||'Other') + '</span>' +
-    '<div class="detail-section"><div class="detail-section-header"><div class="detail-section-label">Ingredients</div><div class="detail-section-line"></div></div>' +
-    r.ingredients.map(function(i) { return '<div class="ingredient-row"><div class="ingredient-dot"></div><div class="ingredient-text">' + i + '</div></div>'; }).join('') + '</div>' +
-    '<div class="detail-section"><div class="detail-section-header"><div class="detail-section-label">Method</div><div class="detail-section-line"></div></div>' +
-    r.method.map(function(s, i) { return '<div class="method-row"><div class="step-num">' + String(i+1).padStart(2,'0') + '</div><div class="step-text">' + s + '</div></div>'; }).join('') + '</div>';
+  var ingHtml = r.ingredients.map(function(i) { return '<div class="ingredient-row"><div class="ingredient-dot"></div><div class="ingredient-text">' + i + '</div></div>'; }).join('');
+  var methHtml = r.method.map(function(s, i) { return '<div class="method-row"><div class="step-num">0' + (i+1) + '</div><div class="step-text">' + s + '</div></div>'; }).join('');
+  document.getElementById('detailBody').innerHTML = '<div class="detail-full-title">' + r.title + '</div><span class="detail-cat-tag">' + (r.category||'Other') + '</span><div class="detail-section"><div class="detail-section-header"><div class="detail-section-label">Ingredients</div><div class="detail-section-line"></div></div>' + ingHtml + '</div><div class="detail-section"><div class="detail-section-header"><div class="detail-section-label">Method</div><div class="detail-section-line"></div></div>' + methHtml + '</div>';
   showScreen('detailScreen');
 }
 
 function deleteCurrentRecipe() {
   if (!currentRecipeId || !confirm('Delete this recipe?')) return;
-  recipes = recipes.filter(function(r) { return r.id !== currentRecipeId; });
+  var newRecipes = [];
+  for (var i = 0; i < recipes.length; i++) { if (recipes[i].id !== currentRecipeId) newRecipes.push(recipes[i]); }
+  recipes = newRecipes;
   localStorage.setItem('recipes', JSON.stringify(recipes));
   showScreen('homeScreen');
 }
@@ -247,19 +245,33 @@ function resetScan() {
 }
 
 function handleFile(file) {
-  if (!file || !file.type.startsWith('image/')) return;
+  if (!file) return;
   var reader = new FileReader();
   reader.onload = function() {
     var dataUrl = reader.result;
-    currentB64 = dataUrl.split(',')[1];
-    document.getElementById('uploadZone').style.display = 'none';
-    document.getElementById('previewSection').style.display = 'block';
-    document.getElementById('previewImg').src = dataUrl;
-    document.getElementById('previewMeta').textContent = file.name + ' · ' + (file.size/1024).toFixed(0) + 'KB';
-    document.getElementById('scanError').style.display = 'none';
-    document.getElementById('extractedSection').style.display = 'none';
-    document.getElementById('extractedSection').innerHTML = '';
-    pendingRecipe = null;
+    // Compress using canvas
+    var img = new Image();
+    img.onload = function() {
+      var maxPx = 800;
+      var scale = Math.min(1, maxPx / Math.max(img.width, img.height));
+      var w = Math.round(img.width * scale);
+      var h = Math.round(img.height * scale);
+      var canvas = document.createElement('canvas');
+      canvas.width = w;
+      canvas.height = h;
+      canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+      var compressed = canvas.toDataURL('image/jpeg', 0.7);
+      currentB64 = compressed.split(',')[1];
+      document.getElementById('uploadZone').style.display = 'none';
+      document.getElementById('previewSection').style.display = 'block';
+      document.getElementById('previewImg').src = compressed;
+      document.getElementById('previewMeta').textContent = file.name + ' · compressed to ' + Math.round(currentB64.length * 0.75 / 1024) + 'KB';
+      document.getElementById('scanError').style.display = 'none';
+      document.getElementById('extractedSection').style.display = 'none';
+      document.getElementById('extractedSection').innerHTML = '';
+      pendingRecipe = null;
+    };
+    img.src = dataUrl;
   };
   reader.readAsDataURL(file);
 }
@@ -279,56 +291,49 @@ function scanRecipe() {
   status.textContent = 'Sending to Claude…';
   errEl.style.display = 'none';
 
-  var payload = JSON.stringify({ imageBase64: currentB64, mediaType: 'image/jpeg' });
-
-  fetch(window.location.origin + '/api/scan', {
-    method: 'POST',
-    headers: { 'content-type': 'application/json' },
-    body: payload
-  })
-  .then(function(resp) { return resp.text(); })
-  .then(function(rawText) {
+  var xhr = new XMLHttpRequest();
+  xhr.open('POST', window.location.origin + '/api/scan', true);
+  xhr.setRequestHeader('Content-Type', 'application/json');
+  xhr.onload = function() {
     var data;
-    try { data = JSON.parse(rawText); } catch(e) {
-      throw new Error('Unexpected server response: ' + rawText.slice(0, 150));
+    try { data = JSON.parse(xhr.responseText); } catch(e) {
+      showErr('Unexpected response: ' + xhr.responseText.slice(0, 100));
+      return;
     }
-    if (data.error) throw new Error(data.error);
-    if (!data.recipe) throw new Error('No recipe returned: ' + rawText.slice(0, 150));
+    if (data.error) { showErr(data.error); return; }
+    if (!data.recipe) { showErr('No recipe returned'); return; }
     pendingRecipe = data.recipe;
     status.style.display = 'none';
     showExtracted(pendingRecipe);
-  })
-  .catch(function(err) {
-    status.style.display = 'none';
-    errEl.style.display = 'block';
-    errEl.textContent = '⚠️ ' + (err.message || String(err));
-  })
-  .finally(function() {
     btn.disabled = false;
     btn.textContent = '✦ Extract Recipe';
-  });
+  };
+  xhr.onerror = function() {
+    showErr('Network error: ' + xhr.status + ' ' + xhr.statusText);
+  };
+  xhr.send(JSON.stringify({ imageBase64: currentB64, mediaType: 'image/jpeg' }));
+
+  function showErr(msg) {
+    status.style.display = 'none';
+    errEl.style.display = 'block';
+    errEl.textContent = '⚠️ ' + msg;
+    btn.disabled = false;
+    btn.textContent = '✦ Extract Recipe';
+  }
 }
 
 function showExtracted(r) {
   var sec = document.getElementById('extractedSection');
   sec.style.display = 'block';
-  sec.innerHTML = '<div class="extracted-card">' +
-    '<div class="ext-label">Extracted Recipe</div>' +
-    '<div class="ext-title">' + r.title + '</div>' +
-    '<div class="ext-cat">' + (r.category||'Other') + '</div>' +
-    '<div class="ext-section-label">Ingredients</div>' +
-    r.ingredients.map(function(i) { return '<div class="ext-item">· ' + i + '</div>'; }).join('') +
-    '<div class="ext-section-label">Method</div>' +
-    r.method.map(function(s, i) { return '<div class="ext-item">' + (i+1) + '. ' + s + '</div>'; }).join('') +
-    '<button class="save-btn" id="saveBtn">✓ Save to My Recipes</button>' +
-    '</div>';
+  var ingHtml = r.ingredients.map(function(i) { return '<div class="ext-item">· ' + i + '</div>'; }).join('');
+  var methHtml = r.method.map(function(s, i) { return '<div class="ext-item">' + (i+1) + '. ' + s + '</div>'; }).join('');
+  sec.innerHTML = '<div class="extracted-card"><div class="ext-label">Extracted Recipe</div><div class="ext-title">' + r.title + '</div><div class="ext-cat">' + (r.category||'Other') + '</div><div class="ext-section-label">Ingredients</div>' + ingHtml + '<div class="ext-section-label">Method</div>' + methHtml + '<button class="save-btn" id="saveBtn">✓ Save to My Recipes</button></div>';
   document.getElementById('saveBtn').addEventListener('click', saveRecipe);
-  sec.scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
 
 function saveRecipe() {
   if (!pendingRecipe) return;
-  var recipe = Object.assign({}, pendingRecipe, { id: Date.now().toString(), savedAt: new Date().toISOString() });
+  var recipe = { title: pendingRecipe.title, category: pendingRecipe.category, ingredients: pendingRecipe.ingredients, method: pendingRecipe.method, id: Date.now().toString(), savedAt: new Date().toISOString() };
   recipes.unshift(recipe);
   localStorage.setItem('recipes', JSON.stringify(recipes));
   showScreen('homeScreen');
