@@ -279,7 +279,7 @@ function compressImage(file, maxPx, quality) {
 }
 
 async function scanRecipe() {
-  if (!currentFile) return;
+  if (!currentFile) { alert('No file'); return; }
   const btn = document.getElementById('scanBtn');
   const status = document.getElementById('scanStatus');
   const errEl = document.getElementById('scanError');
@@ -290,22 +290,33 @@ async function scanRecipe() {
   errEl.style.display = 'none';
 
   try {
+    alert('Step 1: starting compression');
     const b64 = await compressImage(currentFile, 1024, 0.82);
+    alert('Step 2: compressed, length=' + b64.length);
     status.textContent = 'Sending to Claude…';
 
+    alert('Step 3: about to fetch');
     const resp = await fetch('/api/scan', {
       method: 'POST',
       headers: { 'content-type': 'application/json' },
       body: JSON.stringify({ imageBase64: b64, mediaType: 'image/jpeg' })
     });
+    alert('Step 4: fetch done, status=' + resp.status);
 
     const rawText = await resp.text();
+    alert('Step 5: body=' + rawText.slice(0, 100));
+
     let data;
     try { data = JSON.parse(rawText); }
     catch(e) { throw new Error('Server returned unexpected response: ' + rawText.slice(0, 200)); }
 
     if (data.error) throw new Error(data.error);
-    if (!data.recipe) throw new Error('No recipe in response: ' + rawText.slice(0, 200));
+    if (!data.received && !data.recipe) throw new Error('Unexpected: ' + rawText.slice(0, 200));
+
+    if (data.received) {
+      alert('Image reached server! Length: ' + data.imageLength);
+      return;
+    }
 
     pendingRecipe = data.recipe;
     status.style.display = 'none';
@@ -314,12 +325,13 @@ async function scanRecipe() {
   } catch(err) {
     status.style.display = 'none';
     errEl.style.display = 'block';
-    errEl.textContent = '⚠️ ' + (err.message || 'Something went wrong');
+    errEl.textContent = '⚠️ ' + (err.message || String(err));
   } finally {
     btn.disabled = false;
     btn.innerHTML = '<span>✦</span> Extract Recipe';
   }
 }
+
 
 function showExtracted(r) {
   const sec = document.getElementById('extractedSection');
