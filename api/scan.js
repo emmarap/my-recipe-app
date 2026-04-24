@@ -10,7 +10,9 @@ export default async function handler(req, res) {
   const apiKey = process.env.ANTHROPIC_API_KEY;
   if (!apiKey) return res.status(200).json({ error: 'ANTHROPIC_API_KEY not set' });
 
-  const { imageBase64, mediaType } = req.body || {};
+  const imageBase64 = req.body.imageBase64;
+const mediaType = req.body.mediaType;
+
   if (!imageBase64) return res.status(200).json({ error: 'No image received by server. Body keys: ' + Object.keys(req.body || {}).join(', ') });
 
   return res.status(200).json({ 
