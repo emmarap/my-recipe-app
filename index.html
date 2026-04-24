@@ -227,8 +227,26 @@ var pendingRecipe = null;
 var editMode = false;
 var viewingPhotoIndex = -1;
 
-try { recipes = JSON.parse(localStorage.getItem('recipes') || '[]'); } catch(e) { recipes = []; }
-try { categories = JSON.parse(localStorage.getItem('categories') || '[]'); } catch(e) { categories = []; }
+var savedRecipes = localStorage.getItem("recipes"); try { recipes = savedRecipes ? JSON.parse(savedRecipes) : []; recipes = recipes.map(function(r) { return { id: r.id || Date.now().toString(), title: r.title || "Untitled", category: r.category || "", ingredients: r.ingredients || [], method: r.method || [], notes: r.notes || "", photos: r.photos || [], savedAt: r.savedAt || new Date().toISOString() }; }); } catch(e) { recipes = []; } // original: try {
+  var savedR = localStorage.getItem('recipes');
+  recipes = savedR ? JSON.parse(savedR) : [];
+  recipes = recipes.map(function(r) {
+    return {
+      id: r.id || String(Date.now()),
+      title: r.title || 'Untitled',
+      category: r.category || '',
+      ingredients: Array.isArray(r.ingredients) ? r.ingredients : [],
+      method: Array.isArray(r.method) ? r.method : [],
+      notes: r.notes || '',
+      photos: Array.isArray(r.photos) ? r.photos : [],
+      savedAt: r.savedAt || new Date().toISOString()
+    };
+  });
+} catch(e) { recipes = []; }
+try {
+  var savedC = localStorage.getItem('categories');
+  categories = savedC ? JSON.parse(savedC) : [];
+} catch(e) { categories = []; }
 
 function save() {
   localStorage.setItem('recipes', JSON.stringify(recipes));
