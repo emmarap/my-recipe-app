@@ -281,7 +281,7 @@ function scanRecipe() {
 
   var payload = JSON.stringify({ imageBase64: currentB64, mediaType: 'image/jpeg' });
 
-  fetch('https://my-recipe-app-iota.vercel.app/api/scan', {
+  fetch(window.location.origin + '/api/scan', {
     method: 'POST',
     headers: { 'content-type': 'application/json' },
     body: payload
