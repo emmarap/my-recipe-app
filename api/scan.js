@@ -8,7 +8,7 @@ export default async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
 
   const apiKey = process.env.ANTHROPIC_API_KEY;
-  if (!apiKey) return res.status(500).json({ error: 'ANTHROPIC_API_KEY not configured in Vercel environment variables' });
+  if (!apiKey) return res.status(500).json({ error: 'ANTHROPIC_API_KEY not set' });
 
   const { imageBase64, mediaType } = req.body;
   if (!imageBase64) return res.status(400).json({ error: 'No image provided' });
@@ -28,29 +28,38 @@ export default async function handler(req, res) {
           role: 'user',
           content: [
             { type: 'image', source: { type: 'base64', media_type: mediaType || 'image/jpeg', data: imageBase64 } },
-            { type: 'text', text: `Extract the recipe from this image. Return ONLY a JSON object, no markdown:
-{
-  "title": "Recipe name",
-  "category": "one of: Breakfast, Lunch, Dinner, Dessert, Snack, Drink, Baking, Other",
-  "ingredients": ["ingredient 1", "ingredient 2"],
-  "method": ["Step 1", "Step 2"]
-}` }
+            { type: 'text', text: 'Extract the recipe from this image. Return ONLY a JSON object, no markdown:\n{"title":"Recipe name","category":"one of: Breakfast, Lunch, Dinner, Dessert, Snack, Drink, Baking, Other","ingredients":["ingredient 1"],"method":["Step 1"]}' }
           ]
         }]
       })
     });
 
-    const data = await response.json();
-    if (!response.ok) return res.status(response.status).json({ error: data.error?.message || 'API error' });
+    const bodyText = await response.text();
+
+    if (!response.ok) {
+      return res.status(200).json({ error: 'Anthropic error ' + response.status + ': ' + bodyText.slice(0, 300) });
+    }
+
+    let data;
+    try { data = JSON.parse(bodyText); } 
+    catch(e) { return res.status(200).json({ error: 'Could not parse Anthropic response: ' + bodyText.slice(0, 200) }); }
 
     const text = (data.content || []).map(b => b.text || '').join('').trim();
+    
     const cleaned = text.replace(/^```json\s*/i, '').replace(/^```\s*/i, '').replace(/```\s*$/i, '').trim();
     const match = cleaned.match(/\{[\s\S]+\}/);
-    if (!match) return res.status(500).json({ error: 'Could not parse recipe from image' });
+    
+    if (!match) {
+      return res.status(200).json({ error: 'No recipe found. Claude said: ' + text.slice(0, 200) });
+    }
 
-    const recipe = JSON.parse(match[0]);
+    let recipe;
+    try { recipe = JSON.parse(match[0]); }
+    catch(e) { return res.status(200).json({ error: 'Recipe JSON invalid: ' + match[0].slice(0, 200) }); }
+
     return res.status(200).json({ recipe });
+
   } catch (err) {
-    return res.status(500).json({ error: err.message || 'Server error' });
+    return res.status(200).json({ error: err.message || 'Server error' });
   }
 }
