@@ -582,7 +582,10 @@ document.getElementById(‘changeInput’).addEventListener(‘change’, functi
 document.getElementById(‘scanBtn’).addEventListener(‘click’, doScan);
 
 loadData();
-renderHome();
+try { renderHome(); } catch(e) {
+  document.body.innerHTML += '<div style="position:fixed;bottom:40px;left:50%;transform:translateX(-50%);background:#c9a96e;color:#000;padding:14px 24px;border-radius:12px;font-family:sans-serif;font-size:14px;font-weight:600;cursor:pointer;z-index:9999" onclick="localStorage.clear();location.reload()">⚠️ Tap to reset app</div>';
+}
+
 </script>
 
 </body>
