@@ -279,15 +279,13 @@ function scanRecipe() {
   status.textContent = 'Sending to Claude…';
   errEl.style.display = 'none';
 
-  var formData = new FormData();
-formData.append('imageBase64', currentB64);
-formData.append('mediaType', 'image/jpeg');
+  var payload = JSON.stringify({ imageBase64: currentB64, mediaType: 'image/jpeg' });
 
-fetch('/api/scan', {
+  fetch('https://my-recipe-app-iota.vercel.app/api/scan', {
     method: 'POST',
-    body: formData
+    headers: { 'content-type': 'application/json' },
+    body: payload
   })
-
   .then(function(resp) { return resp.text(); })
   .then(function(rawText) {
     var data;
