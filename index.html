@@ -248,15 +248,20 @@ function resetScan() {
 function handleFile(file) {
   if (!file || !file.type.startsWith('image/')) return;
   currentFile = file;
-  document.getElementById('uploadZone').style.display = 'none';
-  document.getElementById('previewSection').style.display = 'block';
-  document.getElementById('previewImg').src = URL.createObjectURL(file);
-  document.getElementById('previewMeta').textContent = file.name + ' · ' + (file.size/1024).toFixed(0) + 'KB';
-  document.getElementById('scanError').style.display = 'none';
-  document.getElementById('extractedSection').style.display = 'none';
-  document.getElementById('extractedSection').innerHTML = '';
-  pendingRecipe = null;
+  const reader = new FileReader();
+  reader.onload = function() {
+    document.getElementById('uploadZone').style.display = 'none';
+    document.getElementById('previewSection').style.display = 'block';
+    document.getElementById('previewImg').src = reader.result;
+    document.getElementById('previewMeta').textContent = file.name + ' · ' + (file.size/1024).toFixed(0) + 'KB';
+    document.getElementById('scanError').style.display = 'none';
+    document.getElementById('extractedSection').style.display = 'none';
+    document.getElementById('extractedSection').innerHTML = '';
+    pendingRecipe = null;
+  };
+  reader.readAsDataURL(file);
 }
+
 
 function compressImage(file, maxPx, quality) {
   return new Promise((res, rej) => {
