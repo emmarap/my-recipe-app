@@ -91,6 +91,9 @@ body { font-family: 'DM Sans', sans-serif; background: #0f0e0c; color: #f0ebe3; 
 .step-num { font-family: 'Playfair Display', serif; font-size: 20px; color: rgba(201,169,110,0.28); font-weight: 700; line-height: 1; min-width: 26px; padding-top: 2px; }
 .step-text { font-size: 14px; line-height: 1.7; color: rgba(240,235,227,0.78); font-weight: 300; padding-bottom: 13px; border-bottom: 1px solid rgba(240,235,227,0.05); flex: 1; }
 .method-row:last-child .step-text { border-bottom: none; }
+.cat-chips-wrap { display: flex; flex-wrap: wrap; gap: 8px; }
+.ext-cat-chip, .det-cat-chip { padding: 7px 14px; border-radius: 20px; border: 1px solid rgba(240,235,227,0.15); background: transparent; color: rgba(240,235,227,0.45); font-family: 'DM Sans', sans-serif; font-size: 12px; cursor: pointer; }
+.ext-cat-chip.selected, .det-cat-chip.selected { background: #c9a96e; border-color: #c9a96e; color: #0f0e0c; font-weight: 500; }
 /* Category modal */
 .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.7); z-index: 50; display: none; align-items: flex-end; justify-content: center; }
 .modal-overlay.open { display: flex; }
@@ -268,7 +271,8 @@ function renderList() {
   var q = document.getElementById('searchInput').value.toLowerCase().trim();
   var list = document.getElementById('recipeList');
   var filtered = recipes.filter(function(r) {
-    var matchCat = activeCategory === 'All' || r.category === activeCategory;
+    var rCatsF = Array.isArray(r.categories) ? r.categories : (r.category ? [r.category] : []);
+    var matchCat = activeCategory === 'All' || rCatsF.indexOf(activeCategory) !== -1;
     var matchQ = !q || r.title.toLowerCase().indexOf(q) !== -1 || (r.category||'').toLowerCase().indexOf(q) !== -1;
     return matchCat && matchQ;
   });
@@ -277,7 +281,9 @@ function renderList() {
     return;
   }
   list.innerHTML = filtered.map(function(r) {
-    return '<div class="recipe-card" data-id="' + r.id + '"><div class="recipe-card-header"><div class="recipe-card-title">' + r.title + '</div>' + (r.category ? '<span class="recipe-cat-tag">' + r.category + '</span>' : '') + '</div><div class="recipe-card-meta">' + r.ingredients.length + ' ingredients · ' + r.method.length + ' steps</div></div>';
+    var cats = Array.isArray(r.categories) && r.categories.length ? r.categories : (r.category ? [r.category] : []);
+    var tagHtml = cats.slice(0,2).map(function(c) { return '<span class="recipe-cat-tag">' + c + '</span>'; }).join('');
+    return '<div class="recipe-card" data-id="' + r.id + '"><div class="recipe-card-header"><div class="recipe-card-title">' + r.title + '</div><div style="display:flex;gap:4px;flex-wrap:wrap;justify-content:flex-end;flex-shrink:0">' + tagHtml + '</div></div><div class="recipe-card-meta">' + r.ingredients.length + ' ingredients · ' + r.method.length + ' steps</div></div>';
   }).join('');
   document.querySelectorAll('.recipe-card').forEach(function(card) {
     card.addEventListener('click', function() { openRecipe(this.dataset.id); });
@@ -293,7 +299,31 @@ function openRecipe(id) {
   document.getElementById('detailHeaderTitle').textContent = r.title;
   var ingHtml = r.ingredients.map(function(i) { return '<div class="ingredient-row"><div class="ingredient-dot"></div><div class="ingredient-text">' + i + '</div></div>'; }).join('');
   var methHtml = r.method.map(function(s, i) { return '<div class="method-row"><div class="step-num">0' + (i+1) + '</div><div class="step-text">' + s + '</div></div>'; }).join('');
-  document.getElementById('detailBody').innerHTML = '<div class="detail-full-title">' + r.title + '</div><span class="detail-cat-tag">' + (r.category||'Other') + '</span><div class="detail-section"><div class="detail-section-header"><div class="detail-section-label">Ingredients</div><div class="detail-section-line"></div></div>' + ingHtml + '</div><div class="detail-section"><div class="detail-section-header"><div class="detail-section-label">Method</div><div class="detail-section-line"></div></div>' + methHtml + '</div>';
+  var rCats2 = Array.isArray(r.categories) ? r.categories : (r.category ? [r.category] : []);
+  var detChips = categories.map(function(c) {
+    return '<button class="det-cat-chip' + (rCats2.indexOf(c)!==-1?' selected':'') + '" data-cat="' + c + '">' + c + '</button>';
+  }).join('');
+  var catSection = categories.length ? '<div style="margin-bottom:20px"><div style="font-size:10px;letter-spacing:0.2em;text-transform:uppercase;color:rgba(240,235,227,0.35);margin-bottom:10px">Categories</div><div class="cat-chips-wrap">' + detChips + '</div><button id="saveCatBtn" style="margin-top:10px;background:rgba(201,169,110,0.15);border:1px solid rgba(201,169,110,0.3);color:#c9a96e;border-radius:8px;padding:7px 16px;font-family:DM Sans,sans-serif;font-size:12px;cursor:pointer">Save categories</button></div>' : '';
+  document.getElementById('detailBody').innerHTML = '<div class="detail-full-title">' + r.title + '</div>' + catSection + '<div class="detail-section"><div class="detail-section-header"><div class="detail-section-label">Ingredients</div><div class="detail-section-line"></div></div>' + ingHtml + '</div><div class="detail-section"><div class="detail-section-header"><div class="detail-section-label">Method</div><div class="detail-section-line"></div></div>' + methHtml + '</div>';
+  if (categories.length) {
+    document.querySelectorAll('.det-cat-chip').forEach(function(chip) {
+      chip.addEventListener('click', function() { this.classList.toggle('selected'); });
+    });
+    document.getElementById('saveCatBtn').addEventListener('click', function() {
+      var selected = [];
+      document.querySelectorAll('.det-cat-chip.selected').forEach(function(chip) { selected.push(chip.dataset.cat); });
+      for (var i = 0; i < recipes.length; i++) {
+        if (recipes[i].id === currentRecipeId) {
+          recipes[i].categories = selected;
+          recipes[i].category = selected[0] || '';
+          break;
+        }
+      }
+      persist();
+      document.getElementById('detailLabel').textContent = selected.join(', ') || 'Recipe';
+      document.getElementById('detailHeaderTitle').textContent = r.title;
+    });
+  }
   showScreen('detailScreen');
 }
 
@@ -373,20 +403,25 @@ function scanRecipe() {
 function showExtracted(r) {
   var sec = document.getElementById('extractedSection');
   sec.style.display = 'block';
-  var catOpts = '<option value="">No category</option>';
-  for (var i = 0; i < categories.length; i++) {
-    catOpts += '<option value="' + categories[i] + '"' + (r.category===categories[i]?' selected':'') + '>' + categories[i] + '</option>';
-  }
+  var rCats = Array.isArray(r.categories) ? r.categories : (r.category ? [r.category] : []);
+  var catChips = categories.map(function(c) {
+    return '<button class="ext-cat-chip' + (rCats.indexOf(c)!==-1?' selected':'') + '" data-cat="' + c + '">' + c + '</button>';
+  }).join('');
+  var catHtml = categories.length ? '<div style="margin-bottom:16px"><div class="ext-section-label" style="margin-top:0">Categories</div><div class="cat-chips-wrap">' + catChips + '</div></div>' : '';
   var ingHtml = r.ingredients.map(function(i) { return '<div class="ext-item">· ' + i + '</div>'; }).join('');
   var methHtml = r.method.map(function(s, i) { return '<div class="ext-item">' + (i+1) + '. ' + s + '</div>'; }).join('');
-  sec.innerHTML = '<div class="extracted-card"><div class="ext-label">Extracted Recipe</div><div class="ext-title">' + r.title + '</div><select class="cat-sel" id="extCatSel">' + catOpts + '</select><div class="ext-section-label">Ingredients</div>' + ingHtml + '<div class="ext-section-label">Method</div>' + methHtml + '<button class="save-btn" id="saveBtn">✓ Save to My Recipes</button></div>';
+  sec.innerHTML = '<div class="extracted-card"><div class="ext-label">Extracted Recipe</div><div class="ext-title">' + r.title + '</div>' + catHtml + '<div class="ext-section-label">Ingredients</div>' + ingHtml + '<div class="ext-section-label">Method</div>' + methHtml + '<button class="save-btn" id="saveBtn">✓ Save to My Recipes</button></div>';
+  document.querySelectorAll('.ext-cat-chip').forEach(function(chip) {
+    chip.addEventListener('click', function() { this.classList.toggle('selected'); });
+  });
   document.getElementById('saveBtn').addEventListener('click', saveRecipe);
 }
 
 function saveRecipe() {
   if (!pendingRecipe) return;
-  var cat = document.getElementById('extCatSel').value;
-  var recipe = { title: pendingRecipe.title, category: cat, ingredients: pendingRecipe.ingredients, method: pendingRecipe.method, id: Date.now().toString(), savedAt: new Date().toISOString() };
+  var selectedCats = [];
+  document.querySelectorAll('.ext-cat-chip.selected').forEach(function(chip) { selectedCats.push(chip.dataset.cat); });
+  var recipe = { title: pendingRecipe.title, categories: selectedCats, category: selectedCats[0]||'', ingredients: pendingRecipe.ingredients, method: pendingRecipe.method, id: Date.now().toString(), savedAt: new Date().toISOString() };
   recipes.unshift(recipe);
   persist();
   showScreen('homeScreen');
