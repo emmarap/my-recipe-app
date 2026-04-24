@@ -15,121 +15,105 @@ html, body { height: 100%; overflow: hidden; }
 body { font-family: 'DM Sans', sans-serif; background: #0f0e0c; color: #f0ebe3; }
 .screen { position: fixed; inset: 0; display: flex; flex-direction: column; overflow: hidden; transition: transform 0.35s cubic-bezier(0.4,0,0.2,1), opacity 0.35s; }
 .screen.hidden { transform: translateX(100%); opacity: 0; pointer-events: none; }
-
-/* ── SHARED ── */
-.top-bar { padding: 56px 24px 20px; display: flex; align-items: center; gap: 16px; flex-shrink: 0; border-bottom: 1px solid rgba(240,235,227,0.07); }
-.back-btn { width: 36px; height: 36px; border-radius: 50%; background: rgba(240,235,227,0.06); border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 18px; color: #f0ebe3; flex-shrink: 0; }
+.top-bar { padding: 56px 24px 20px; display: flex; align-items: center; gap: 12px; flex-shrink: 0; border-bottom: 1px solid rgba(240,235,227,0.07); }
+.back-btn { width: 36px; height: 36px; border-radius: 50%; background: rgba(240,235,227,0.06); border: none; cursor: pointer; font-size: 18px; color: #f0ebe3; flex-shrink: 0; }
 .top-bar-text { flex: 1; min-width: 0; }
 .top-bar-label { font-size: 10px; letter-spacing: 0.25em; text-transform: uppercase; color: #c9a96e; font-weight: 500; margin-bottom: 3px; }
-.top-bar-title { font-family: ‘Playfair Display’, serif; font-size: 24px; font-weight: 400; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.top-bar-title { font-family: 'Playfair Display', serif; font-size: 22px; font-weight: 400; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.icon-btn { width: 36px; height: 36px; border-radius: 50%; border: none; cursor: pointer; font-size: 15px; flex-shrink: 0; }
 .scrollable { flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch; }
 .scrollable::-webkit-scrollbar { display: none; }
-.icon-btn { width: 36px; height: 36px; border-radius: 50%; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 16px; flex-shrink: 0; }
-
-/* ── HOME ── */
 .home-header { padding: 56px 24px 20px; border-bottom: 1px solid rgba(240,235,227,0.07); flex-shrink: 0; }
-.home-header-top { display: flex; align-items: flex-end; justify-content: space-between; margin-bottom: 20px; }
+.home-top { display: flex; align-items: flex-end; justify-content: space-between; margin-bottom: 20px; }
 .home-label { font-size: 10px; letter-spacing: 0.25em; text-transform: uppercase; color: #c9a96e; margin-bottom: 6px; font-weight: 500; }
-.home-title { font-family: ‘Playfair Display’, serif; font-size: 34px; font-weight: 400; line-height: 1; }
+.home-title { font-family: 'Playfair Display', serif; font-size: 34px; font-weight: 400; line-height: 1; }
 .home-title em { font-style: italic; color: #c9a96e; }
-.add-btn { width: 44px; height: 44px; background: #c9a96e; border-radius: 50%; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 22px; color: #0f0e0c; flex-shrink: 0; }
-.search-bar { position: relative; }
-.search-input { width: 100%; background: rgba(240,235,227,0.06); border: 1px solid rgba(240,235,227,0.1); border-radius: 12px; padding: 12px 16px 12px 40px; color: #f0ebe3; font-family: ‘DM Sans’, sans-serif; font-size: 14px; outline: none; }
+.add-btn { width: 44px; height: 44px; background: #c9a96e; border-radius: 50%; border: none; cursor: pointer; font-size: 24px; color: #0f0e0c; flex-shrink: 0; }
+.search-wrap { position: relative; }
+.search-input { width: 100%; background: rgba(240,235,227,0.06); border: 1px solid rgba(240,235,227,0.1); border-radius: 12px; padding: 12px 16px 12px 40px; color: #f0ebe3; font-family: 'DM Sans', sans-serif; font-size: 14px; outline: none; }
 .search-input::placeholder { color: rgba(240,235,227,0.25); }
-.search-icon { position: absolute; left: 13px; top: 50%; transform: translateY(-50%); font-size: 16px; opacity: 0.3; pointer-events: none; }
-.categories { display: flex; gap: 8px; padding: 14px 24px; overflow-x: auto; flex-shrink: 0; scrollbar-width: none; align-items: center; }
-.categories::-webkit-scrollbar { display: none; }
-.cat-btn { flex-shrink: 0; padding: 7px 14px; border-radius: 20px; border: 1px solid rgba(240,235,227,0.12); background: transparent; color: rgba(240,235,227,0.5); font-family: ‘DM Sans’, sans-serif; font-size: 12px; cursor: pointer; white-space: nowrap; }
-.cat-btn.active { background: #c9a96e; border-color: #c9a96e; color: #0f0e0c; font-weight: 500; }
-.cat-manage-btn { flex-shrink: 0; width: 30px; height: 30px; border-radius: 50%; border: 1px dashed rgba(240,235,227,0.2); background: transparent; color: rgba(240,235,227,0.3); font-size: 16px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
-.recipe-list { padding: 8px 24px 100px; }
-.empty-state { text-align: center; padding: 80px 40px; }
+.search-icon { position: absolute; left: 13px; top: 50%; transform: translateY(-50%); opacity: 0.3; pointer-events: none; }
+.cat-bar { display: flex; gap: 8px; padding: 14px 24px; overflow-x: auto; flex-shrink: 0; scrollbar-width: none; align-items: center; }
+.cat-bar::-webkit-scrollbar { display: none; }
+.cat-pill { flex-shrink: 0; padding: 7px 14px; border-radius: 20px; border: 1px solid rgba(240,235,227,0.12); background: transparent; color: rgba(240,235,227,0.5); font-family: 'DM Sans', sans-serif; font-size: 12px; cursor: pointer; white-space: nowrap; }
+.cat-pill.active { background: #c9a96e; border-color: #c9a96e; color: #0f0e0c; font-weight: 500; }
+.cat-add-pill { flex-shrink: 0; padding: 6px 12px; border-radius: 20px; border: 1px dashed rgba(240,235,227,0.2); background: transparent; color: rgba(240,235,227,0.3); font-family: 'DM Sans', sans-serif; font-size: 12px; cursor: pointer; white-space: nowrap; }
+.recipe-list { padding: 8px 24px 120px; }
+.empty-state { text-align: center; padding: 80px 32px; }
 .empty-icon { font-size: 48px; margin-bottom: 16px; opacity: 0.4; }
-.empty-title { font-family: ‘Playfair Display’, serif; font-size: 20px; font-weight: 400; margin-bottom: 8px; color: rgba(240,235,227,0.5); }
+.empty-title { font-family: 'Playfair Display', serif; font-size: 20px; font-weight: 400; margin-bottom: 8px; color: rgba(240,235,227,0.5); }
 .empty-sub { font-size: 13px; color: rgba(240,235,227,0.25); line-height: 1.6; }
-.recipe-card { background: rgba(240,235,227,0.04); border-radius: 14px; padding: 16px; margin-bottom: 10px; cursor: pointer; border: 1px solid rgba(240,235,227,0.06); }
-.recipe-card:active { background: rgba(240,235,227,0.08); }
-.recipe-card-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
-.recipe-card-title { font-family: ‘Playfair Display’, serif; font-size: 18px; font-weight: 700; line-height: 1.2; flex: 1; }
-.recipe-cat-tag { font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; color: #c9a96e; background: rgba(201,169,110,0.1); border-radius: 6px; padding: 3px 8px; white-space: nowrap; flex-shrink: 0; margin-top: 3px; }
-.recipe-card-meta { font-size: 12px; color: rgba(240,235,227,0.3); margin-top: 6px; }
-.recipe-thumb { width: 60px; height: 60px; border-radius: 8px; object-fit: cover; flex-shrink: 0; }
-
-/* ── SCAN ── */
+.rcard { background: rgba(240,235,227,0.04); border-radius: 14px; padding: 16px; margin-bottom: 10px; cursor: pointer; border: 1px solid rgba(240,235,227,0.06); display: flex; gap: 12px; align-items: center; }
+.rcard:active { background: rgba(240,235,227,0.08); }
+.rcard-body { flex: 1; min-width: 0; }
+.rcard-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 8px; }
+.rcard-title { font-family: 'Playfair Display', serif; font-size: 18px; font-weight: 700; line-height: 1.2; flex: 1; }
+.rcard-tag { font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; color: #c9a96e; background: rgba(201,169,110,0.1); border-radius: 6px; padding: 3px 8px; white-space: nowrap; flex-shrink: 0; margin-top: 2px; }
+.rcard-meta { font-size: 12px; color: rgba(240,235,227,0.3); margin-top: 5px; }
+.rcard-thumb { width: 58px; height: 58px; border-radius: 8px; object-fit: cover; flex-shrink: 0; }
 .upload-zone { border: 1.5px dashed rgba(201,169,110,0.35); border-radius: 16px; padding: 40px 20px; text-align: center; cursor: pointer; background: rgba(201,169,110,0.03); display: block; margin-bottom: 20px; }
 .upload-icon { width: 56px; height: 56px; background: rgba(201,169,110,0.12); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 14px; font-size: 24px; }
-.upload-zone h3 { font-family: ‘Playfair Display’, serif; font-size: 18px; font-weight: 400; margin-bottom: 6px; }
+.upload-zone h3 { font-family: 'Playfair Display', serif; font-size: 18px; font-weight: 400; margin-bottom: 6px; }
 .upload-zone p { font-size: 12px; color: rgba(240,235,227,0.4); }
 .preview-img { width: 100%; max-height: 240px; object-fit: cover; border-radius: 14px; display: block; margin-bottom: 12px; }
 .preview-meta { font-size: 12px; color: rgba(240,235,227,0.35); text-align: center; margin-bottom: 12px; }
 .change-link { display: block; text-align: center; font-size: 12px; color: rgba(201,169,110,0.6); cursor: pointer; margin-bottom: 20px; text-decoration: underline; }
-.primary-btn { width: 100%; background: #c9a96e; color: #0f0e0c; border: none; border-radius: 13px; padding: 17px; font-family: ‘DM Sans’, sans-serif; font-size: 14px; font-weight: 500; letter-spacing: 0.06em; text-transform: uppercase; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px; }
-.primary-btn:disabled { opacity: 0.45; cursor: not-allowed; }
-.spinner { width: 17px; height: 17px; border: 2px solid rgba(15,14,12,0.25); border-top-color: #0f0e0c; border-radius: 50%; animation: spin 0.9s linear infinite; display: inline-block; }
-@keyframes spin { to { transform: rotate(360deg); } }
+.primary-btn { width: 100%; background: #c9a96e; color: #0f0e0c; border: none; border-radius: 13px; padding: 17px; font-family: 'DM Sans', sans-serif; font-size: 14px; font-weight: 500; letter-spacing: 0.06em; text-transform: uppercase; cursor: pointer; }
+.primary-btn:disabled { opacity: 0.45; }
 .status-msg { text-align: center; font-size: 13px; color: rgba(240,235,227,0.4); margin-top: 14px; }
 .error-msg { background: rgba(220,80,60,0.1); border: 1px solid rgba(220,80,60,0.3); border-radius: 12px; padding: 14px; font-size: 13px; color: rgba(240,235,227,0.8); margin-top: 16px; line-height: 1.6; word-break: break-word; }
-.extracted-card { margin-top: 24px; background: rgba(240,235,227,0.04); border-radius: 16px; padding: 20px; border: 1px solid rgba(240,235,227,0.08); }
-.ext-label { font-size: 10px; letter-spacing: 0.2em; text-transform: uppercase; color: #c9a96e; margin-bottom: 6px; }
-.ext-title { font-family: ‘Playfair Display’, serif; font-size: 22px; font-weight: 700; margin-bottom: 4px; }
-.ext-cat { font-size: 11px; color: rgba(201,169,110,0.7); margin-bottom: 16px; }
-.ext-section-label { font-size: 10px; letter-spacing: 0.2em; text-transform: uppercase; color: rgba(240,235,227,0.35); margin-bottom: 8px; margin-top: 14px; }
+.ext-card { margin-top: 24px; background: rgba(240,235,227,0.04); border-radius: 16px; padding: 20px; border: 1px solid rgba(240,235,227,0.08); }
+.ext-sublabel { font-size: 10px; letter-spacing: 0.2em; text-transform: uppercase; color: #c9a96e; margin-bottom: 6px; }
+.ext-seclabel { font-size: 10px; letter-spacing: 0.2em; text-transform: uppercase; color: rgba(240,235,227,0.3); margin: 14px 0 8px; }
 .ext-item { font-size: 13px; color: rgba(240,235,227,0.7); line-height: 1.6; padding: 4px 0; border-bottom: 1px solid rgba(240,235,227,0.04); }
-.save-btn { width: 100%; background: #c9a96e; color: #0f0e0c; border: none; border-radius: 13px; padding: 16px; font-family: ‘DM Sans’, sans-serif; font-size: 14px; font-weight: 500; letter-spacing: 0.06em; text-transform: uppercase; cursor: pointer; margin-top: 20px; }
-
-/* ── DETAIL / EDIT ── */
-.detail-body { padding: 24px 24px 100px; }
-.det-section { margin-bottom: 28px; }
-.det-section-header { display: flex; align-items: center; gap: 10px; margin-bottom: 14px; }
-.det-section-label { font-size: 10px; letter-spacing: 0.22em; text-transform: uppercase; color: #c9a96e; font-weight: 500; }
-.det-section-line { flex: 1; height: 1px; background: rgba(201,169,110,0.18); }
-.ingredient-row { display: flex; align-items: flex-start; gap: 12px; padding: 11px 13px; background: rgba(240,235,227,0.04); border-radius: 9px; border-left: 2px solid rgba(201,169,110,0.35); margin-bottom: 8px; }
-.ingredient-dot { width: 5px; height: 5px; background: #c9a96e; border-radius: 50%; margin-top: 7px; flex-shrink: 0; }
-.ingredient-text { font-size: 14px; line-height: 1.5; color: rgba(240,235,227,0.82); font-weight: 300; flex: 1; }
-.method-row { display: flex; gap: 13px; margin-bottom: 14px; }
-.step-num { font-family: ‘Playfair Display’, serif; font-size: 20px; color: rgba(201,169,110,0.28); font-weight: 700; line-height: 1; min-width: 26px; padding-top: 2px; flex-shrink: 0; }
-.step-text { font-size: 14px; line-height: 1.7; color: rgba(240,235,227,0.78); font-weight: 300; padding-bottom: 13px; border-bottom: 1px solid rgba(240,235,227,0.05); flex: 1; }
-.method-row:last-child .step-text { border-bottom: none; }
-.notes-box { width: 100%; background: rgba(240,235,227,0.05); border: 1px solid rgba(240,235,227,0.1); border-radius: 12px; padding: 14px; color: #f0ebe3; font-family: ‘DM Sans’, sans-serif; font-size: 14px; line-height: 1.6; resize: none; min-height: 100px; outline: none; }
-.notes-box::placeholder { color: rgba(240,235,227,0.2); }
-.photo-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 12px; }
-.photo-thumb { width: 100%; aspect-ratio: 1; object-fit: cover; border-radius: 10px; cursor: pointer; }
-.add-photo-btn { width: 100%; aspect-ratio: 1; border-radius: 10px; border: 1.5px dashed rgba(201,169,110,0.3); background: rgba(201,169,110,0.04); display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; gap: 4px; color: rgba(201,169,110,0.5); font-size: 11px; }
-.add-photo-btn span { font-size: 22px; }
-.det-title-input { font-family: ‘Playfair Display’, serif; font-size: 26px; font-weight: 700; background: none; border: none; border-bottom: 1px solid rgba(240,235,227,0.1); color: #f0ebe3; width: 100%; padding-bottom: 8px; margin-bottom: 8px; outline: none; }
-.cat-select { background: rgba(201,169,110,0.1); border: 1px solid rgba(201,169,110,0.2); border-radius: 8px; color: #c9a96e; font-family: ‘DM Sans’, sans-serif; font-size: 12px; padding: 5px 10px; margin-bottom: 24px; outline: none; }
+.field-input { width: 100%; background: rgba(240,235,227,0.05); border: 1px solid rgba(240,235,227,0.1); border-radius: 10px; padding: 11px 13px; color: #f0ebe3; font-family: 'DM Sans', sans-serif; font-size: 14px; outline: none; margin-bottom: 10px; }
+.field-input:focus { border-color: rgba(201,169,110,0.4); }
+.cat-select { background: rgba(201,169,110,0.08); border: 1px solid rgba(201,169,110,0.2); border-radius: 8px; color: #c9a96e; font-family: 'DM Sans', sans-serif; font-size: 12px; padding: 6px 10px; outline: none; margin-bottom: 16px; }
 .cat-select option { background: #1a1917; color: #f0ebe3; }
-.editable-list { margin-bottom: 8px; }
-.editable-item { display: flex; align-items: flex-start; gap: 8px; margin-bottom: 6px; }
-.editable-item textarea { flex: 1; background: rgba(240,235,227,0.05); border: 1px solid rgba(240,235,227,0.08); border-radius: 8px; padding: 8px 10px; color: #f0ebe3; font-family: ‘DM Sans’, sans-serif; font-size: 13px; line-height: 1.5; resize: none; outline: none; min-height: 36px; }
-.editable-item textarea:focus { border-color: rgba(201,169,110,0.3); }
-.remove-item-btn { width: 28px; height: 28px; border-radius: 50%; background: rgba(220,80,60,0.1); border: none; color: rgba(220,80,60,0.5); font-size: 16px; cursor: pointer; flex-shrink: 0; margin-top: 4px; display: flex; align-items: center; justify-content: center; }
-.add-item-btn { font-size: 12px; color: rgba(201,169,110,0.6); background: none; border: 1px dashed rgba(201,169,110,0.2); border-radius: 8px; padding: 7px 12px; cursor: pointer; font-family: ‘DM Sans’, sans-serif; margin-top: 4px; }
-.save-changes-btn { width: 100%; background: #c9a96e; color: #0f0e0c; border: none; border-radius: 13px; padding: 16px; font-family: ‘DM Sans’, sans-serif; font-size: 14px; font-weight: 500; letter-spacing: 0.06em; text-transform: uppercase; cursor: pointer; margin-top: 8px; }
-.delete-recipe-btn { width: 100%; background: none; border: 1px solid rgba(220,80,60,0.2); color: rgba(220,80,60,0.5); border-radius: 13px; padding: 14px; font-family: ‘DM Sans’, sans-serif; font-size: 13px; cursor: pointer; margin-top: 10px; }
-.det-cat-tag { display: inline-block; font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; color: #c9a96e; background: rgba(201,169,110,0.1); border-radius: 6px; padding: 4px 10px; margin-bottom: 20px; }
-.edit-btn { background: rgba(240,235,227,0.06); }
-
-/* ── MODAL ── */
-.modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.7); z-index: 100; display: flex; align-items: flex-end; justify-content: center; }
-.modal-overlay.hidden { display: none; }
-.modal { background: #1a1917; border-radius: 20px 20px 0 0; padding: 28px 24px 40px; width: 100%; max-width: 430px; }
-.modal h3 { font-family: ‘Playfair Display’, serif; font-size: 20px; font-weight: 400; margin-bottom: 20px; }
-.modal-input { width: 100%; background: rgba(240,235,227,0.06); border: 1px solid rgba(240,235,227,0.12); border-radius: 10px; padding: 12px 14px; color: #f0ebe3; font-family: ‘DM Sans’, sans-serif; font-size: 14px; outline: none; margin-bottom: 12px; }
-.modal-btn { width: 100%; background: #c9a96e; color: #0f0e0c; border: none; border-radius: 12px; padding: 15px; font-family: ‘DM Sans’, sans-serif; font-size: 14px; font-weight: 500; cursor: pointer; margin-bottom: 10px; }
-.modal-cancel { width: 100%; background: none; border: none; color: rgba(240,235,227,0.4); font-family: ‘DM Sans’, sans-serif; font-size: 14px; cursor: pointer; padding: 10px; }
-.cat-manage-list { margin-bottom: 16px; }
-.cat-manage-item { display: flex; align-items: center; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid rgba(240,235,227,0.06); font-size: 14px; }
-.cat-delete-btn { background: none; border: none; color: rgba(220,80,60,0.4); font-size: 18px; cursor: pointer; }
-
-/* ── PHOTO VIEWER ── */
-.photo-viewer { position: fixed; inset: 0; background: #000; z-index: 200; display: flex; align-items: center; justify-content: center; flex-direction: column; }
+.save-btn { width: 100%; background: #c9a96e; color: #0f0e0c; border: none; border-radius: 13px; padding: 16px; font-family: 'DM Sans', sans-serif; font-size: 14px; font-weight: 500; letter-spacing: 0.06em; text-transform: uppercase; cursor: pointer; margin-top: 20px; }
+.det-pad { padding: 24px 24px 120px; }
+.det-title { font-family: 'Playfair Display', serif; font-size: 28px; font-weight: 700; line-height: 1.2; margin-bottom: 8px; }
+.det-tag { display: inline-block; font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; color: #c9a96e; background: rgba(201,169,110,0.1); border-radius: 6px; padding: 4px 10px; margin-bottom: 24px; }
+.det-sec { margin-bottom: 28px; }
+.det-sec-hdr { display: flex; align-items: center; gap: 10px; margin-bottom: 14px; }
+.det-sec-lbl { font-size: 10px; letter-spacing: 0.22em; text-transform: uppercase; color: #c9a96e; font-weight: 500; }
+.det-sec-line { flex: 1; height: 1px; background: rgba(201,169,110,0.18); }
+.ing-row { display: flex; align-items: flex-start; gap: 12px; padding: 11px 13px; background: rgba(240,235,227,0.04); border-radius: 9px; border-left: 2px solid rgba(201,169,110,0.35); margin-bottom: 8px; }
+.ing-dot { width: 5px; height: 5px; background: #c9a96e; border-radius: 50%; margin-top: 7px; flex-shrink: 0; }
+.ing-text { font-size: 14px; line-height: 1.5; color: rgba(240,235,227,0.82); font-weight: 300; flex: 1; }
+.meth-row { display: flex; gap: 13px; margin-bottom: 14px; }
+.meth-num { font-family: 'Playfair Display', serif; font-size: 20px; color: rgba(201,169,110,0.28); font-weight: 700; line-height: 1; min-width: 26px; padding-top: 2px; flex-shrink: 0; }
+.meth-text { font-size: 14px; line-height: 1.7; color: rgba(240,235,227,0.78); font-weight: 300; padding-bottom: 13px; border-bottom: 1px solid rgba(240,235,227,0.05); flex: 1; }
+.meth-row:last-child .meth-text { border-bottom: none; }
+.notes-view { font-size: 14px; line-height: 1.7; color: rgba(240,235,227,0.65); font-weight: 300; white-space: pre-wrap; }
+.notes-ta { width: 100%; background: rgba(240,235,227,0.05); border: 1px solid rgba(240,235,227,0.1); border-radius: 12px; padding: 14px; color: #f0ebe3; font-family: 'DM Sans', sans-serif; font-size: 14px; line-height: 1.6; resize: none; min-height: 100px; outline: none; }
+.notes-ta::placeholder { color: rgba(240,235,227,0.2); }
+.photo-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 8px; margin-bottom: 12px; }
+.photo-thumb { width: 100%; aspect-ratio: 1; object-fit: cover; border-radius: 10px; cursor: pointer; }
+.add-photo-lbl { width: 100%; aspect-ratio: 1; border-radius: 10px; border: 1.5px dashed rgba(201,169,110,0.3); background: rgba(201,169,110,0.04); display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; gap: 4px; color: rgba(201,169,110,0.5); font-size: 11px; }
+.add-photo-lbl span { font-size: 22px; }
+.edit-list-item { display: flex; align-items: flex-start; gap: 8px; margin-bottom: 6px; }
+.edit-list-item textarea { flex: 1; background: rgba(240,235,227,0.05); border: 1px solid rgba(240,235,227,0.08); border-radius: 8px; padding: 8px 10px; color: #f0ebe3; font-family: 'DM Sans', sans-serif; font-size: 13px; line-height: 1.5; resize: none; outline: none; overflow: hidden; }
+.edit-list-item textarea:focus { border-color: rgba(201,169,110,0.3); }
+.rm-btn { width: 28px; height: 28px; border-radius: 50%; background: rgba(220,80,60,0.1); border: none; color: rgba(220,80,60,0.5); font-size: 18px; cursor: pointer; flex-shrink: 0; margin-top: 4px; }
+.add-item-btn { font-size: 12px; color: rgba(201,169,110,0.6); background: none; border: 1px dashed rgba(201,169,110,0.2); border-radius: 8px; padding: 7px 14px; cursor: pointer; font-family: 'DM Sans', sans-serif; margin-top: 4px; }
+.save-changes-btn { width: 100%; background: #c9a96e; color: #0f0e0c; border: none; border-radius: 13px; padding: 16px; font-family: 'DM Sans', sans-serif; font-size: 14px; font-weight: 500; letter-spacing: 0.06em; text-transform: uppercase; cursor: pointer; margin-top: 8px; }
+.del-recipe-btn { width: 100%; background: none; border: 1px solid rgba(220,80,60,0.2); color: rgba(220,80,60,0.5); border-radius: 13px; padding: 14px; font-family: 'DM Sans', sans-serif; font-size: 13px; cursor: pointer; margin-top: 10px; }
+.modal-bg { position: fixed; inset: 0; background: rgba(0,0,0,0.7); z-index: 100; display: flex; align-items: flex-end; justify-content: center; }
+.modal-bg.hidden { display: none; }
+.modal-box { background: #1a1917; border-radius: 20px 20px 0 0; padding: 28px 24px 48px; width: 100%; max-width: 430px; }
+.modal-box h3 { font-family: 'Playfair Display', serif; font-size: 20px; font-weight: 400; margin-bottom: 20px; }
+.modal-input { width: 100%; background: rgba(240,235,227,0.06); border: 1px solid rgba(240,235,227,0.12); border-radius: 10px; padding: 12px 14px; color: #f0ebe3; font-family: 'DM Sans', sans-serif; font-size: 14px; outline: none; margin-bottom: 12px; }
+.modal-btn { width: 100%; background: #c9a96e; color: #0f0e0c; border: none; border-radius: 12px; padding: 15px; font-family: 'DM Sans', sans-serif; font-size: 14px; font-weight: 500; cursor: pointer; margin-bottom: 10px; }
+.modal-cancel { width: 100%; background: none; border: none; color: rgba(240,235,227,0.4); font-family: 'DM Sans', sans-serif; font-size: 14px; cursor: pointer; padding: 10px; }
+.cat-row { display: flex; align-items: center; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid rgba(240,235,227,0.06); font-size: 14px; }
+.cat-del { background: none; border: none; color: rgba(220,80,60,0.4); font-size: 20px; cursor: pointer; }
+.photo-viewer { position: fixed; inset: 0; background: #000; z-index: 200; display: flex; align-items: center; justify-content: center; }
 .photo-viewer.hidden { display: none; }
 .photo-viewer img { max-width: 100%; max-height: 80vh; object-fit: contain; }
-.photo-viewer-close { position: absolute; top: 50px; right: 20px; background: rgba(255,255,255,0.1); border: none; color: #fff; font-size: 24px; width: 40px; height: 40px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; }
-.photo-viewer-del { position: absolute; bottom: 50px; background: rgba(220,80,60,0.3); border: 1px solid rgba(220,80,60,0.5); color: #fff; font-size: 13px; padding: 10px 20px; border-radius: 20px; cursor: pointer; }
+.pv-close { position: absolute; top: 52px; right: 20px; background: rgba(255,255,255,0.1); border: none; color: #fff; font-size: 20px; width: 40px; height: 40px; border-radius: 50%; cursor: pointer; }
+.pv-del { position: absolute; bottom: 52px; background: rgba(220,80,60,0.3); border: 1px solid rgba(220,80,60,0.5); color: #fff; font-size: 13px; padding: 10px 24px; border-radius: 20px; cursor: pointer; }
 </style>
-
 </head>
 <body>
 
@@ -137,19 +121,16 @@ body { font-family: 'DM Sans', sans-serif; background: #0f0e0c; color: #f0ebe3; 
 
 <div class="screen" id="homeScreen">
   <div class="home-header">
-    <div class="home-header-top">
-      <div>
-        <div class="home-label">Your Collection</div>
-        <h1 class="home-title">My <em>Recipes</em></h1>
-      </div>
+    <div class="home-top">
+      <div><div class="home-label">Your Collection</div><h1 class="home-title">My <em>Recipes</em></h1></div>
       <button class="add-btn" id="addBtn">+</button>
     </div>
-    <div class="search-bar">
+    <div class="search-wrap">
       <span class="search-icon">🔍</span>
       <input class="search-input" id="searchInput" type="search" placeholder="Search recipes…">
     </div>
   </div>
-  <div class="categories" id="categoryBar"></div>
+  <div class="cat-bar" id="catBar"></div>
   <div class="scrollable"><div class="recipe-list" id="recipeList"></div></div>
 </div>
 
@@ -157,13 +138,10 @@ body { font-family: 'DM Sans', sans-serif; background: #0f0e0c; color: #f0ebe3; 
 
 <div class="screen hidden" id="scanScreen">
   <div class="top-bar">
-    <button class="back-btn" id="scanBackBtn">←</button>
-    <div class="top-bar-text">
-      <div class="top-bar-label">New Recipe</div>
-      <div class="top-bar-title">Scan a photo</div>
-    </div>
+    <button class="back-btn" id="scanBack">←</button>
+    <div class="top-bar-text"><div class="top-bar-label">New Recipe</div><div class="top-bar-title">Scan a photo</div></div>
   </div>
-  <div class="scrollable" style="padding:24px">
+  <div class="scrollable" style="padding:24px 24px 80px">
     <label class="upload-zone" id="uploadZone">
       <input type="file" accept="image/*" id="fileInput" style="display:none">
       <div class="upload-icon">📷</div>
@@ -178,7 +156,7 @@ body { font-family: 'DM Sans', sans-serif; background: #0f0e0c; color: #f0ebe3; 
     </div>
     <div class="status-msg" id="scanStatus" style="display:none"></div>
     <div class="error-msg" id="scanError" style="display:none"></div>
-    <div id="extractedSection" style="display:none"></div>
+    <div id="extSection" style="display:none"></div>
   </div>
 </div>
 
@@ -186,23 +164,20 @@ body { font-family: 'DM Sans', sans-serif; background: #0f0e0c; color: #f0ebe3; 
 
 <div class="screen hidden" id="detailScreen">
   <div class="top-bar">
-    <button class="back-btn" id="detailBackBtn">←</button>
-    <div class="top-bar-text">
-      <div class="top-bar-label" id="detailLabel"></div>
-      <div class="top-bar-title" id="detailHeaderTitle"></div>
-    </div>
-    <button class="icon-btn edit-btn" id="editToggleBtn">✏️</button>
-    <button class="icon-btn" style="background:rgba(220,80,60,0.1)" id="deleteBtn">🗑</button>
+    <button class="back-btn" id="detBack">←</button>
+    <div class="top-bar-text"><div class="top-bar-label" id="detLabel"></div><div class="top-bar-title" id="detHeaderTitle"></div></div>
+    <button class="icon-btn" id="editBtn" style="background:rgba(240,235,227,0.06)">✏️</button>
+    <button class="icon-btn" id="delBtn" style="background:rgba(220,80,60,0.1)">🗑</button>
   </div>
-  <div class="scrollable"><div class="detail-body" id="detailBody"></div></div>
+  <div class="scrollable"><div class="det-pad" id="detBody"></div></div>
 </div>
 
-<!-- CATEGORY MODAL -->
+<!-- CAT MODAL -->
 
-<div class="modal-overlay hidden" id="catModal">
-  <div class="modal">
-    <h3>Manage Categories</h3>
-    <div class="cat-manage-list" id="catManageList"></div>
+<div class="modal-bg hidden" id="catModal">
+  <div class="modal-box">
+    <h3>My Categories</h3>
+    <div id="catModalList"></div>
     <input class="modal-input" id="newCatInput" placeholder="New category name…">
     <button class="modal-btn" id="addCatBtn">Add Category</button>
     <button class="modal-cancel" id="catModalClose">Done</button>
@@ -212,88 +187,70 @@ body { font-family: 'DM Sans', sans-serif; background: #0f0e0c; color: #f0ebe3; 
 <!-- PHOTO VIEWER -->
 
 <div class="photo-viewer hidden" id="photoViewer">
-  <button class="photo-viewer-close" id="photoViewerClose">✕</button>
-  <img id="photoViewerImg" src="" alt="">
-  <button class="photo-viewer-del" id="photoViewerDel">Delete Photo</button>
+  <button class="pv-close" id="pvClose">✕</button>
+  <img id="pvImg" src="" alt="">
+  <button class="pv-del" id="pvDel">Delete Photo</button>
 </div>
 
 <script>
-var recipes = [];
-var categories = [];
-var activeCategory = 'All';
-var currentRecipeId = null;
-var currentB64 = null;
-var pendingRecipe = null;
-var editMode = false;
-var viewingPhotoIndex = -1;
+var recipes = [], categories = [], activeCategory = 'All', currentId = null, currentB64 = null, pendingRecipe = null, isEditing = false, viewingPhotoIdx = -1;
 
-var savedRecipes = localStorage.getItem("recipes"); try { recipes = savedRecipes ? JSON.parse(savedRecipes) : []; recipes = recipes.map(function(r) { return { id: r.id || Date.now().toString(), title: r.title || "Untitled", category: r.category || "", ingredients: r.ingredients || [], method: r.method || [], notes: r.notes || "", photos: r.photos || [], savedAt: r.savedAt || new Date().toISOString() }; }); } catch(e) { recipes = []; } // original: try {
-  var savedR = localStorage.getItem('recipes');
-  recipes = savedR ? JSON.parse(savedR) : [];
+function loadData() {
+  try { var r = localStorage.getItem('recipes'); recipes = r ? JSON.parse(r) : []; } catch(e) { recipes = []; }
+  try { var c = localStorage.getItem('categories'); categories = c ? JSON.parse(c) : []; } catch(e) { categories = []; }
+  // Normalise recipes
   recipes = recipes.map(function(r) {
-    return {
-      id: r.id || String(Date.now()),
-      title: r.title || 'Untitled',
-      category: r.category || '',
-      ingredients: Array.isArray(r.ingredients) ? r.ingredients : [],
-      method: Array.isArray(r.method) ? r.method : [],
-      notes: r.notes || '',
-      photos: Array.isArray(r.photos) ? r.photos : [],
-      savedAt: r.savedAt || new Date().toISOString()
-    };
+    return { id: r.id||String(Date.now()+Math.random()), title: r.title||'Untitled', category: r.category||'', ingredients: Array.isArray(r.ingredients)?r.ingredients:[], method: Array.isArray(r.method)?r.method:[], notes: r.notes||'', photos: Array.isArray(r.photos)?r.photos:[], savedAt: r.savedAt||'' };
   });
-} catch(e) { recipes = []; }
-try {
-  var savedC = localStorage.getItem('categories');
-  categories = savedC ? JSON.parse(savedC) : [];
-} catch(e) { categories = []; }
-
-function save() {
-  localStorage.setItem('recipes', JSON.stringify(recipes));
-  localStorage.setItem('categories', JSON.stringify(categories));
 }
 
+function persist() { localStorage.setItem('recipes', JSON.stringify(recipes)); localStorage.setItem('categories', JSON.stringify(categories)); }
+
 function showScreen(id) {
-  document.querySelectorAll('.screen').forEach(function(s) { s.classList.toggle('hidden', s.id !== id); });
-  if (id === 'homeScreen') { editMode = false; renderList(); }
+  var screens = document.querySelectorAll('.screen');
+  for (var i = 0; i < screens.length; i++) screens[i].classList.toggle('hidden', screens[i].id !== id);
+  if (id === 'homeScreen') { isEditing = false; renderHome(); }
   if (id === 'scanScreen') resetScan();
 }
 
 // ── HOME ──
-function buildCategories() {
-  var bar = document.getElementById('categoryBar');
-  var allBtn = '<button class="cat-btn ' + (activeCategory==='All'?'active':'') + '" data-cat="All">All</button>';
-  var catBtns = categories.map(function(c) {
-    return '<button class="cat-btn ' + (activeCategory===c?'active':'') + '" data-cat="' + c + '">' + c + '</button>';
-  }).join('');
-  var manageBtn = '<button class="cat-manage-btn" id="manageCatsBtn">+</button>';
-  bar.innerHTML = allBtn + catBtns + manageBtn;
-  bar.querySelectorAll('.cat-btn').forEach(function(btn) {
-    btn.addEventListener('click', function() { activeCategory = this.dataset.cat; renderList(); });
-  });
-  document.getElementById('manageCatsBtn').addEventListener('click', openCatModal);
-}
+function renderHome() {
+  var bar = document.getElementById('catBar');
+  var html = '<button class="cat-pill' + (activeCategory==='All'?' active':'') + '" data-cat="All">All</button>';
+  for (var i = 0; i < categories.length; i++) {
+    html += '<button class="cat-pill' + (activeCategory===categories[i]?' active':'') + '" data-cat="' + categories[i] + '">' + categories[i] + '</button>';
+  }
+  html += '<button class="cat-add-pill" id="manageCatsBtn">+ Category</button>';
+  bar.innerHTML = html;
 
-function renderList() {
-  buildCategories();
+  var pills = bar.querySelectorAll('.cat-pill');
+  for (var j = 0; j < pills.length; j++) {
+    pills[j].addEventListener('click', function() { activeCategory = this.dataset.cat; renderHome(); });
+  }
+  document.getElementById('manageCatsBtn').addEventListener('click', openCatModal);
+
   var q = document.getElementById('searchInput').value.toLowerCase().trim();
-  var list = document.getElementById('recipeList');
   var filtered = recipes.filter(function(r) {
-    var matchCat = activeCategory === 'All' || r.category === activeCategory;
-    var matchQ = !q || r.title.toLowerCase().indexOf(q) !== -1 || (r.category||'').toLowerCase().indexOf(q) !== -1;
-    return matchCat && matchQ;
+    return (activeCategory === 'All' || r.category === activeCategory) &&
+           (!q || r.title.toLowerCase().indexOf(q) !== -1);
   });
+
+  var list = document.getElementById('recipeList');
   if (!filtered.length) {
     list.innerHTML = '<div class="empty-state"><div class="empty-icon">📖</div><div class="empty-title">' + (recipes.length ? 'No matches' : 'No recipes yet') + '</div><div class="empty-sub">' + (recipes.length ? 'Try a different category' : 'Tap + to scan your first recipe') + '</div></div>';
     return;
   }
-  list.innerHTML = filtered.map(function(r) {
-    var thumb = (r.photos && r.photos.length) ? '<img class="recipe-thumb" src="' + r.photos[0] + '">' : '';
-    return '<div class="recipe-card" data-id="' + r.id + '" style="display:flex;gap:12px;align-items:center"><div style="flex:1"><div class="recipe-card-header"><div class="recipe-card-title">' + r.title + '</div><span class="recipe-cat-tag">' + (r.category||'') + '</span></div><div class="recipe-card-meta">' + r.ingredients.length + ' ingredients · ' + r.method.length + ' steps</div></div>' + thumb + '</div>';
-  }).join('');
-  list.querySelectorAll('.recipe-card').forEach(function(card) {
-    card.addEventListener('click', function() { openRecipe(this.dataset.id); });
-  });
+  list.innerHTML = '';
+  for (var k = 0; k < filtered.length; k++) {
+    var r = filtered[k];
+    var thumb = (r.photos && r.photos.length) ? '<img class="rcard-thumb" src="' + r.photos[0] + '">' : '';
+    var div = document.createElement('div');
+    div.className = 'rcard';
+    div.dataset.id = r.id;
+    div.innerHTML = '<div class="rcard-body"><div class="rcard-header"><div class="rcard-title">' + r.title + '</div>' + (r.category ? '<span class="rcard-tag">' + r.category + '</span>' : '') + '</div><div class="rcard-meta">' + r.ingredients.length + ' ingredients · ' + r.method.length + ' steps</div></div>' + thumb;
+    div.addEventListener('click', function() { openRecipe(this.dataset.id); });
+    list.appendChild(div);
+  }
 }
 
 // ── CATEGORIES ──
@@ -303,115 +260,119 @@ function openCatModal() {
 }
 
 function renderCatModal() {
-  var list = document.getElementById('catManageList');
-  if (!categories.length) { list.innerHTML = '<div style="font-size:13px;color:rgba(240,235,227,0.3);padding:8px 0">No categories yet</div>'; return; }
-  list.innerHTML = categories.map(function(c, i) {
-    return '<div class="cat-manage-item"><span>' + c + '</span><button class="cat-delete-btn" data-i="' + i + '">×</button></div>';
-  }).join('');
-  list.querySelectorAll('.cat-delete-btn').forEach(function(btn) {
-    btn.addEventListener('click', function() {
-      var i = parseInt(this.dataset.i);
-      categories.splice(i, 1);
-      save();
+  var list = document.getElementById('catModalList');
+  if (!categories.length) { list.innerHTML = '<div style="font-size:13px;color:rgba(240,235,227,0.3);padding:8px 0 16px">No categories yet — add one below</div>'; return; }
+  var html = '';
+  for (var i = 0; i < categories.length; i++) {
+    html += '<div class="cat-row"><span>' + categories[i] + '</span><button class="cat-del" data-i="' + i + '">×</button></div>';
+  }
+  list.innerHTML = html;
+  var dels = list.querySelectorAll('.cat-del');
+  for (var j = 0; j < dels.length; j++) {
+    dels[j].addEventListener('click', function() {
+      var idx = parseInt(this.dataset.i);
+      if (activeCategory === categories[idx]) activeCategory = 'All';
+      categories.splice(idx, 1);
+      persist();
       renderCatModal();
-      if (activeCategory === categories[i]) { activeCategory = 'All'; }
     });
-  });
+  }
 }
 
 document.getElementById('addCatBtn').addEventListener('click', function() {
-  var val = document.getElementById('newCatInput').value.trim();
-  if (!val) return;
-  if (categories.indexOf(val) === -1) { categories.push(val); save(); }
+  var v = document.getElementById('newCatInput').value.trim();
+  if (!v || categories.indexOf(v) !== -1) return;
+  categories.push(v);
+  persist();
   document.getElementById('newCatInput').value = '';
   renderCatModal();
 });
+
 document.getElementById('catModalClose').addEventListener('click', function() {
   document.getElementById('catModal').classList.add('hidden');
-  renderList();
+  renderHome();
 });
 
 // ── DETAIL ──
 function openRecipe(id) {
-  var r = null;
-  for (var i = 0; i < recipes.length; i++) { if (recipes[i].id === id) { r = recipes[i]; break; } }
-  if (!r) return;
-  currentRecipeId = id;
-  editMode = false;
-  document.getElementById('editToggleBtn').textContent = '✏️';
-  document.getElementById('detailLabel').textContent = r.category || '';
-  document.getElementById('detailHeaderTitle').textContent = r.title;
-  renderDetail(r, false);
+  for (var i = 0; i < recipes.length; i++) {
+    if (recipes[i].id === id) { currentId = id; break; }
+  }
+  isEditing = false;
+  document.getElementById('editBtn').textContent = '✏️';
+  var r = getRecipe();
+  document.getElementById('detLabel').textContent = r.category || 'Recipe';
+  document.getElementById('detHeaderTitle').textContent = r.title;
+  renderDetail();
   showScreen('detailScreen');
 }
 
-function getCurrentRecipe() {
-  for (var i = 0; i < recipes.length; i++) { if (recipes[i].id === currentRecipeId) return recipes[i]; }
+function getRecipe() {
+  for (var i = 0; i < recipes.length; i++) { if (recipes[i].id === currentId) return recipes[i]; }
   return null;
 }
 
-function renderDetail(r, editing) {
-  var body = document.getElementById('detailBody');
-  if (!editing) {
-    // VIEW MODE
+function renderDetail() {
+  var r = getRecipe();
+  if (!r) return;
+  var body = document.getElementById('detBody');
+
+  if (!isEditing) {
     var photosHtml = '';
     if (r.photos && r.photos.length) {
-      photosHtml = '<div class="det-section"><div class="det-section-header"><div class="det-section-label">Photos</div><div class="det-section-line"></div></div><div class="photo-grid">' +
-        r.photos.map(function(p, i) { return '<img class="photo-thumb" src="' + p + '" data-i="' + i + '">'; }).join('') +
-        '</div></div>';
+      photosHtml = '<div class="det-sec"><div class="det-sec-hdr"><div class="det-sec-lbl">Photos</div><div class="det-sec-line"></div></div><div class="photo-grid">';
+      for (var p = 0; p < r.photos.length; p++) photosHtml += '<img class="photo-thumb" src="' + r.photos[p] + '" data-i="' + p + '">';
+      photosHtml += '</div></div>';
     }
-    var notesHtml = r.notes ? '<div class="det-section"><div class="det-section-header"><div class="det-section-label">Notes</div><div class="det-section-line"></div></div><div style="font-size:14px;line-height:1.7;color:rgba(240,235,227,0.7);font-weight:300;white-space:pre-wrap">' + r.notes + '</div></div>' : '';
-    var ingHtml = r.ingredients.map(function(i) { return '<div class="ingredient-row"><div class="ingredient-dot"></div><div class="ingredient-text">' + i + '</div></div>'; }).join('');
-    var methHtml = r.method.map(function(s, i) { return '<div class="method-row"><div class="step-num">0' + (i+1) + '</div><div class="step-text">' + s + '</div></div>'; }).join('');
-    body.innerHTML =
-      '<div class="det-section"><div style="font-family:Playfair Display,serif;font-size:28px;font-weight:700;margin-bottom:8px">' + r.title + '</div>' +
-      '<span class="det-cat-tag">' + (r.category||'') + '</span></div>' +
+    var ingHtml = '';
+    for (var a = 0; a < r.ingredients.length; a++) ingHtml += '<div class="ing-row"><div class="ing-dot"></div><div class="ing-text">' + r.ingredients[a] + '</div></div>';
+    var methHtml = '';
+    for (var b = 0; b < r.method.length; b++) methHtml += '<div class="meth-row"><div class="meth-num">0' + (b+1) + '</div><div class="meth-text">' + r.method[b] + '</div></div>';
+    var notesHtml = r.notes ? '<div class="det-sec"><div class="det-sec-hdr"><div class="det-sec-lbl">Notes</div><div class="det-sec-line"></div></div><div class="notes-view">' + r.notes + '</div></div>' : '';
+
+    body.innerHTML = '<div class="det-title">' + r.title + '</div>' + (r.category ? '<span class="det-tag">' + r.category + '</span>' : '') +
       photosHtml +
-      '<div class="det-section"><div class="det-section-header"><div class="det-section-label">Ingredients</div><div class="det-section-line"></div></div>' + ingHtml + '</div>' +
-      '<div class="det-section"><div class="det-section-header"><div class="det-section-label">Method</div><div class="det-section-line"></div></div>' + methHtml + '</div>' +
+      '<div class="det-sec"><div class="det-sec-hdr"><div class="det-sec-lbl">Ingredients</div><div class="det-sec-line"></div></div>' + ingHtml + '</div>' +
+      '<div class="det-sec"><div class="det-sec-hdr"><div class="det-sec-lbl">Method</div><div class="det-sec-line"></div></div>' + methHtml + '</div>' +
       notesHtml;
-    body.querySelectorAll('.photo-thumb').forEach(function(img) {
-      img.addEventListener('click', function() { openPhotoViewer(parseInt(this.dataset.i)); });
-    });
+
+    var thumbs = body.querySelectorAll('.photo-thumb');
+    for (var t = 0; t < thumbs.length; t++) {
+      thumbs[t].addEventListener('click', function() { openPhotoViewer(parseInt(this.dataset.i)); });
+    }
+
   } else {
-    // EDIT MODE
-    var catOptions = categories.map(function(c) { return '<option value="' + c + '"' + (r.category===c?' selected':'') + '>' + c + '</option>'; }).join('');
-    var ingItems = r.ingredients.map(function(ing, i) {
-      return '<div class="editable-item" data-i="' + i + '"><textarea rows="1">' + ing + '</textarea><button class="remove-item-btn" data-type="ing" data-i="' + i + '">×</button></div>';
+    var catOpts = '<option value="">No category</option>';
+    for (var ci = 0; ci < categories.length; ci++) catOpts += '<option value="' + categories[ci] + '"' + (r.category===categories[ci]?' selected':'') + '>' + categories[ci] + '</option>';
+
+    var ingEdit = '';
+    for (var ia = 0; ia < r.ingredients.length; ia++) ingEdit += '<div class="edit-list-item"><textarea data-type="ing" data-i="' + ia + '">' + r.ingredients[ia] + '</textarea><button class="rm-btn" data-type="ing" data-i="' + ia + '">×</button></div>';
 
 ```
-}).join('');
-var methItems = r.method.map(function(s, i) {
-  return '<div class="editable-item" data-i="' + i + '"><textarea rows="2">' + s + '</textarea><button class="remove-item-btn" data-type="meth" data-i="' + i + '">×</button></div>';
-}).join('');
+var methEdit = '';
+for (var ib = 0; ib < r.method.length; ib++) methEdit += '<div class="edit-list-item"><textarea data-type="meth" data-i="' + ib + '">' + r.method[ib] + '</textarea><button class="rm-btn" data-type="meth" data-i="' + ib + '">×</button></div>';
 
-var photosHtml = '<div class="det-section"><div class="det-section-header"><div class="det-section-label">Photos</div><div class="det-section-line"></div></div><div class="photo-grid" id="editPhotoGrid">';
-if (r.photos && r.photos.length) {
-  photosHtml += r.photos.map(function(p, i) { return '<img class="photo-thumb" src="' + p + '" data-i="' + i + '">'; }).join('');
-}
-photosHtml += '<label class="add-photo-btn"><span>📷</span>Add<input type="file" accept="image/*" multiple id="addPhotoInput" style="display:none"></label></div></div>';
+var photoEditHtml = '<div class="det-sec"><div class="det-sec-hdr"><div class="det-sec-lbl">Photos</div><div class="det-sec-line"></div></div><div class="photo-grid" id="editPhotoGrid">';
+if (r.photos) for (var pe = 0; pe < r.photos.length; pe++) photoEditHtml += '<img class="photo-thumb" src="' + r.photos[pe] + '" data-i="' + pe + '">';
+photoEditHtml += '<label class="add-photo-lbl"><span>📷</span>Add<input type="file" accept="image/*" multiple id="addPhotoInput" style="display:none"></label></div></div>';
 
 body.innerHTML =
-  '<input class="det-title-input" id="editTitle" value="' + r.title + '">' +
-  '<select class="cat-select" id="editCat"><option value="">No category</option>' + catOptions + '</select>' +
-  photosHtml +
-  '<div class="det-section"><div class="det-section-header"><div class="det-section-label">Ingredients</div><div class="det-section-line"></div></div>' +
-  '<div class="editable-list" id="ingList">' + ingItems + '</div>' +
-  '<button class="add-item-btn" id="addIngBtn">+ Add ingredient</button></div>' +
-  '<div class="det-section"><div class="det-section-header"><div class="det-section-label">Method</div><div class="det-section-line"></div></div>' +
-  '<div class="editable-list" id="methList">' + methItems + '</div>' +
-  '<button class="add-item-btn" id="addMethBtn">+ Add step</button></div>' +
-  '<div class="det-section"><div class="det-section-header"><div class="det-section-label">Notes</div><div class="det-section-line"></div></div>' +
-  '<textarea class="notes-box" id="editNotes" placeholder="Add your own notes, tips, variations…">' + (r.notes||'') + '</textarea></div>' +
-  '<button class="save-changes-btn" id="saveChangesBtn">✓ Save Changes</button>' +
-  '<button class="delete-recipe-btn" id="deleteRecipeBtn">Delete Recipe</button>';
+  '<input class="field-input" id="editTitle" value="' + r.title.replace(/"/g,'&quot;') + '" placeholder="Recipe title">' +
+  '<select class="cat-select" id="editCat">' + catOpts + '</select>' +
+  photoEditHtml +
+  '<div class="det-sec"><div class="det-sec-hdr"><div class="det-sec-lbl">Ingredients</div><div class="det-sec-line"></div></div><div id="ingEditList">' + ingEdit + '</div><button class="add-item-btn" id="addIngBtn">+ Add ingredient</button></div>' +
+  '<div class="det-sec"><div class="det-sec-hdr"><div class="det-sec-lbl">Method</div><div class="det-sec-line"></div></div><div id="methEditList">' + methEdit + '</div><button class="add-item-btn" id="addMethBtn">+ Add step</button></div>' +
+  '<div class="det-sec"><div class="det-sec-hdr"><div class="det-sec-lbl">Notes</div><div class="det-sec-line"></div></div><textarea class="notes-ta" id="editNotes" placeholder="Add notes, tips, variations…">' + (r.notes||'') + '</textarea></div>' +
+  '<button class="save-changes-btn" id="saveChgBtn">✓ Save Changes</button>' +
+  '<button class="del-recipe-btn" id="delRecipeBtn">Delete Recipe</button>';
 
 // Auto-resize textareas
-body.querySelectorAll('textarea').forEach(function(ta) {
-  ta.style.height = 'auto';
-  ta.style.height = ta.scrollHeight + 'px';
-  ta.addEventListener('input', function() { this.style.height = 'auto'; this.style.height = this.scrollHeight + 'px'; });
-});
+var tas = body.querySelectorAll('textarea');
+for (var ti = 0; ti < tas.length; ti++) {
+  tas[ti].style.height = 'auto';
+  tas[ti].style.height = (tas[ti].scrollHeight + 2) + 'px';
+  tas[ti].addEventListener('input', function() { this.style.height = 'auto'; this.style.height = (this.scrollHeight + 2) + 'px'; });
+}
 
 body.querySelectorAll('.photo-thumb').forEach(function(img) {
   img.addEventListener('click', function() { openPhotoViewer(parseInt(this.dataset.i)); });
@@ -420,130 +381,95 @@ body.querySelectorAll('.photo-thumb').forEach(function(img) {
 document.getElementById('addPhotoInput').addEventListener('change', function() {
   var files = this.files;
   if (!files || !files.length) return;
-  var r2 = getCurrentRecipe();
-  if (!r2.photos) r2.photos = [];
-  var remaining = files.length;
-  for (var i = 0; i < files.length; i++) {
+  var r2 = getRecipe(); if (!r2.photos) r2.photos = [];
+  var left = files.length;
+  for (var fi = 0; fi < files.length; fi++) {
     (function(file) {
-      var reader = new FileReader();
-      reader.onload = function() {
-        var img2 = new Image();
-        img2.onload = function() {
-          var maxPx = 800;
-          var scale = Math.min(1, maxPx / Math.max(img2.width, img2.height));
-          var canvas = document.createElement('canvas');
-          canvas.width = Math.round(img2.width * scale);
-          canvas.height = Math.round(img2.height * scale);
-          canvas.getContext('2d').drawImage(img2, 0, 0, canvas.width, canvas.height);
-          r2.photos.push(canvas.toDataURL('image/jpeg', 0.7));
-          remaining--;
-          if (remaining === 0) { save(); renderDetail(r2, true); }
+      var fr = new FileReader();
+      fr.onload = function() {
+        var im = new Image();
+        im.onload = function() {
+          var sc = Math.min(1, 800/Math.max(im.width,im.height));
+          var cv = document.createElement('canvas');
+          cv.width = Math.round(im.width*sc); cv.height = Math.round(im.height*sc);
+          cv.getContext('2d').drawImage(im,0,0,cv.width,cv.height);
+          r2.photos.push(cv.toDataURL('image/jpeg',0.7));
+          left--;
+          if (!left) { persist(); renderDetail(); }
         };
-        img2.src = reader.result;
+        im.src = fr.result;
       };
-      reader.readAsDataURL(file);
-    })(files[i]);
+      fr.readAsDataURL(file);
+    })(files[fi]);
   }
 });
 
 document.getElementById('addIngBtn').addEventListener('click', function() {
-  var r2 = getCurrentRecipe();
-  r2.ingredients.push('');
-  renderDetail(r2, true);
-  var items = document.getElementById('ingList').querySelectorAll('textarea');
-  if (items.length) items[items.length-1].focus();
+  getRecipe().ingredients.push(''); renderDetail();
+  var ts = document.getElementById('ingEditList').querySelectorAll('textarea');
+  if (ts.length) ts[ts.length-1].focus();
 });
 
 document.getElementById('addMethBtn').addEventListener('click', function() {
-  var r2 = getCurrentRecipe();
-  r2.method.push('');
-  renderDetail(r2, true);
-  var items = document.getElementById('methList').querySelectorAll('textarea');
-  if (items.length) items[items.length-1].focus();
+  getRecipe().method.push(''); renderDetail();
+  var ts = document.getElementById('methEditList').querySelectorAll('textarea');
+  if (ts.length) ts[ts.length-1].focus();
 });
 
-body.querySelectorAll('.remove-item-btn').forEach(function(btn) {
+body.querySelectorAll('.rm-btn').forEach(function(btn) {
   btn.addEventListener('click', function() {
-    var r2 = getCurrentRecipe();
-    var i = parseInt(this.dataset.i);
-    if (this.dataset.type === 'ing') r2.ingredients.splice(i, 1);
-    else r2.method.splice(i, 1);
-    renderDetail(r2, true);
+    var r2 = getRecipe(); var i = parseInt(this.dataset.i);
+    if (this.dataset.type === 'ing') r2.ingredients.splice(i,1);
+    else r2.method.splice(i,1);
+    renderDetail();
   });
 });
 
-document.getElementById('saveChangesBtn').addEventListener('click', function() {
-  var r2 = getCurrentRecipe();
+document.getElementById('saveChgBtn').addEventListener('click', function() {
+  var r2 = getRecipe();
   r2.title = document.getElementById('editTitle').value.trim() || r2.title;
   r2.category = document.getElementById('editCat').value;
   r2.notes = document.getElementById('editNotes').value;
   r2.ingredients = [];
-  document.getElementById('ingList').querySelectorAll('textarea').forEach(function(ta) {
-    if (ta.value.trim()) r2.ingredients.push(ta.value.trim());
-  });
+  document.getElementById('ingEditList').querySelectorAll('textarea').forEach(function(ta) { if (ta.value.trim()) r2.ingredients.push(ta.value.trim()); });
   r2.method = [];
-  document.getElementById('methList').querySelectorAll('textarea').forEach(function(ta) {
-    if (ta.value.trim()) r2.method.push(ta.value.trim());
-  });
-  save();
-  document.getElementById('detailLabel').textContent = r2.category || '';
-  document.getElementById('detailHeaderTitle').textContent = r2.title;
-  editMode = false;
-  document.getElementById('editToggleBtn').textContent = '✏️';
-  renderDetail(r2, false);
+  document.getElementById('methEditList').querySelectorAll('textarea').forEach(function(ta) { if (ta.value.trim()) r2.method.push(ta.value.trim()); });
+  persist();
+  document.getElementById('detLabel').textContent = r2.category || 'Recipe';
+  document.getElementById('detHeaderTitle').textContent = r2.title;
+  isEditing = false;
+  document.getElementById('editBtn').textContent = '✏️';
+  renderDetail();
 });
 
-document.getElementById('deleteRecipeBtn').addEventListener('click', function() {
-  if (!confirm('Delete this recipe?')) return;
-  var newRecipes = [];
-  for (var i = 0; i < recipes.length; i++) { if (recipes[i].id !== currentRecipeId) newRecipes.push(recipes[i]); }
-  recipes = newRecipes;
-  save();
-  showScreen('homeScreen');
-});
+document.getElementById('delRecipeBtn').addEventListener('click', deleteRecipe);
 ```
 
 }
 }
 
+function deleteRecipe() {
+if (!confirm(‘Delete this recipe?’)) return;
+recipes = recipes.filter(function(r) { return r.id !== currentId; });
+persist();
+showScreen(‘homeScreen’);
+}
+
 // ── PHOTO VIEWER ──
-function openPhotoViewer(index) {
-var r = getCurrentRecipe();
-if (!r || !r.photos || !r.photos[index]) return;
-viewingPhotoIndex = index;
-document.getElementById(‘photoViewerImg’).src = r.photos[index];
+function openPhotoViewer(idx) {
+var r = getRecipe();
+if (!r || !r.photos || !r.photos[idx]) return;
+viewingPhotoIdx = idx;
+document.getElementById(‘pvImg’).src = r.photos[idx];
 document.getElementById(‘photoViewer’).classList.remove(‘hidden’);
 }
-
-document.getElementById(‘photoViewerClose’).addEventListener(‘click’, function() {
+document.getElementById(‘pvClose’).addEventListener(‘click’, function() { document.getElementById(‘photoViewer’).classList.add(‘hidden’); });
+document.getElementById(‘pvDel’).addEventListener(‘click’, function() {
+if (!confirm(‘Delete photo?’)) return;
+var r = getRecipe();
+if (r && r.photos) { r.photos.splice(viewingPhotoIdx,1); persist(); }
 document.getElementById(‘photoViewer’).classList.add(‘hidden’);
-});
-
-document.getElementById(‘photoViewerDel’).addEventListener(‘click’, function() {
-if (!confirm(‘Delete this photo?’)) return;
-var r = getCurrentRecipe();
-if (r && r.photos) {
-r.photos.splice(viewingPhotoIndex, 1);
-save();
-}
-document.getElementById(‘photoViewer’).classList.add(‘hidden’);
-renderDetail(getCurrentRecipe(), editMode);
-});
-
-// ── EDIT TOGGLE ──
-document.getElementById(‘editToggleBtn’).addEventListener(‘click’, function() {
-editMode = !editMode;
-this.textContent = editMode ? ‘👁’ : ‘✏️’;
-renderDetail(getCurrentRecipe(), editMode);
-});
-
-document.getElementById(‘deleteBtn’).addEventListener(‘click’, function() {
-if (!confirm(‘Delete this recipe?’)) return;
-var newRecipes = [];
-for (var i = 0; i < recipes.length; i++) { if (recipes[i].id !== currentRecipeId) newRecipes.push(recipes[i]); }
-recipes = newRecipes;
-save();
-showScreen(‘homeScreen’);
+renderDetail();
 });
 
 // ── SCAN ──
@@ -553,53 +479,49 @@ document.getElementById(‘uploadZone’).style.display = ‘block’;
 document.getElementById(‘previewSection’).style.display = ‘none’;
 document.getElementById(‘scanStatus’).style.display = ‘none’;
 document.getElementById(‘scanError’).style.display = ‘none’;
-document.getElementById(‘extractedSection’).style.display = ‘none’;
-document.getElementById(‘extractedSection’).innerHTML = ‘’;
+document.getElementById(‘extSection’).style.display = ‘none’;
+document.getElementById(‘extSection’).innerHTML = ‘’;
 document.getElementById(‘fileInput’).value = ‘’;
 }
 
 function handleFile(file) {
 if (!file) return;
-var reader = new FileReader();
-reader.onload = function() {
-var img = new Image();
-img.onload = function() {
-var maxPx = 800;
-var scale = Math.min(1, maxPx / Math.max(img.width, img.height));
-var canvas = document.createElement(‘canvas’);
-canvas.width = Math.round(img.width * scale);
-canvas.height = Math.round(img.height * scale);
-canvas.getContext(‘2d’).drawImage(img, 0, 0, canvas.width, canvas.height);
-var compressed = canvas.toDataURL(‘image/jpeg’, 0.7);
-currentB64 = compressed.split(’,’)[1];
+var fr = new FileReader();
+fr.onload = function() {
+var im = new Image();
+im.onload = function() {
+var sc = Math.min(1, 800/Math.max(im.width,im.height));
+var cv = document.createElement(‘canvas’);
+cv.width = Math.round(im.width*sc); cv.height = Math.round(im.height*sc);
+cv.getContext(‘2d’).drawImage(im,0,0,cv.width,cv.height);
+var comp = cv.toDataURL(‘image/jpeg’,0.7);
+currentB64 = comp.split(’,’)[1];
 document.getElementById(‘uploadZone’).style.display = ‘none’;
 document.getElementById(‘previewSection’).style.display = ‘block’;
-document.getElementById(‘previewImg’).src = compressed;
-document.getElementById(‘previewMeta’).textContent = file.name + ’ · ~’ + Math.round(currentB64.length * 0.75 / 1024) + ‘KB’;
+document.getElementById(‘previewImg’).src = comp;
+document.getElementById(‘previewMeta’).textContent = file.name + ’ · ~’ + Math.round(currentB64.length*0.75/1024) + ‘KB’;
 document.getElementById(‘scanError’).style.display = ‘none’;
-document.getElementById(‘extractedSection’).style.display = ‘none’;
-document.getElementById(‘extractedSection’).innerHTML = ‘’;
+document.getElementById(‘extSection’).style.display = ‘none’;
+document.getElementById(‘extSection’).innerHTML = ‘’;
 pendingRecipe = null;
 };
-img.src = reader.result;
+im.src = fr.result;
 };
-reader.readAsDataURL(file);
+fr.readAsDataURL(file);
 }
 
-function scanRecipe() {
-if (!currentB64) { document.getElementById(‘scanError’).style.display = ‘block’; document.getElementById(‘scanError’).textContent = ‘Please select a photo first.’; return; }
+function doScan() {
+if (!currentB64) { document.getElementById(‘scanError’).style.display=‘block’; document.getElementById(‘scanError’).textContent=‘Please select a photo first.’; return; }
 var btn = document.getElementById(‘scanBtn’);
 var status = document.getElementById(‘scanStatus’);
 var errEl = document.getElementById(‘scanError’);
-btn.disabled = true;
-btn.textContent = ‘Reading…’;
-status.style.display = ‘block’;
-status.textContent = ‘Sending to Claude…’;
+btn.disabled = true; btn.textContent = ‘Reading…’;
+status.style.display = ‘block’; status.textContent = ‘Sending to Claude…’;
 errEl.style.display = ‘none’;
 
 var xhr = new XMLHttpRequest();
 xhr.open(‘POST’, window.location.origin + ‘/api/scan’, true);
-xhr.setRequestHeader(‘Content-Type’, ‘application/json’);
+xhr.setRequestHeader(‘Content-Type’,‘application/json’);
 xhr.onload = function() {
 var data;
 try { data = JSON.parse(xhr.responseText); } catch(e) { showScanErr(’Unexpected: ’ + xhr.responseText.slice(0,100)); return; }
@@ -614,24 +536,23 @@ xhr.onerror = function() { showScanErr(‘Network error’); };
 xhr.send(JSON.stringify({ imageBase64: currentB64, mediaType: ‘image/jpeg’ }));
 
 function showScanErr(msg) {
-status.style.display = ‘none’;
-errEl.style.display = ‘block’;
-errEl.textContent = ’⚠️ ’ + msg;
+status.style.display = ‘none’; errEl.style.display = ‘block’; errEl.textContent = ’⚠️ ’ + msg;
 btn.disabled = false; btn.textContent = ‘✦ Extract Recipe’;
 }
 }
 
 function showExtracted(r) {
-var sec = document.getElementById(‘extractedSection’);
+var sec = document.getElementById(‘extSection’);
 sec.style.display = ‘block’;
-var catOptions = ‘<option value="">No category</option>’ + categories.map(function(c) { return ‘<option value=”’ + c + ‘”’ + (r.category===c?’ selected’:’’) + ‘>’ + c + ‘</option>’; }).join(’’);
-sec.innerHTML = ‘<div class="extracted-card"><div class="ext-label">Extracted Recipe</div>’ +
-‘<input style="font-family:Playfair Display,serif;font-size:20px;font-weight:700;background:none;border:none;border-bottom:1px solid rgba(240,235,227,0.1);color:#f0ebe3;width:100%;padding-bottom:6px;margin-bottom:8px;outline:none" id="extTitleInput" value="' + r.title + '">’ +
-‘<select class="cat-select" id="extCatSelect" style="margin-bottom:12px">’ + catOptions + ‘</select>’ +
-‘<div class="ext-section-label">Ingredients</div>’ +
-r.ingredients.map(function(i) { return ‘<div class="ext-item">· ’ + i + ‘</div>’; }).join(’’) +
-‘<div class="ext-section-label">Method</div>’ +
-r.method.map(function(s, i) { return ‘<div class="ext-item">’ + (i+1) + ‘. ’ + s + ‘</div>’; }).join(’’) +
+var catOpts = ‘<option value="">No category</option>’;
+for (var i = 0; i < categories.length; i++) catOpts += ‘<option value=”’ + categories[i] + ‘”’ + (r.category===categories[i]?’ selected’:’’) + ‘>’ + categories[i] + ‘</option>’;
+var ingHtml = ‘’; for (var a = 0; a < r.ingredients.length; a++) ingHtml += ‘<div class="ext-item">· ’ + r.ingredients[a] + ‘</div>’;
+var methHtml = ‘’; for (var b = 0; b < r.method.length; b++) methHtml += ‘<div class="ext-item">’ + (b+1) + ‘. ’ + r.method[b] + ‘</div>’;
+sec.innerHTML = ‘<div class="ext-card"><div class="ext-sublabel">Extracted Recipe</div>’ +
+‘<input class=“field-input” id=“extTitleInput” value=”’ + r.title.replace(/”/g,’"’) + ‘” placeholder=“Recipe title”>’ +
+‘<select class="cat-select" id="extCatSel">’ + catOpts + ‘</select>’ +
+‘<div class="ext-seclabel">Ingredients</div>’ + ingHtml +
+‘<div class="ext-seclabel">Method</div>’ + methHtml +
 ‘<button class="save-btn" id="savePendingBtn">✓ Save to My Recipes</button></div>’;
 document.getElementById(‘savePendingBtn’).addEventListener(‘click’, savePending);
 }
@@ -639,23 +560,29 @@ document.getElementById(‘savePendingBtn’).addEventListener(‘click’, save
 function savePending() {
 if (!pendingRecipe) return;
 var title = document.getElementById(‘extTitleInput’).value.trim() || pendingRecipe.title;
-var category = document.getElementById(‘extCatSelect’).value;
-var recipe = { title: title, category: category, ingredients: pendingRecipe.ingredients, method: pendingRecipe.method, notes: ‘’, photos: [], id: Date.now().toString(), savedAt: new Date().toISOString() };
-recipes.unshift(recipe);
-save();
+var cat = document.getElementById(‘extCatSel’).value;
+recipes.unshift({ id: String(Date.now()), title: title, category: cat, ingredients: pendingRecipe.ingredients, method: pendingRecipe.method, notes: ‘’, photos: [], savedAt: new Date().toISOString() });
+persist();
 showScreen(‘homeScreen’);
 }
 
 // ── WIRE UP ──
 document.getElementById(‘addBtn’).addEventListener(‘click’, function() { showScreen(‘scanScreen’); });
-document.getElementById(‘scanBackBtn’).addEventListener(‘click’, function() { showScreen(‘homeScreen’); });
-document.getElementById(‘detailBackBtn’).addEventListener(‘click’, function() { showScreen(‘homeScreen’); });
-document.getElementById(‘searchInput’).addEventListener(‘input’, renderList);
+document.getElementById(‘scanBack’).addEventListener(‘click’, function() { showScreen(‘homeScreen’); });
+document.getElementById(‘detBack’).addEventListener(‘click’, function() { showScreen(‘homeScreen’); });
+document.getElementById(‘searchInput’).addEventListener(‘input’, renderHome);
+document.getElementById(‘editBtn’).addEventListener(‘click’, function() {
+isEditing = !isEditing;
+this.textContent = isEditing ? ‘👁’ : ‘✏️’;
+renderDetail();
+});
+document.getElementById(‘delBtn’).addEventListener(‘click’, deleteRecipe);
 document.getElementById(‘fileInput’).addEventListener(‘change’, function() { if (this.files && this.files[0]) handleFile(this.files[0]); });
 document.getElementById(‘changeInput’).addEventListener(‘change’, function() { if (this.files && this.files[0]) handleFile(this.files[0]); });
-document.getElementById(‘scanBtn’).addEventListener(‘click’, scanRecipe);
+document.getElementById(‘scanBtn’).addEventListener(‘click’, doScan);
 
-renderList();
+loadData();
+renderHome();
 </script>
 
 </body>
