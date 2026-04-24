@@ -13,7 +13,7 @@
 * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
 html, body { height: 100%; overflow: hidden; }
 body { font-family: 'DM Sans', sans-serif; background: #0f0e0c; color: #f0ebe3; }
-.screen { position: fixed; inset: 0; display: flex; flex-direction: column; overflow: hidden; transition: transform 0.35s cubic-bezier(0.4,0,0.2,1), opacity 0.35s; }
+.screen { position: fixed; inset: 0; display: flex; flex-direction: column; overflow: hidden; transition: transform 0.35s cubic-bezier(0.4,0,0.2,1), opacity 0.35s; z-index: 10; }
 .screen.hidden { transform: translateX(100%); opacity: 0; pointer-events: none; }
 .top-bar { padding: 56px 24px 20px; display: flex; align-items: center; gap: 12px; flex-shrink: 0; border-bottom: 1px solid rgba(240,235,227,0.07); }
 .back-btn { width: 36px; height: 36px; border-radius: 50%; background: rgba(240,235,227,0.06); border: none; cursor: pointer; font-size: 18px; color: #f0ebe3; flex-shrink: 0; }
