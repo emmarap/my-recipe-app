@@ -113,11 +113,14 @@ body { font-family: 'DM Sans', sans-serif; background: #0f0e0c; color: #f0ebe3; 
 .photo-viewer img { max-width: 100%; max-height: 80vh; object-fit: contain; }
 .pv-close { position: absolute; top: 52px; right: 20px; background: rgba(255,255,255,0.1); border: none; color: #fff; font-size: 20px; width: 40px; height: 40px; border-radius: 50%; cursor: pointer; }
 .pv-del { position: absolute; bottom: 52px; background: rgba(220,80,60,0.3); border: 1px solid rgba(220,80,60,0.5); color: #fff; font-size: 13px; padding: 10px 24px; border-radius: 20px; cursor: pointer; }
-.reset-bar { position: fixed; bottom: 40px; left: 50%; transform: translateX(-50%); z-index: 999; display: none; }
-.reset-bar button { background: #c9a96e; color: #0f0e0c; border: none; padding: 14px 28px; border-radius: 12px; font-family: 'DM Sans', sans-serif; font-size: 14px; font-weight: 600; cursor: pointer; }
+#resetBtn { position: fixed; bottom: 30px; right: 20px; z-index: 9999; background: #c9a96e; color: #0f0e0c; border: none; padding: 12px 18px; border-radius: 10px; font-family: 'DM Sans', sans-serif; font-size: 13px; font-weight: 600; cursor: pointer; box-shadow: 0 4px 20px rgba(0,0,0,0.4); }
 </style>
 </head>
 <body>
+
+<!-- RESET BUTTON - always visible -->
+
+<button id="resetBtn">⚠️ Reset</button>
 
 <!-- HOME -->
 
@@ -126,8 +129,6 @@ body { font-family: 'DM Sans', sans-serif; background: #0f0e0c; color: #f0ebe3; 
     <div class="home-top">
       <div><div class="home-label">Your Collection</div><h1 class="home-title">My <em>Recipes</em></h1></div>
       <button class="add-btn" id="addBtn">+</button>
-      <button onclick="localStorage.clear();location.reload()" style="position:fixed;bottom:30px;right:20px;z-index:9999;background:#c9a96e;color:#0f0e0c;border:none;padding:12px 16px;border-radius:10px;font-size:12px;font-weight:600;cursor:pointer">Reset</button>
-
     </div>
     <div class="search-wrap">
       <span class="search-icon">🔍</span>
@@ -196,14 +197,16 @@ body { font-family: 'DM Sans', sans-serif; background: #0f0e0c; color: #f0ebe3; 
   <button class="pv-del" id="pvDel">Delete Photo</button>
 </div>
 
-<!-- RESET BAR (shows if app crashes) -->
-
-<div class="reset-bar" id="resetBar">
-  <button onclick="localStorage.clear();location.reload()">⚠️ Reset App</button>
-</div>
-
 <script>
 var recipes = [], categories = [], activeCategory = 'All', currentId = null, currentB64 = null, pendingRecipe = null, isEditing = false, viewingPhotoIdx = -1;
+
+// Reset button - wired up first before anything else
+document.getElementById('resetBtn').addEventListener('click', function() {
+  if (confirm('Clear all data and reset the app?')) {
+    localStorage.clear();
+    location.reload();
+  }
+});
 
 function loadData() {
   try {
@@ -234,6 +237,10 @@ function persist() {
   try { localStorage.setItem('categories', JSON.stringify(categories)); } catch(e) {}
 }
 
+function esc(str) {
+  return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
 function showScreen(id) {
   var all = document.querySelectorAll('.screen');
   for (var i = 0; i < all.length; i++) all[i].classList.toggle('hidden', all[i].id !== id);
@@ -249,7 +256,6 @@ function renderHome() {
   }
   html += '<button class="cat-add-pill" id="manageCatsBtn">+ Category</button>';
   bar.innerHTML = html;
-
   var pills = bar.querySelectorAll('.cat-pill');
   for (var j = 0; j < pills.length; j++) {
     pills[j].addEventListener('click', function() { activeCategory = this.dataset.cat; renderHome(); });
@@ -260,9 +266,7 @@ function renderHome() {
   var filtered = [];
   for (var k = 0; k < recipes.length; k++) {
     var r = recipes[k];
-    if ((activeCategory === 'All' || r.category === activeCategory) && (!q || r.title.toLowerCase().indexOf(q) !== -1)) {
-      filtered.push(r);
-    }
+    if ((activeCategory === 'All' || r.category === activeCategory) && (!q || r.title.toLowerCase().indexOf(q) !== -1)) filtered.push(r);
   }
 
   var list = document.getElementById('recipeList');
@@ -283,10 +287,6 @@ function renderHome() {
   }
 }
 
-function esc(str) {
-  return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-}
-
 function openCatModal() {
   renderCatModal();
   document.getElementById('catModal').classList.remove('hidden');
@@ -303,9 +303,7 @@ function renderCatModal() {
     dels[j].addEventListener('click', function() {
       var idx = parseInt(this.dataset.i);
       if (activeCategory === categories[idx]) activeCategory = 'All';
-      categories.splice(idx, 1);
-      persist();
-      renderCatModal();
+      categories.splice(idx, 1); persist(); renderCatModal();
     });
   }
 }
@@ -329,11 +327,9 @@ function getRecipe() {
 }
 
 function openRecipe(id) {
-  currentId = id;
-  isEditing = false;
+  currentId = id; isEditing = false;
   document.getElementById('editBtn').textContent = '✏️';
-  var r = getRecipe();
-  if (!r) return;
+  var r = getRecipe(); if (!r) return;
   document.getElementById('detLabel').textContent = r.category || 'Recipe';
   document.getElementById('detHeaderTitle').textContent = r.title;
   renderDetail();
@@ -341,8 +337,7 @@ function openRecipe(id) {
 }
 
 function renderDetail() {
-  var r = getRecipe();
-  if (!r) return;
+  var r = getRecipe(); if (!r) return;
   var body = document.getElementById('detBody');
 
   if (!isEditing) {
@@ -369,24 +364,21 @@ function renderDetail() {
     for (var t = 0; t < thumbs.length; t++) {
       thumbs[t].addEventListener('click', function() { openPhotoViewer(parseInt(this.dataset.i)); });
     }
-
   } else {
     var catOpts = '<option value="">No category</option>';
     for (var ci = 0; ci < categories.length; ci++) catOpts += '<option value="' + esc(categories[ci]) + '"' + (r.category===categories[ci]?' selected':'') + '>' + esc(categories[ci]) + '</option>';
-
     var ingEdit = '';
     for (var ia = 0; ia < r.ingredients.length; ia++) ingEdit += '<div class="edit-item"><textarea data-i="' + ia + '" rows="1">' + esc(r.ingredients[ia]) + '</textarea><button class="rm-btn" data-type="ing" data-i="' + ia + '">×</button></div>';
 
 ```
 var methEdit = '';
 for (var ib = 0; ib < r.method.length; ib++) methEdit += '<div class="edit-item"><textarea data-i="' + ib + '" rows="2">' + esc(r.method[ib]) + '</textarea><button class="rm-btn" data-type="meth" data-i="' + ib + '">×</button></div>';
-
-var pgHtml = '<div class="det-sec"><div class="det-sec-hdr"><div class="det-sec-lbl">Photos</div><div class="det-sec-line"></div></div><div class="photo-grid" id="editPhotoGrid">';
+var pgHtml = '<div class="det-sec"><div class="det-sec-hdr"><div class="det-sec-lbl">Photos</div><div class="det-sec-line"></div></div><div class="photo-grid">';
 if (r.photos) for (var pe = 0; pe < r.photos.length; pe++) pgHtml += '<img class="photo-thumb" src="' + r.photos[pe] + '" data-i="' + pe + '">';
 pgHtml += '<label class="add-photo-lbl"><span>📷</span>Add<input type="file" accept="image/*" multiple id="addPhotoInput" style="display:none"></label></div></div>';
 
 body.innerHTML =
-  '<input class="field-input" id="editTitle" value="' + esc(r.title) + '" placeholder="Recipe title">' +
+  '<input class="field-input" id="editTitle" value="' + esc(r.title) + '">' +
   '<select class="cat-select" id="editCat">' + catOpts + '</select>' +
   pgHtml +
   '<div class="det-sec"><div class="det-sec-hdr"><div class="det-sec-lbl">Ingredients</div><div class="det-sec-line"></div></div><div id="ingEditList">' + ingEdit + '</div><button class="add-item-btn" id="addIngBtn">+ Add ingredient</button></div>' +
@@ -407,8 +399,7 @@ body.querySelectorAll('.photo-thumb').forEach(function(img) {
 });
 
 document.getElementById('addPhotoInput').addEventListener('change', function() {
-  var files = this.files;
-  if (!files || !files.length) return;
+  var files = this.files; if (!files || !files.length) return;
   var r2 = getRecipe(); if (!r2.photos) r2.photos = [];
   var left = files.length;
   for (var fi = 0; fi < files.length; fi++) {
@@ -422,8 +413,7 @@ document.getElementById('addPhotoInput').addEventListener('change', function() {
           cv.width = Math.round(im.width*sc); cv.height = Math.round(im.height*sc);
           cv.getContext('2d').drawImage(im,0,0,cv.width,cv.height);
           r2.photos.push(cv.toDataURL('image/jpeg',0.7));
-          left--;
-          if (!left) { persist(); renderDetail(); }
+          left--; if (!left) { persist(); renderDetail(); }
         };
         im.src = fr.result;
       };
@@ -465,8 +455,7 @@ document.getElementById('saveChgBtn').addEventListener('click', function() {
   persist();
   document.getElementById('detLabel').textContent = r2.category || 'Recipe';
   document.getElementById('detHeaderTitle').textContent = r2.title;
-  isEditing = false;
-  document.getElementById('editBtn').textContent = '✏️';
+  isEditing = false; document.getElementById('editBtn').textContent = '✏️';
   renderDetail();
 });
 
@@ -480,8 +469,7 @@ function deleteRecipe() {
 if (!confirm(‘Delete this recipe?’)) return;
 var newR = [];
 for (var i = 0; i < recipes.length; i++) { if (recipes[i].id !== currentId) newR.push(recipes[i]); }
-recipes = newR; persist();
-showScreen(‘homeScreen’);
+recipes = newR; persist(); showScreen(‘homeScreen’);
 }
 
 function openPhotoViewer(idx) {
@@ -575,7 +563,7 @@ for (var i = 0; i < categories.length; i++) catOpts += ‘<option value=”’ +
 var ingHtml = ‘’; for (var a = 0; a < r.ingredients.length; a++) ingHtml += ’<div class="ext-item">· ’ + esc(r.ingredients[a]) + ‘</div>’;
 var methHtml = ‘’; for (var b = 0; b < r.method.length; b++) methHtml += ‘<div class="ext-item">’ + (b+1) + ’. ’ + esc(r.method[b]) + ‘</div>’;
 sec.innerHTML = ‘<div class="ext-card"><div class="ext-sublabel">Extracted Recipe</div>’ +
-‘<input class="field-input" id="extTitleInput" value="' + esc(r.title) + '" placeholder="Recipe title">’ +
+‘<input class="field-input" id="extTitleInput" value="' + esc(r.title) + '">’ +
 ‘<select class="cat-select" id="extCatSel">’ + catOpts + ‘</select>’ +
 ‘<div class="ext-seclabel">Ingredients</div>’ + ingHtml +
 ‘<div class="ext-seclabel">Method</div>’ + methHtml +
@@ -588,8 +576,7 @@ if (!pendingRecipe) return;
 var title = document.getElementById(‘extTitleInput’).value.trim() || pendingRecipe.title;
 var cat = document.getElementById(‘extCatSel’).value;
 recipes.unshift({ id: String(Date.now()), title: title, category: cat, ingredients: pendingRecipe.ingredients, method: pendingRecipe.method, notes: ‘’, photos: [] });
-persist();
-showScreen(‘homeScreen’);
+persist(); showScreen(‘homeScreen’);
 }
 
 document.getElementById(‘addBtn’).addEventListener(‘click’, function() { showScreen(‘scanScreen’); });
@@ -606,13 +593,8 @@ document.getElementById(‘fileInput’).addEventListener(‘change’, function
 document.getElementById(‘changeInput’).addEventListener(‘change’, function() { if (this.files && this.files[0]) handleFile(this.files[0]); });
 document.getElementById(‘scanBtn’).addEventListener(‘click’, doScan);
 
-// Boot
-try {
 loadData();
 renderHome();
-} catch(e) {
-document.getElementById(‘resetBar’).style.display = ‘block’;
-}
 </script>
 
 </body>
