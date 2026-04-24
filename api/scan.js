@@ -28,7 +28,7 @@ messages: [{
 role: ‘user’,
 content: [
 { type: ‘image’, source: { type: ‘base64’, media_type: mediaType || ‘image/jpeg’, data: imageBase64 } },
-{ type: ‘text’, text: ‘Extract the recipe from this image. Return ONLY a JSON object, no markdown:\n{“title”:“Recipe name”,“category”:“one of: Breakfast, Lunch, Dinner, Dessert, Snack, Drink, Baking, Other”,“ingredients”:[“ingredient 1”],“method”:[“Step 1”]}’ }
+{ type: ‘text’, text: ‘Extract the recipe from this image. Return ONLY a JSON object, no markdown, no explanation:\n{“title”:“Recipe name”,“category”:“one of: Breakfast, Lunch, Dinner, Dessert, Snack, Drink, Baking, Other”,“ingredients”:[“ingredient 1”],“method”:[“Step 1”]}’ }
 ]
 }]
 })
@@ -36,19 +36,36 @@ content: [
 
 ```
 const bodyText = await response.text();
-if (!response.ok) return res.status(200).json({ error: 'Anthropic error ' + response.status + ': ' + bodyText.slice(0, 300) });
 
-const data = JSON.parse(bodyText);
-const text = (data.content || []).map(function(b) { return b.text || ''; }).join('').trim();
+if (!response.ok) {
+  return res.status(200).json({ error: 'Anthropic error ' + response.status + ': ' + bodyText.slice(0, 300) });
+}
+
+let data;
+try { data = JSON.parse(bodyText); } 
+catch(e) { return res.status(200).json({ error: 'Could not parse Anthropic response: ' + bodyText.slice(0, 200) }); }
+
+const text = (data.content || []).map(b => b.text || '').join('').trim();
+
+if (!text) {
+  return res.status(200).json({ error: 'Empty response from Claude. Full response: ' + bodyText.slice(0, 300) });
+}
+
 const cleaned = text.replace(/^```json\s*/i, '').replace(/^```\s*/i, '').replace(/```\s*$/i, '').trim();
 const match = cleaned.match(/\{[\s\S]+\}/);
-if (!match) return res.status(200).json({ error: 'No recipe found. Claude said: ' + text.slice(0, 200) });
 
-const recipe = JSON.parse(match[0]);
+if (!match) {
+  return res.status(200).json({ error: 'Claude said: ' + text.slice(0, 300) });
+}
+
+let recipe;
+try { recipe = JSON.parse(match[0]); }
+catch(e) { return res.status(200).json({ error: 'Recipe JSON parse failed: ' + match[0].slice(0, 200) }); }
+
 return res.status(200).json({ recipe: recipe });
 ```
 
 } catch (err) {
-return res.status(200).json({ error: err.message || ‘Server error’ });
+return res.status(200).json({ error: ’Server error: ’ + (err.message || String(err)) });
 }
 }
