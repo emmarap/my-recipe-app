@@ -131,7 +131,8 @@ body { font-family: 'DM Sans', sans-serif; background: #0f0e0c; color: #f0ebe3; 
       <img class="preview-img" id="previewImg" src="" alt="">
       <div class="preview-meta" id="previewMeta"></div>
       <label class="change-link">Change photo<input type="file" accept="image/*" style="display:none" onchange="handleFile(this.files[0])"></label>
-      <button class="primary-btn" id="scanBtn" onclick="scanRecipe()"><span>✦</span> Extract Recipe</button>
+   <button class="primary-btn" id="scanBtn"><span>✦</span> Extract Recipe</button>
+
     </div>
     <div class="status-msg" id="scanStatus" style="display:none"></div>
     <div class="error-msg" id="scanError" style="display:none"></div>
@@ -358,6 +359,9 @@ function saveRecipe() {
   localStorage.setItem('recipes', JSON.stringify(recipes));
   showScreen('homeScreen');
 }
+document.getElementById('scanBtn').addEventListener('click', function() {
+  scanRecipe().catch(function(e) { alert('Uncaught: ' + e.message); });
+});
 
 renderList();
 </script>
