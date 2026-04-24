@@ -30,6 +30,7 @@ body { font-family: 'DM Sans', sans-serif; background: #0f0e0c; color: #f0ebe3; 
 .categories::-webkit-scrollbar { display: none; }
 .cat-btn { flex-shrink: 0; padding: 7px 14px; border-radius: 20px; border: 1px solid rgba(240,235,227,0.12); background: transparent; color: rgba(240,235,227,0.5); font-family: 'DM Sans', sans-serif; font-size: 12px; cursor: pointer; transition: all 0.2s; white-space: nowrap; }
 .cat-btn.active { background: #c9a96e; border-color: #c9a96e; color: #0f0e0c; font-weight: 500; }
+.cat-add-btn { flex-shrink: 0; padding: 6px 12px; border-radius: 20px; border: 1px dashed rgba(240,235,227,0.2); background: transparent; color: rgba(240,235,227,0.3); font-family: 'DM Sans', sans-serif; font-size: 12px; cursor: pointer; white-space: nowrap; }
 .recipe-list { flex: 1; overflow-y: auto; padding: 8px 24px 100px; }
 .recipe-list::-webkit-scrollbar { display: none; }
 .empty-state { text-align: center; padding: 80px 40px; }
@@ -90,6 +91,19 @@ body { font-family: 'DM Sans', sans-serif; background: #0f0e0c; color: #f0ebe3; 
 .step-num { font-family: 'Playfair Display', serif; font-size: 20px; color: rgba(201,169,110,0.28); font-weight: 700; line-height: 1; min-width: 26px; padding-top: 2px; }
 .step-text { font-size: 14px; line-height: 1.7; color: rgba(240,235,227,0.78); font-weight: 300; padding-bottom: 13px; border-bottom: 1px solid rgba(240,235,227,0.05); flex: 1; }
 .method-row:last-child .step-text { border-bottom: none; }
+/* Category modal */
+.modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.7); z-index: 50; display: none; align-items: flex-end; justify-content: center; }
+.modal-overlay.open { display: flex; }
+.modal-box { background: #1a1917; border-radius: 20px 20px 0 0; padding: 28px 24px 48px; width: 100%; max-width: 430px; }
+.modal-box h3 { font-family: 'Playfair Display', serif; font-size: 20px; font-weight: 400; margin-bottom: 20px; }
+.modal-input { width: 100%; background: rgba(240,235,227,0.06); border: 1px solid rgba(240,235,227,0.12); border-radius: 10px; padding: 12px 14px; color: #f0ebe3; font-family: 'DM Sans', sans-serif; font-size: 14px; outline: none; margin-bottom: 12px; }
+.modal-add-btn { width: 100%; background: #c9a96e; color: #0f0e0c; border: none; border-radius: 12px; padding: 15px; font-family: 'DM Sans', sans-serif; font-size: 14px; font-weight: 500; cursor: pointer; margin-bottom: 10px; }
+.modal-done-btn { width: 100%; background: none; border: none; color: rgba(240,235,227,0.4); font-family: 'DM Sans', sans-serif; font-size: 14px; cursor: pointer; padding: 10px; }
+.modal-cat-row { display: flex; align-items: center; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid rgba(240,235,227,0.06); font-size: 14px; }
+.modal-cat-del { background: none; border: none; color: rgba(220,80,60,0.4); font-size: 20px; cursor: pointer; }
+/* Cat select in scan */
+.cat-sel { background: rgba(201,169,110,0.08); border: 1px solid rgba(201,169,110,0.2); border-radius: 8px; color: #c9a96e; font-family: 'DM Sans', sans-serif; font-size: 12px; padding: 6px 10px; outline: none; margin-bottom: 16px; }
+.cat-sel option { background: #1a1917; color: #f0ebe3; }
 </style>
 </head>
 <body>
@@ -151,14 +165,33 @@ body { font-family: 'DM Sans', sans-serif; background: #0f0e0c; color: #f0ebe3; 
   <div class="detail-body" id="detailBody"></div>
 </div>
 
+<!-- Category Modal -->
+
+<div class="modal-overlay" id="catModal">
+  <div class="modal-box">
+    <h3>My Categories</h3>
+    <div id="catModalList"></div>
+    <input class="modal-input" id="newCatInput" placeholder="New category name…">
+    <button class="modal-add-btn" id="addCatBtn">Add Category</button>
+    <button class="modal-done-btn" id="catDoneBtn">Done</button>
+  </div>
+</div>
+
 <script>
-var CATEGORIES = ['All','Breakfast','Lunch','Dinner','Dessert','Snack','Drink','Baking','Other'];
 var recipes = [];
-try { recipes = JSON.parse(localStorage.getItem('recipes') || '[]'); } catch(e) { recipes = []; }
+var categories = [];
 var activeCategory = 'All';
 var currentRecipeId = null;
 var currentB64 = null;
 var pendingRecipe = null;
+
+try { recipes = JSON.parse(localStorage.getItem('recipes') || '[]'); } catch(e) { recipes = []; }
+try { categories = JSON.parse(localStorage.getItem('categories') || '[]'); } catch(e) { categories = []; }
+
+function persist() {
+  localStorage.setItem('recipes', JSON.stringify(recipes));
+  localStorage.setItem('categories', JSON.stringify(categories));
+}
 
 function showScreen(id) {
   document.querySelectorAll('.screen').forEach(function(s) {
@@ -173,21 +206,61 @@ document.getElementById('backBtn').addEventListener('click', function() { showSc
 document.getElementById('detailBackBtn').addEventListener('click', function() { showScreen('homeScreen'); });
 document.getElementById('searchInput').addEventListener('input', renderList);
 document.getElementById('deleteBtn').addEventListener('click', deleteCurrentRecipe);
-document.getElementById('fileInput').addEventListener('change', function() {
-  if (this.files && this.files[0]) handleFile(this.files[0]);
-});
-document.getElementById('changeInput').addEventListener('change', function() {
-  if (this.files && this.files[0]) handleFile(this.files[0]);
-});
+document.getElementById('fileInput').addEventListener('change', function() { if (this.files && this.files[0]) handleFile(this.files[0]); });
+document.getElementById('changeInput').addEventListener('change', function() { if (this.files && this.files[0]) handleFile(this.files[0]); });
 document.getElementById('scanBtn').addEventListener('click', scanRecipe);
+document.getElementById('addCatBtn').addEventListener('click', addCategory);
+document.getElementById('catDoneBtn').addEventListener('click', function() {
+  document.getElementById('catModal').classList.remove('open');
+  renderList();
+});
 
 function buildCategories() {
-  document.getElementById('categoryBar').innerHTML = CATEGORIES.map(function(c) {
-    return '<button class="cat-btn ' + (c===activeCategory?'active':'') + '" data-cat="' + c + '">' + c + '</button>';
-  }).join('');
+  var bar = document.getElementById('categoryBar');
+  var html = '<button class="cat-btn ' + (activeCategory==='All'?'active':'') + '" data-cat="All">All</button>';
+  for (var i = 0; i < categories.length; i++) {
+    html += '<button class="cat-btn ' + (activeCategory===categories[i]?'active':'') + '" data-cat="' + categories[i] + '">' + categories[i] + '</button>';
+  }
+  html += '<button class="cat-add-btn" id="manageCatBtn">+ Category</button>';
+  bar.innerHTML = html;
   document.querySelectorAll('.cat-btn').forEach(function(btn) {
     btn.addEventListener('click', function() { activeCategory = this.dataset.cat; renderList(); });
   });
+  document.getElementById('manageCatBtn').addEventListener('click', function() {
+    renderCatModal();
+    document.getElementById('catModal').classList.add('open');
+  });
+}
+
+function renderCatModal() {
+  var list = document.getElementById('catModalList');
+  if (!categories.length) {
+    list.innerHTML = '<div style="font-size:13px;color:rgba(240,235,227,0.3);padding:8px 0 16px">No categories yet — add one below</div>';
+    return;
+  }
+  var html = '';
+  for (var i = 0; i < categories.length; i++) {
+    html += '<div class="modal-cat-row"><span>' + categories[i] + '</span><button class="modal-cat-del" data-i="' + i + '">×</button></div>';
+  }
+  list.innerHTML = html;
+  list.querySelectorAll('.modal-cat-del').forEach(function(btn) {
+    btn.addEventListener('click', function() {
+      var idx = parseInt(this.dataset.i);
+      if (activeCategory === categories[idx]) activeCategory = 'All';
+      categories.splice(idx, 1);
+      persist();
+      renderCatModal();
+    });
+  });
+}
+
+function addCategory() {
+  var val = document.getElementById('newCatInput').value.trim();
+  if (!val || categories.indexOf(val) !== -1) return;
+  categories.push(val);
+  persist();
+  document.getElementById('newCatInput').value = '';
+  renderCatModal();
 }
 
 function renderList() {
@@ -204,7 +277,7 @@ function renderList() {
     return;
   }
   list.innerHTML = filtered.map(function(r) {
-    return '<div class="recipe-card" data-id="' + r.id + '"><div class="recipe-card-header"><div class="recipe-card-title">' + r.title + '</div><span class="recipe-cat-tag">' + (r.category||'Other') + '</span></div><div class="recipe-card-meta">' + r.ingredients.length + ' ingredients · ' + r.method.length + ' steps</div></div>';
+    return '<div class="recipe-card" data-id="' + r.id + '"><div class="recipe-card-header"><div class="recipe-card-title">' + r.title + '</div>' + (r.category ? '<span class="recipe-cat-tag">' + r.category + '</span>' : '') + '</div><div class="recipe-card-meta">' + r.ingredients.length + ' ingredients · ' + r.method.length + ' steps</div></div>';
   }).join('');
   document.querySelectorAll('.recipe-card').forEach(function(card) {
     card.addEventListener('click', function() { openRecipe(this.dataset.id); });
@@ -225,11 +298,11 @@ function openRecipe(id) {
 }
 
 function deleteCurrentRecipe() {
-  if (!currentRecipeId || !confirm('Delete this recipe?')) return;
+  if (!currentRecipeId) return;
   var newRecipes = [];
   for (var i = 0; i < recipes.length; i++) { if (recipes[i].id !== currentRecipeId) newRecipes.push(recipes[i]); }
   recipes = newRecipes;
-  localStorage.setItem('recipes', JSON.stringify(recipes));
+  persist();
   showScreen('homeScreen');
 }
 
@@ -248,94 +321,74 @@ function handleFile(file) {
   if (!file) return;
   var reader = new FileReader();
   reader.onload = function() {
-    var dataUrl = reader.result;
-    // Compress using canvas
     var img = new Image();
     img.onload = function() {
-      var maxPx = 800;
-      var scale = Math.min(1, maxPx / Math.max(img.width, img.height));
-      var w = Math.round(img.width * scale);
-      var h = Math.round(img.height * scale);
+      var scale = Math.min(1, 800 / Math.max(img.width, img.height));
       var canvas = document.createElement('canvas');
-      canvas.width = w;
-      canvas.height = h;
-      canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+      canvas.width = Math.round(img.width * scale);
+      canvas.height = Math.round(img.height * scale);
+      canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height);
       var compressed = canvas.toDataURL('image/jpeg', 0.7);
       currentB64 = compressed.split(',')[1];
       document.getElementById('uploadZone').style.display = 'none';
       document.getElementById('previewSection').style.display = 'block';
       document.getElementById('previewImg').src = compressed;
-      document.getElementById('previewMeta').textContent = file.name + ' · compressed to ' + Math.round(currentB64.length * 0.75 / 1024) + 'KB';
+      document.getElementById('previewMeta').textContent = file.name + ' · ~' + Math.round(currentB64.length * 0.75 / 1024) + 'KB';
       document.getElementById('scanError').style.display = 'none';
       document.getElementById('extractedSection').style.display = 'none';
       document.getElementById('extractedSection').innerHTML = '';
       pendingRecipe = null;
     };
-    img.src = dataUrl;
+    img.src = reader.result;
   };
   reader.readAsDataURL(file);
 }
 
 function scanRecipe() {
-  if (!currentB64) {
-    document.getElementById('scanError').style.display = 'block';
-    document.getElementById('scanError').textContent = 'Please select a photo first.';
-    return;
-  }
+  if (!currentB64) { document.getElementById('scanError').style.display = 'block'; document.getElementById('scanError').textContent = 'Please select a photo first.'; return; }
   var btn = document.getElementById('scanBtn');
   var status = document.getElementById('scanStatus');
   var errEl = document.getElementById('scanError');
-  btn.disabled = true;
-  btn.textContent = 'Reading…';
-  status.style.display = 'block';
-  status.textContent = 'Sending to Claude…';
+  btn.disabled = true; btn.textContent = 'Reading…';
+  status.style.display = 'block'; status.textContent = 'Sending to Claude…';
   errEl.style.display = 'none';
-
   var xhr = new XMLHttpRequest();
   xhr.open('POST', window.location.origin + '/api/scan', true);
   xhr.setRequestHeader('Content-Type', 'application/json');
   xhr.onload = function() {
     var data;
-    try { data = JSON.parse(xhr.responseText); } catch(e) {
-      showErr('Unexpected response: ' + xhr.responseText.slice(0, 100));
-      return;
-    }
+    try { data = JSON.parse(xhr.responseText); } catch(e) { showErr('Unexpected: ' + xhr.responseText.slice(0,100)); return; }
     if (data.error) { showErr(data.error); return; }
     if (!data.recipe) { showErr('No recipe returned'); return; }
     pendingRecipe = data.recipe;
     status.style.display = 'none';
     showExtracted(pendingRecipe);
-    btn.disabled = false;
-    btn.textContent = '✦ Extract Recipe';
+    btn.disabled = false; btn.textContent = '✦ Extract Recipe';
   };
-  xhr.onerror = function() {
-    showErr('Network error: ' + xhr.status + ' ' + xhr.statusText);
-  };
+  xhr.onerror = function() { showErr('Network error'); };
   xhr.send(JSON.stringify({ imageBase64: currentB64, mediaType: 'image/jpeg' }));
-
-  function showErr(msg) {
-    status.style.display = 'none';
-    errEl.style.display = 'block';
-    errEl.textContent = '⚠️ ' + msg;
-    btn.disabled = false;
-    btn.textContent = '✦ Extract Recipe';
-  }
+  function showErr(msg) { status.style.display = 'none'; errEl.style.display = 'block'; errEl.textContent = '⚠️ ' + msg; btn.disabled = false; btn.textContent = '✦ Extract Recipe'; }
 }
 
 function showExtracted(r) {
   var sec = document.getElementById('extractedSection');
   sec.style.display = 'block';
+  var catOpts = '<option value="">No category</option>';
+  for (var i = 0; i < categories.length; i++) {
+    catOpts += '<option value="' + categories[i] + '"' + (r.category===categories[i]?' selected':'') + '>' + categories[i] + '</option>';
+  }
   var ingHtml = r.ingredients.map(function(i) { return '<div class="ext-item">· ' + i + '</div>'; }).join('');
   var methHtml = r.method.map(function(s, i) { return '<div class="ext-item">' + (i+1) + '. ' + s + '</div>'; }).join('');
-  sec.innerHTML = '<div class="extracted-card"><div class="ext-label">Extracted Recipe</div><div class="ext-title">' + r.title + '</div><div class="ext-cat">' + (r.category||'Other') + '</div><div class="ext-section-label">Ingredients</div>' + ingHtml + '<div class="ext-section-label">Method</div>' + methHtml + '<button class="save-btn" id="saveBtn">✓ Save to My Recipes</button></div>';
+  sec.innerHTML = '<div class="extracted-card"><div class="ext-label">Extracted Recipe</div><div class="ext-title">' + r.title + '</div><select class="cat-sel" id="extCatSel">' + catOpts + '</select><div class="ext-section-label">Ingredients</div>' + ingHtml + '<div class="ext-section-label">Method</div>' + methHtml + '<button class="save-btn" id="saveBtn">✓ Save to My Recipes</button></div>';
   document.getElementById('saveBtn').addEventListener('click', saveRecipe);
 }
 
 function saveRecipe() {
   if (!pendingRecipe) return;
-  var recipe = { title: pendingRecipe.title, category: pendingRecipe.category, ingredients: pendingRecipe.ingredients, method: pendingRecipe.method, id: Date.now().toString(), savedAt: new Date().toISOString() };
+  var cat = document.getElementById('extCatSel').value;
+  var recipe = { title: pendingRecipe.title, category: cat, ingredients: pendingRecipe.ingredients, method: pendingRecipe.method, id: Date.now().toString(), savedAt: new Date().toISOString() };
   recipes.unshift(recipe);
-  localStorage.setItem('recipes', JSON.stringify(recipes));
+  persist();
   showScreen('homeScreen');
 }
 
