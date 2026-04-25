@@ -1,5 +1,7 @@
 <!DOCTYPE html>
-<!-- v2 -->
+
+<!-- v3 -->
+
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -66,7 +68,6 @@ body { font-family: 'DM Sans', sans-serif; background: #0f0e0c; color: #f0ebe3; 
 .extracted-card { margin-top: 24px; background: rgba(240,235,227,0.04); border-radius: 16px; padding: 20px; border: 1px solid rgba(240,235,227,0.08); }
 .ext-label { font-size: 10px; letter-spacing: 0.2em; text-transform: uppercase; color: #c9a96e; margin-bottom: 6px; }
 .ext-title { font-family: 'Playfair Display', serif; font-size: 22px; font-weight: 700; margin-bottom: 4px; }
-.ext-cat { font-size: 11px; color: rgba(201,169,110,0.7); margin-bottom: 16px; }
 .ext-section-label { font-size: 10px; letter-spacing: 0.2em; text-transform: uppercase; color: rgba(240,235,227,0.35); margin-bottom: 8px; margin-top: 14px; }
 .ext-item { font-size: 13px; color: rgba(240,235,227,0.7); line-height: 1.6; padding: 4px 0; border-bottom: 1px solid rgba(240,235,227,0.04); }
 .save-btn { width: 100%; background: #c9a96e; color: #0f0e0c; border: none; border-radius: 13px; padding: 16px; font-family: 'DM Sans', sans-serif; font-size: 14px; font-weight: 500; letter-spacing: 0.06em; text-transform: uppercase; cursor: pointer; margin-top: 20px; }
@@ -107,12 +108,10 @@ body { font-family: 'DM Sans', sans-serif; background: #0f0e0c; color: #f0ebe3; 
 .modal-done-btn { width: 100%; background: none; border: none; color: rgba(240,235,227,0.4); font-family: 'DM Sans', sans-serif; font-size: 14px; cursor: pointer; padding: 10px; }
 .modal-cat-row { display: flex; align-items: center; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid rgba(240,235,227,0.06); font-size: 14px; }
 .modal-cat-del { background: none; border: none; color: rgba(220,80,60,0.4); font-size: 20px; cursor: pointer; }
-/* Edit screen */
 #editScreen { background: #0f0e0c; }
 .edit-body { flex: 1; overflow-y: auto; padding: 24px 24px 100px; }
 .edit-body::-webkit-scrollbar { display: none; }
 .edit-field-label { font-size: 10px; letter-spacing: 0.22em; text-transform: uppercase; color: #c9a96e; font-weight: 500; margin-bottom: 8px; margin-top: 20px; }
-.edit-field-label:first-child { margin-top: 0; }
 .edit-title-input { width: 100%; background: rgba(240,235,227,0.05); border: 1px solid rgba(240,235,227,0.1); border-radius: 10px; padding: 12px 14px; color: #f0ebe3; font-family: 'Playfair Display', serif; font-size: 20px; font-weight: 700; outline: none; }
 .edit-title-input:focus { border-color: rgba(201,169,110,0.4); }
 .edit-list-item { display: flex; gap: 8px; align-items: flex-start; margin-bottom: 6px; }
@@ -194,8 +193,6 @@ body { font-family: 'DM Sans', sans-serif; background: #0f0e0c; color: #f0ebe3; 
   </div>
 </div>
 
-<!-- EDIT SCREEN — separate screen, no innerHTML manipulation -->
-
 <div class="screen hidden" id="editScreen">
   <div class="scan-header">
     <button class="back-btn" id="editBackBtn">←</button>
@@ -265,9 +262,7 @@ document.getElementById('saveNotesBtn').addEventListener('click', function() {
   btn.textContent = '✓ Saved!';
   setTimeout(function() { btn.textContent = 'Save notes'; }, 1500);
 });
-document.getElementById('editBtn').addEventListener('click', function() {
-  openEditScreen();
-});
+document.getElementById('editBtn').addEventListener('click', function() { openEditScreen(); });
 
 function openEditScreen() {
   var r = null;
@@ -276,23 +271,26 @@ function openEditScreen() {
 
   var rCats = Array.isArray(r.categories) ? r.categories : (r.category ? [r.category] : []);
   var catChips = categories.map(function(c) {
-    return '<button class="det-cat-chip' + (rCats.indexOf(c)!==-1?' selected':'') + '" data-cat="' + c + '">' + c + '</button>';
+    return '<button class="det-cat-chip' + (rCats.indexOf(c) !== -1 ? ' selected' : '') + '" data-cat="' + c + '">' + c + '</button>';
   }).join('');
   var catSection = categories.length ? '<div class="edit-field-label">Categories</div><div class="cat-chips-wrap" style="margin-bottom:8px">' + catChips + '</div>' : '';
 
-  var ingItems = r.ingredients.map(function(ing, i) {
-    return '<div class="edit-list-item"><textarea class="edit-list-ta" data-i="' + i + '" rows="1">' + ing.replace(/</g,'&lt;') + '</textarea><button class="rm-btn" data-type="ing" data-i="' + i + '">×</button></div>';
+  var ingItems = r.ingredients.map(function(ing, idx) {
+    return '<div class="edit-list-item"><textarea class="edit-list-ta" rows="1">' + ing.replace(/</g, '&lt;') + '</textarea><button class="rm-btn" data-type="ing" data-i="' + idx + '">×</button></div>';
 
 }).join(’’);
 
-var methItems = r.method.map(function(s, i) {
-return ‘<div class="edit-list-item"><textarea class="edit-list-ta" data-i="' + i + '" rows="2">’ + s.replace(/</g,’<’) + ‘</textarea><button class="rm-btn" data-type="meth" data-i="' + i + '">×</button></div>’;
+var methItems = r.method.map(function(s, idx) {
+return ‘<div class="edit-list-item"><textarea class="edit-list-ta" rows="2">’ + s.replace(/</g, ‘<’) + ‘</textarea><button class="rm-btn" data-type="meth" data-i="' + idx + '">×</button></div>’;
 }).join(’’);
+
+var safeTitle = r.title.replace(/&/g, ‘&’).replace(/”/g, ‘"’);
+var safeNotes = (r.notes || ‘’).replace(/</g, ‘<’).replace(/&/g, ‘&’);
 
 var body = document.getElementById(‘editBody’);
 body.innerHTML =
-‘<div class="edit-field-label">Title</div>’ +
-‘<input class=“edit-title-input” id=“editTitleInput” value=”’ + r.title.replace(/[”]/g,’"’) + ‘”>’ +
+‘<div class="edit-field-label" style="margin-top:0">Title</div>’ +
+‘<input class="edit-title-input" id="editTitleInput" value="' + safeTitle + '">’ +
 catSection +
 ‘<div class="edit-field-label">Ingredients</div>’ +
 ‘<div id="ingList">’ + ingItems + ‘</div>’ +
@@ -301,22 +299,19 @@ catSection +
 ‘<div id="methList">’ + methItems + ‘</div>’ +
 ‘<button class="add-item-btn" id="addMethBtn">+ Add step</button>’ +
 ‘<div class="edit-field-label">Notes</div>’ +
-‘<textarea class="edit-notes-ta" id="editNotesField" placeholder="Add notes, tips, variations…">’ + (r.notes||’’).replace(/</g,’<’) + ‘</textarea>’ +
+‘<textarea class="edit-notes-ta" id="editNotesField" placeholder="Add notes, tips, variations…">’ + safeNotes + ‘</textarea>’ +
 ‘<button class="save-all-btn" id="saveAllBtn">✓ Save Recipe</button>’;
 
-// Auto-resize textareas
 body.querySelectorAll(’.edit-list-ta’).forEach(function(ta) {
 ta.style.height = ‘auto’;
 ta.style.height = (ta.scrollHeight + 2) + ‘px’;
 ta.addEventListener(‘input’, function() { this.style.height = ‘auto’; this.style.height = (this.scrollHeight + 2) + ‘px’; });
 });
 
-// Category chips
 body.querySelectorAll(’.det-cat-chip’).forEach(function(chip) {
 chip.addEventListener(‘click’, function() { this.classList.toggle(‘selected’); });
 });
 
-// Remove buttons
 body.querySelectorAll(’.rm-btn’).forEach(function(btn) {
 btn.addEventListener(‘click’, function() {
 var r2 = null;
@@ -329,7 +324,6 @@ openEditScreen();
 });
 });
 
-// Add ingredient
 document.getElementById(‘addIngBtn’).addEventListener(‘click’, function() {
 var r2 = null;
 for (var i = 0; i < recipes.length; i++) { if (recipes[i].id === currentRecipeId) { r2 = recipes[i]; break; } }
@@ -337,10 +331,9 @@ if (!r2) return;
 r2.ingredients.push(’’);
 openEditScreen();
 var tas = document.getElementById(‘ingList’).querySelectorAll(‘textarea’);
-if (tas.length) tas[tas.length-1].focus();
+if (tas.length) tas[tas.length - 1].focus();
 });
 
-// Add step
 document.getElementById(‘addMethBtn’).addEventListener(‘click’, function() {
 var r2 = null;
 for (var i = 0; i < recipes.length; i++) { if (recipes[i].id === currentRecipeId) { r2 = recipes[i]; break; } }
@@ -348,10 +341,9 @@ if (!r2) return;
 r2.method.push(’’);
 openEditScreen();
 var tas = document.getElementById(‘methList’).querySelectorAll(‘textarea’);
-if (tas.length) tas[tas.length-1].focus();
+if (tas.length) tas[tas.length - 1].focus();
 });
 
-// Save all
 document.getElementById(‘saveAllBtn’).addEventListener(‘click’, function() {
 var r2 = null;
 for (var i = 0; i < recipes.length; i++) { if (recipes[i].id === currentRecipeId) { r2 = recipes[i]; break; } }
@@ -367,7 +359,6 @@ document.getElementById(‘ingList’).querySelectorAll(‘textarea’).forEach(
 r2.method = [];
 document.getElementById(‘methList’).querySelectorAll(‘textarea’).forEach(function(ta) { if (ta.value.trim()) r2.method.push(ta.value.trim()); });
 persist();
-showScreen(‘detailScreen’);
 openRecipe(currentRecipeId);
 });
 
@@ -376,9 +367,9 @@ showScreen(‘editScreen’);
 
 function buildCategories() {
 var bar = document.getElementById(‘categoryBar’);
-var html = ‘<button class="cat-btn ' + (activeCategory==='All'?'active':'') + '" data-cat="All">All</button>’;
+var html = ‘<button class="cat-btn ' + (activeCategory === 'All' ? 'active' : '') + '" data-cat="All">All</button>’;
 for (var i = 0; i < categories.length; i++) {
-html += ‘<button class="cat-btn ' + (activeCategory===categories[i]?'active':'') + '" data-cat="' + categories[i] + '">’ + categories[i] + ‘</button>’;
+html += ‘<button class="cat-btn ' + (activeCategory === categories[i] ? 'active' : '') + '" data-cat="' + categories[i] + '">’ + categories[i] + ‘</button>’;
 }
 html += ‘<button class="cat-add-btn" id="manageCatBtn">+ Category</button>’;
 bar.innerHTML = html;
@@ -429,7 +420,7 @@ var list = document.getElementById(‘recipeList’);
 var filtered = recipes.filter(function(r) {
 var rCatsF = Array.isArray(r.categories) ? r.categories : (r.category ? [r.category] : []);
 var matchCat = activeCategory === ‘All’ || rCatsF.indexOf(activeCategory) !== -1;
-var matchQ = !q || r.title.toLowerCase().indexOf(q) !== -1 || (r.category||’’).toLowerCase().indexOf(q) !== -1;
+var matchQ = !q || r.title.toLowerCase().indexOf(q) !== -1 || (r.category || ‘’).toLowerCase().indexOf(q) !== -1;
 return matchCat && matchQ;
 });
 if (!filtered.length) {
@@ -438,7 +429,7 @@ return;
 }
 list.innerHTML = filtered.map(function(r) {
 var cats = Array.isArray(r.categories) && r.categories.length ? r.categories : (r.category ? [r.category] : []);
-var tagHtml = cats.slice(0,2).map(function(c) { return ‘<span class="recipe-cat-tag">’ + c + ‘</span>’; }).join(’’);
+var tagHtml = cats.slice(0, 2).map(function(c) { return ‘<span class="recipe-cat-tag">’ + c + ‘</span>’; }).join(’’);
 return ‘<div class="recipe-card" data-id="' + r.id + '"><div class="recipe-card-header"><div class="recipe-card-title">’ + r.title + ‘</div><div style="display:flex;gap:4px;flex-wrap:wrap;justify-content:flex-end;flex-shrink:0">’ + tagHtml + ‘</div></div><div class="recipe-card-meta">’ + r.ingredients.length + ’ ingredients · ’ + r.method.length + ’ steps</div></div>’;
 }).join(’’);
 document.querySelectorAll(’.recipe-card’).forEach(function(card) {
@@ -453,11 +444,11 @@ if (!r) return;
 currentRecipeId = id;
 document.getElementById(‘detailLabel’).textContent = r.category || ‘Recipe’;
 document.getElementById(‘detailHeaderTitle’).textContent = r.title;
-var ingHtml = r.ingredients.map(function(i) { return ‘<div class="ingredient-row"><div class="ingredient-dot"></div><div class="ingredient-text">’ + i + ‘</div></div>’; }).join(’’);
-var methHtml = r.method.map(function(s, i) { return ‘<div class="method-row"><div class="step-num">0’ + (i+1) + ‘</div><div class="step-text">’ + s + ‘</div></div>’; }).join(’’);
+var ingHtml = r.ingredients.map(function(ing) { return ‘<div class="ingredient-row"><div class="ingredient-dot"></div><div class="ingredient-text">’ + ing + ‘</div></div>’; }).join(’’);
+var methHtml = r.method.map(function(s, i) { return ‘<div class="method-row"><div class="step-num">0’ + (i + 1) + ‘</div><div class="step-text">’ + s + ‘</div></div>’; }).join(’’);
 var rCats2 = Array.isArray(r.categories) ? r.categories : (r.category ? [r.category] : []);
 var detChips = categories.map(function(c) {
-return ‘<button class="det-cat-chip' + (rCats2.indexOf(c)!==-1?' selected':'') + '" data-cat="' + c + '">’ + c + ‘</button>’;
+return ‘<button class="det-cat-chip' + (rCats2.indexOf(c) !== -1 ? ' selected' : '') + '" data-cat="' + c + '">’ + c + ‘</button>’;
 }).join(’’);
 var catSection = categories.length ? ‘<div style="margin-bottom:20px"><div style="font-size:10px;letter-spacing:0.2em;text-transform:uppercase;color:rgba(240,235,227,0.35);margin-bottom:10px">Categories</div><div class="cat-chips-wrap">’ + detChips + ‘</div><button id="saveCatBtn" style="margin-top:10px;background:rgba(201,169,110,0.15);border:1px solid rgba(201,169,110,0.3);color:#c9a96e;border-radius:8px;padding:7px 16px;font-family:DM Sans,sans-serif;font-size:12px;cursor:pointer">Save categories</button></div>’ : ‘’;
 document.getElementById(‘detailBody’).innerHTML = ‘<div class="detail-full-title">’ + r.title + ‘</div>’ + catSection + ‘<div class="detail-section"><div class="detail-section-header"><div class="detail-section-label">Ingredients</div><div class="detail-section-line"></div></div>’ + ingHtml + ‘</div><div class="detail-section"><div class="detail-section-header"><div class="detail-section-label">Method</div><div class="detail-section-line"></div></div>’ + methHtml + ‘</div>’;
@@ -541,7 +532,7 @@ xhr.open(‘POST’, window.location.origin + ‘/api/scan’, true);
 xhr.setRequestHeader(‘Content-Type’, ‘application/json’);
 xhr.onload = function() {
 var data;
-try { data = JSON.parse(xhr.responseText); } catch(e) { showErr(’Unexpected: ’ + xhr.responseText.slice(0,100)); return; }
+try { data = JSON.parse(xhr.responseText); } catch(e) { showErr(’Unexpected: ’ + xhr.responseText.slice(0, 100)); return; }
 if (data.error) { showErr(data.error); return; }
 if (!data.recipe) { showErr(‘No recipe returned’); return; }
 pendingRecipe = data.recipe;
@@ -559,11 +550,11 @@ var sec = document.getElementById(‘extractedSection’);
 sec.style.display = ‘block’;
 var rCats = Array.isArray(r.categories) ? r.categories : (r.category ? [r.category] : []);
 var catChips = categories.map(function(c) {
-return ‘<button class="ext-cat-chip' + (rCats.indexOf(c)!==-1?' selected':'') + '" data-cat="' + c + '">’ + c + ‘</button>’;
+return ‘<button class="ext-cat-chip' + (rCats.indexOf(c) !== -1 ? ' selected' : '') + '" data-cat="' + c + '">’ + c + ‘</button>’;
 }).join(’’);
 var catHtml = categories.length ? ‘<div style="margin-bottom:16px"><div class="ext-section-label" style="margin-top:0">Categories</div><div class="cat-chips-wrap">’ + catChips + ‘</div></div>’ : ‘’;
-var ingHtml = r.ingredients.map(function(i) { return ‘<div class="ext-item">· ’ + i + ‘</div>’; }).join(’’);
-var methHtml = r.method.map(function(s, i) { return ‘<div class="ext-item">’ + (i+1) + ‘. ’ + s + ‘</div>’; }).join(’’);
+var ingHtml = r.ingredients.map(function(ing) { return ‘<div class="ext-item">· ’ + ing + ‘</div>’; }).join(’’);
+var methHtml = r.method.map(function(s, i) { return ‘<div class="ext-item">’ + (i + 1) + ‘. ’ + s + ‘</div>’; }).join(’’);
 sec.innerHTML = ‘<div class="extracted-card"><div class="ext-label">Extracted Recipe</div><div class="ext-title">’ + r.title + ‘</div>’ + catHtml + ‘<div class="ext-section-label">Ingredients</div>’ + ingHtml + ‘<div class="ext-section-label">Method</div>’ + methHtml + ‘<button class="save-btn" id="saveBtn">✓ Save to My Recipes</button></div>’;
 document.querySelectorAll(’.ext-cat-chip’).forEach(function(chip) {
 chip.addEventListener(‘click’, function() { this.classList.toggle(‘selected’); });
@@ -575,7 +566,7 @@ function saveRecipe() {
 if (!pendingRecipe) return;
 var selectedCats = [];
 document.querySelectorAll(’.ext-cat-chip.selected’).forEach(function(chip) { selectedCats.push(chip.dataset.cat); });
-var recipe = { title: pendingRecipe.title, categories: selectedCats, category: selectedCats[0]||’’, ingredients: pendingRecipe.ingredients, method: pendingRecipe.method, notes: ‘’, id: Date.now().toString(), savedAt: new Date().toISOString() };
+var recipe = { title: pendingRecipe.title, categories: selectedCats, category: selectedCats[0] || ‘’, ingredients: pendingRecipe.ingredients, method: pendingRecipe.method, notes: ‘’, id: Date.now().toString(), savedAt: new Date().toISOString() };
 recipes.unshift(recipe);
 persist();
 showScreen(‘homeScreen’);
