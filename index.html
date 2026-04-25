@@ -220,12 +220,6 @@ var currentRecipeId = null;
 var currentB64 = null;
 var pendingRecipe = null;
 
-// Global error catcher
-window.onerror = function(msg, src, line, col, err) {
-  document.body.insertAdjacentHTML('beforeend', '<div style="position:fixed;top:0;left:0;right:0;background:red;color:white;padding:20px;z-index:9999;font-size:12px;word-break:break-all">' + msg + ' (line ' + line + ')</div>');
-  return false;
-};
-
 try { recipes = JSON.parse(localStorage.getItem('recipes') || '[]'); } catch(e) { recipes = []; }
 try { categories = JSON.parse(localStorage.getItem('categories') || '[]'); } catch(e) { categories = []; }
 
@@ -238,7 +232,7 @@ function showScreen(id) {
   document.querySelectorAll('.screen').forEach(function(s) {
     s.classList.toggle('hidden', s.id !== id);
   });
-  if (id === 'homeScreen') { var ns = document.getElementById('notesSection'); if (ns) ns.style.display = 'none'; try { renderList(); } catch(e) { document.body.insertAdjacentHTML('beforeend', '<div style="position:fixed;top:60px;left:0;right:0;background:orange;color:black;padding:20px;z-index:9999;font-size:12px;word-break:break-all">renderList crash: ' + e.message + ' line:' + e.stack + '</div>'); } }
+  if (id === 'homeScreen') { var ns = document.getElementById('notesSection'); if (ns) ns.style.display = 'none'; try { renderList(); } catch(e) { console.error('renderList error:', e); } }
   if (id === 'scanScreen') resetScan();
 }
 
@@ -254,7 +248,7 @@ document.getElementById('scanBtn').addEventListener('click', scanRecipe);
 document.getElementById('addCatBtn').addEventListener('click', addCategory);
 document.getElementById('catDoneBtn').addEventListener('click', function() {
   document.getElementById('catModal').classList.remove('open');
-  try { renderList(); } catch(e) { document.body.insertAdjacentHTML('beforeend', '<div style="position:fixed;top:60px;left:0;right:0;background:orange;color:black;padding:20px;z-index:9999;font-size:12px;word-break:break-all">renderList crash: ' + e.message + ' line:' + e.stack + '</div>'); }
+  try { renderList(); } catch(e) { console.error('renderList error:', e); }
 });
 document.getElementById('saveNotesBtn').addEventListener('click', function() {
   var notes = document.getElementById('notesField').value;
@@ -377,7 +371,7 @@ function buildCategories() {
   html += '<button class="cat-add-btn" id="manageCatBtn">+ Category</button>';
   bar.innerHTML = html;
   document.querySelectorAll('.cat-btn').forEach(function(btn) {
-    btn.addEventListener('click', function() { activeCategory = this.dataset.cat; try { renderList(); } catch(e) { document.body.insertAdjacentHTML('beforeend', '<div style="position:fixed;top:60px;left:0;right:0;background:orange;color:black;padding:20px;z-index:9999;font-size:12px;word-break:break-all">renderList crash: ' + e.message + ' line:' + e.stack + '</div>'); } });
+    btn.addEventListener('click', function() { activeCategory = this.dataset.cat; try { renderList(); } catch(e) { console.error('renderList error:', e); } });
   });
   document.getElementById('manageCatBtn').addEventListener('click', function() {
     renderCatModal();
@@ -575,7 +569,7 @@ function saveRecipe() {
   showScreen('homeScreen');
 }
 
-try { renderList(); } catch(e) { document.body.insertAdjacentHTML('beforeend', '<div style="position:fixed;top:60px;left:0;right:0;background:orange;color:black;padding:20px;z-index:9999;font-size:12px;word-break:break-all">renderList crash: ' + e.message + ' line:' + e.stack + '</div>'); }
+try { renderList(); } catch(e) { console.error('renderList error:', e); }
 </script>
 </body>
 </html>
