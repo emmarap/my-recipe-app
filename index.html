@@ -66,20 +66,22 @@ body { font-family: 'DM Sans', sans-serif; background: #0f0e0c; color: #f0ebe3; 
 .extracted-card { margin-top: 24px; background: rgba(240,235,227,0.04); border-radius: 16px; padding: 20px; border: 1px solid rgba(240,235,227,0.08); }
 .ext-label { font-size: 10px; letter-spacing: 0.2em; text-transform: uppercase; color: #c9a96e; margin-bottom: 6px; }
 .ext-title { font-family: 'Playfair Display', serif; font-size: 22px; font-weight: 700; margin-bottom: 4px; }
-.ext-cat { font-size: 11px; color: rgba(201,169,110,0.7); margin-bottom: 16px; }
 .ext-section-label { font-size: 10px; letter-spacing: 0.2em; text-transform: uppercase; color: rgba(240,235,227,0.35); margin-bottom: 8px; margin-top: 14px; }
 .ext-item { font-size: 13px; color: rgba(240,235,227,0.7); line-height: 1.6; padding: 4px 0; border-bottom: 1px solid rgba(240,235,227,0.04); }
 .save-btn { width: 100%; background: #c9a96e; color: #0f0e0c; border: none; border-radius: 13px; padding: 16px; font-family: 'DM Sans', sans-serif; font-size: 14px; font-weight: 500; letter-spacing: 0.06em; text-transform: uppercase; cursor: pointer; margin-top: 20px; }
+/* Detail screen */
 #detailScreen { background: #0f0e0c; }
-.detail-header { padding: 56px 24px 20px; display: flex; align-items: center; gap: 16px; flex-shrink: 0; border-bottom: 1px solid rgba(240,235,227,0.07); }
+.detail-header { padding: 56px 24px 20px; display: flex; align-items: center; gap: 12px; flex-shrink: 0; border-bottom: 1px solid rgba(240,235,227,0.07); }
 .detail-header-text { flex: 1; min-width: 0; }
 .detail-label { font-size: 10px; letter-spacing: 0.2em; text-transform: uppercase; color: #c9a96e; font-weight: 500; }
 .detail-title { font-family: 'Playfair Display', serif; font-size: 22px; font-weight: 700; line-height: 1.2; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.edit-btn { width: 36px; height: 36px; border-radius: 50%; background: rgba(201,169,110,0.15); border: 1px solid rgba(201,169,110,0.3); cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 15px; flex-shrink: 0; }
+.edit-btn.active { background: #c9a96e; border-color: #c9a96e; }
 .delete-btn { width: 36px; height: 36px; border-radius: 50%; background: rgba(220,80,60,0.1); border: 1px solid rgba(220,80,60,0.2); cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 16px; flex-shrink: 0; }
-.detail-body { flex: 1; overflow-y: auto; padding: 24px 24px 80px; }
+.detail-body { flex: 1; overflow-y: auto; padding: 24px 24px 120px; }
 .detail-body::-webkit-scrollbar { display: none; }
-.detail-full-title { font-family: 'Playfair Display', serif; font-size: 28px; font-weight: 700; line-height: 1.2; margin-bottom: 6px; }
-.detail-cat-tag { display: inline-block; font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; color: #c9a96e; background: rgba(201,169,110,0.1); border-radius: 6px; padding: 4px 10px; margin-bottom: 24px; }
+/* View mode */
+.detail-full-title { font-family: 'Playfair Display', serif; font-size: 28px; font-weight: 700; line-height: 1.2; margin-bottom: 20px; }
 .detail-section { margin-bottom: 28px; }
 .detail-section-header { display: flex; align-items: center; gap: 10px; margin-bottom: 14px; }
 .detail-section-label { font-size: 10px; letter-spacing: 0.22em; text-transform: uppercase; color: #c9a96e; font-weight: 500; }
@@ -91,9 +93,21 @@ body { font-family: 'DM Sans', sans-serif; background: #0f0e0c; color: #f0ebe3; 
 .step-num { font-family: 'Playfair Display', serif; font-size: 20px; color: rgba(201,169,110,0.28); font-weight: 700; line-height: 1; min-width: 26px; padding-top: 2px; }
 .step-text { font-size: 14px; line-height: 1.7; color: rgba(240,235,227,0.78); font-weight: 300; padding-bottom: 13px; border-bottom: 1px solid rgba(240,235,227,0.05); flex: 1; }
 .method-row:last-child .step-text { border-bottom: none; }
-.notes-ta { width: 100%; background: rgba(240,235,227,0.05); border: 1px solid rgba(240,235,227,0.1); border-radius: 12px; padding: 14px; color: #f0ebe3; font-family: 'DM Sans', sans-serif; font-size: 14px; line-height: 1.6; resize: none; min-height: 100px; outline: none; display: block; }
-.notes-ta::placeholder { color: rgba(240,235,227,0.2); }
-.notes-save-btn { margin-top: 10px; background: rgba(201,169,110,0.15); border: 1px solid rgba(201,169,110,0.3); color: #c9a96e; border-radius: 8px; padding: 8px 16px; font-family: 'DM Sans', sans-serif; font-size: 12px; cursor: pointer; }
+.notes-view { font-size: 14px; line-height: 1.7; color: rgba(240,235,227,0.6); white-space: pre-wrap; }
+/* Edit mode */
+.edit-field { width: 100%; background: rgba(240,235,227,0.05); border: 1px solid rgba(240,235,227,0.12); border-radius: 10px; padding: 11px 13px; color: #f0ebe3; font-family: 'DM Sans', sans-serif; font-size: 14px; outline: none; margin-bottom: 8px; }
+.edit-field:focus { border-color: rgba(201,169,110,0.4); }
+.edit-title-field { width: 100%; background: none; border: none; border-bottom: 1px solid rgba(240,235,227,0.15); color: #f0ebe3; font-family: 'Playfair Display', serif; font-size: 26px; font-weight: 700; padding-bottom: 10px; margin-bottom: 20px; outline: none; }
+.edit-list-item { display: flex; gap: 8px; align-items: flex-start; margin-bottom: 6px; }
+.edit-list-ta { flex: 1; background: rgba(240,235,227,0.05); border: 1px solid rgba(240,235,227,0.1); border-radius: 8px; padding: 9px 11px; color: #f0ebe3; font-family: 'DM Sans', sans-serif; font-size: 13px; line-height: 1.5; resize: none; outline: none; overflow: hidden; }
+.edit-list-ta:focus { border-color: rgba(201,169,110,0.3); }
+.rm-item-btn { width: 28px; height: 28px; border-radius: 50%; background: rgba(220,80,60,0.1); border: none; color: rgba(220,80,60,0.5); font-size: 18px; cursor: pointer; flex-shrink: 0; margin-top: 4px; }
+.add-item-btn { font-size: 12px; color: rgba(201,169,110,0.6); background: none; border: 1px dashed rgba(201,169,110,0.2); border-radius: 8px; padding: 7px 14px; cursor: pointer; font-family: 'DM Sans', sans-serif; margin-top: 4px; }
+.edit-notes-ta { width: 100%; background: rgba(240,235,227,0.05); border: 1px solid rgba(240,235,227,0.1); border-radius: 10px; padding: 12px 13px; color: #f0ebe3; font-family: 'DM Sans', sans-serif; font-size: 14px; line-height: 1.6; resize: none; min-height: 90px; outline: none; }
+.edit-notes-ta:focus { border-color: rgba(201,169,110,0.3); }
+.edit-notes-ta::placeholder { color: rgba(240,235,227,0.2); }
+.save-all-btn { width: 100%; background: #c9a96e; color: #0f0e0c; border: none; border-radius: 13px; padding: 17px; font-family: 'DM Sans', sans-serif; font-size: 14px; font-weight: 500; letter-spacing: 0.06em; text-transform: uppercase; cursor: pointer; margin-top: 16px; }
+/* Shared */
 .cat-chips-wrap { display: flex; flex-wrap: wrap; gap: 8px; }
 .ext-cat-chip, .det-cat-chip { padding: 7px 14px; border-radius: 20px; border: 1px solid rgba(240,235,227,0.15); background: transparent; color: rgba(240,235,227,0.45); font-family: 'DM Sans', sans-serif; font-size: 12px; cursor: pointer; }
 .ext-cat-chip.selected, .det-cat-chip.selected { background: #c9a96e; border-color: #c9a96e; color: #0f0e0c; font-weight: 500; }
@@ -162,18 +176,10 @@ body { font-family: 'DM Sans', sans-serif; background: #0f0e0c; color: #f0ebe3; 
       <div class="detail-label" id="detailLabel"></div>
       <div class="detail-title" id="detailHeaderTitle"></div>
     </div>
+    <button class="edit-btn" id="editBtn">✏️</button>
     <button class="delete-btn" id="deleteBtn">🗑</button>
   </div>
   <div class="detail-body" id="detailBody"></div>
-  <!-- Notes section lives OUTSIDE detailBody so it never gets wiped -->
-  <div id="notesSection" style="display:none;padding:0 24px 80px;flex-shrink:0">
-    <div class="detail-section-header" style="margin-bottom:10px">
-      <div class="detail-section-label">Notes</div>
-      <div class="detail-section-line"></div>
-    </div>
-    <textarea class="notes-ta" id="notesField" placeholder="Add notes, tips, variations…"></textarea>
-    <button class="notes-save-btn" id="saveNotesBtn">Save notes</button>
-  </div>
 </div>
 
 <div class="modal-overlay" id="catModal">
@@ -193,6 +199,7 @@ var activeCategory = 'All';
 var currentRecipeId = null;
 var currentB64 = null;
 var pendingRecipe = null;
+var editMode = false;
 
 try { recipes = JSON.parse(localStorage.getItem('recipes') || '[]'); } catch(e) { recipes = []; }
 try { categories = JSON.parse(localStorage.getItem('categories') || '[]'); } catch(e) { categories = []; }
@@ -206,7 +213,7 @@ function showScreen(id) {
   document.querySelectorAll('.screen').forEach(function(s) {
     s.classList.toggle('hidden', s.id !== id);
   });
-  if (id === 'homeScreen') { document.getElementById('notesSection').style.display = 'none'; renderList(); }
+  if (id === 'homeScreen') { editMode = false; renderList(); }
   if (id === 'scanScreen') resetScan();
 }
 
@@ -223,15 +230,12 @@ document.getElementById('catDoneBtn').addEventListener('click', function() {
   document.getElementById('catModal').classList.remove('open');
   renderList();
 });
-document.getElementById('saveNotesBtn').addEventListener('click', function() {
-  var notes = document.getElementById('notesField').value;
-  for (var i = 0; i < recipes.length; i++) {
-    if (recipes[i].id === currentRecipeId) { recipes[i].notes = notes; break; }
-  }
-  persist();
-  var btn = document.getElementById('saveNotesBtn');
-  btn.textContent = '✓ Saved!';
-  setTimeout(function() { btn.textContent = 'Save notes'; }, 1500);
+document.getElementById('editBtn').addEventListener('click', function() {
+  editMode = !editMode;
+  var btn = document.getElementById('editBtn');
+  btn.textContent = editMode ? '✕' : '✏️';
+  btn.classList.toggle('active', editMode);
+  renderDetail();
 });
 
 function buildCategories() {
@@ -306,143 +310,230 @@ function renderList() {
   });
 }
 
+function getCurrentRecipe() {
+  for (var i = 0; i < recipes.length; i++) { if (recipes[i].id === currentRecipeId) return recipes[i]; }
+  return null;
+}
+
 function openRecipe(id) {
-  var r = null;
-  for (var i = 0; i < recipes.length; i++) { if (recipes[i].id === id) { r = recipes[i]; break; } }
-  if (!r) return;
   currentRecipeId = id;
-  document.getElementById('detailLabel').textContent = r.category || 'Recipe';
-  document.getElementById('detailHeaderTitle').textContent = r.title;
-  var ingHtml = r.ingredients.map(function(i) { return '<div class="ingredient-row"><div class="ingredient-dot"></div><div class="ingredient-text">' + i + '</div></div>'; }).join('');
-  var methHtml = r.method.map(function(s, i) { return '<div class="method-row"><div class="step-num">0' + (i+1) + '</div><div class="step-text">' + s + '</div></div>'; }).join('');
-  var rCats2 = Array.isArray(r.categories) ? r.categories : (r.category ? [r.category] : []);
-  var detChips = categories.map(function(c) {
-    return '<button class="det-cat-chip' + (rCats2.indexOf(c)!==-1?' selected':'') + '" data-cat="' + c + '">' + c + '</button>';
-  }).join('');
-  var catSection = categories.length ? '<div style="margin-bottom:20px"><div style="font-size:10px;letter-spacing:0.2em;text-transform:uppercase;color:rgba(240,235,227,0.35);margin-bottom:10px">Categories</div><div class="cat-chips-wrap">' + detChips + '</div><button id="saveCatBtn" style="margin-top:10px;background:rgba(201,169,110,0.15);border:1px solid rgba(201,169,110,0.3);color:#c9a96e;border-radius:8px;padding:7px 16px;font-family:DM Sans,sans-serif;font-size:12px;cursor:pointer">Save categories</button></div>' : '';
-  document.getElementById('detailBody').innerHTML = '<div class="detail-full-title">' + r.title + '</div>' + catSection + '<div class="detail-section"><div class="detail-section-header"><div class="detail-section-label">Ingredients</div><div class="detail-section-line"></div></div>' + ingHtml + '</div><div class="detail-section"><div class="detail-section-header"><div class="detail-section-label">Method</div><div class="detail-section-line"></div></div>' + methHtml + '</div>';
-
-  if (categories.length) {
-    document.querySelectorAll('.det-cat-chip').forEach(function(chip) {
-      chip.addEventListener('click', function() { this.classList.toggle('selected'); });
-    });
-    document.getElementById('saveCatBtn').addEventListener('click', function() {
-      var selected = [];
-      document.querySelectorAll('.det-cat-chip.selected').forEach(function(chip) { selected.push(chip.dataset.cat); });
-      for (var i = 0; i < recipes.length; i++) {
-        if (recipes[i].id === currentRecipeId) { recipes[i].categories = selected; recipes[i].category = selected[0] || ''; break; }
-      }
-      persist();
-      document.getElementById('detailLabel').textContent = selected.join(', ') || 'Recipe';
-    });
-  }
-
-  // Show notes section with current notes
-  document.getElementById('notesField').value = r.notes || '';
-  document.getElementById('notesSection').style.display = 'block';
-  document.getElementById('saveNotesBtn').textContent = 'Save notes';
-
+  editMode = false;
+  document.getElementById('editBtn').textContent = '✏️';
+  document.getElementById('editBtn').classList.remove('active');
+  renderDetail();
   showScreen('detailScreen');
 }
 
-function deleteCurrentRecipe() {
-  if (!currentRecipeId) return;
-  var newRecipes = [];
-  for (var i = 0; i < recipes.length; i++) { if (recipes[i].id !== currentRecipeId) newRecipes.push(recipes[i]); }
-  recipes = newRecipes;
+function renderDetail() {
+  var r = getCurrentRecipe();
+  if (!r) return;
+  var body = document.getElementById('detailBody');
+
+  var rCats = Array.isArray(r.categories) ? r.categories : (r.category ? [r.category] : []);
+
+  if (!editMode) {
+    // VIEW MODE
+    var catTagsHtml = rCats.length ? '<div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:20px">' + rCats.map(function(c) { return '<span class="recipe-cat-tag" style="font-size:11px;padding:4px 10px">' + c + '</span>'; }).join('') + '</div>' : '';
+    var ingHtml = r.ingredients.map(function(i) { return '<div class="ingredient-row"><div class="ingredient-dot"></div><div class="ingredient-text">' + i + '</div></div>'; }).join('');
+    var methHtml = r.method.map(function(s, i) { return '<div class="method-row"><div class="step-num">0' + (i+1) + '</div><div class="step-text">' + s + '</div></div>'; }).join('');
+    var notesHtml = r.notes ? '<div class="detail-section"><div class="detail-section-header"><div class="detail-section-label">Notes</div><div class="detail-section-line"></div></div><div class="notes-view">' + r.notes + '</div></div>' : '';
+    body.innerHTML = '<div class="detail-full-title">' + r.title + '</div>' + catTagsHtml +
+      '<div class="detail-section"><div class="detail-section-header"><div class="detail-section-label">Ingredients</div><div class="detail-section-line"></div></div>' + ingHtml + '</div>' +
+      '<div class="detail-section"><div class="detail-section-header"><div class="detail-section-label">Method</div><div class="detail-section-line"></div></div>' + methHtml + '</div>' +
+      notesHtml;
+    document.getElementById('detailLabel').textContent = rCats.join(', ') || 'Recipe';
+    document.getElementById('detailHeaderTitle').textContent = r.title;
+
+  } else {
+    // EDIT MODE
+    var catChips = categories.map(function(c) {
+      return '<button class="det-cat-chip' + (rCats.indexOf(c)!==-1?' selected':'') + '" data-cat="' + c + '">' + c + '</button>';
+    }).join('');
+    var catSection = categories.length ? '<div class="detail-section"><div class="detail-section-header"><div class="detail-section-label">Categories</div><div class="detail-section-line"></div></div><div class="cat-chips-wrap">' + catChips + '</div></div>' : '';
+
+    var ingItems = r.ingredients.map(function(ing, i) {
+      return '<div class="edit-list-item"><textarea class="edit-list-ta" data-type="ing" data-i="' + i + '" rows="1">' + ing + '</textarea><button class="rm-item-btn" data-type="ing" data-i="' + i + '">×</button></div>';
+
+```
+}).join('');
+var methItems = r.method.map(function(s, i) {
+  return '<div class="edit-list-item"><textarea class="edit-list-ta" data-type="meth" data-i="' + i + '" rows="2">' + s + '</textarea><button class="rm-item-btn" data-type="meth" data-i="' + i + '">×</button></div>';
+}).join('');
+
+body.innerHTML =
+  '<input class="edit-title-field" id="editTitleField" value="' + r.title.replace(/"/g, '&quot;') + '">' +
+  catSection +
+  '<div class="detail-section"><div class="detail-section-header"><div class="detail-section-label">Ingredients</div><div class="detail-section-line"></div></div><div id="ingList">' + ingItems + '</div><button class="add-item-btn" id="addIngBtn">+ Add ingredient</button></div>' +
+  '<div class="detail-section"><div class="detail-section-header"><div class="detail-section-label">Method</div><div class="detail-section-line"></div></div><div id="methList">' + methItems + '</div><button class="add-item-btn" id="addMethBtn">+ Add step</button></div>' +
+  '<div class="detail-section"><div class="detail-section-header"><div class="detail-section-label">Notes</div><div class="detail-section-line"></div></div><textarea class="edit-notes-ta" id="editNotesField" placeholder="Add notes, tips, variations…">' + (r.notes||'') + '</textarea></div>' +
+  '<button class="save-all-btn" id="saveAllBtn">✓ Save Recipe</button>';
+
+// Auto-resize textareas
+body.querySelectorAll('.edit-list-ta').forEach(function(ta) {
+  ta.style.height = 'auto';
+  ta.style.height = (ta.scrollHeight + 2) + 'px';
+  ta.addEventListener('input', function() { this.style.height = 'auto'; this.style.height = (this.scrollHeight + 2) + 'px'; });
+});
+
+// Category chips
+body.querySelectorAll('.det-cat-chip').forEach(function(chip) {
+  chip.addEventListener('click', function() { this.classList.toggle('selected'); });
+});
+
+// Remove ingredient/method
+body.querySelectorAll('.rm-item-btn').forEach(function(btn) {
+  btn.addEventListener('click', function() {
+    var r2 = getCurrentRecipe();
+    var i = parseInt(this.dataset.i);
+    if (this.dataset.type === 'ing') r2.ingredients.splice(i, 1);
+    else r2.method.splice(i, 1);
+    renderDetail();
+  });
+});
+
+// Add ingredient
+document.getElementById('addIngBtn').addEventListener('click', function() {
+  var r2 = getCurrentRecipe();
+  r2.ingredients.push('');
+  renderDetail();
+  var items = document.getElementById('ingList').querySelectorAll('textarea');
+  if (items.length) items[items.length-1].focus();
+});
+
+// Add step
+document.getElementById('addMethBtn').addEventListener('click', function() {
+  var r2 = getCurrentRecipe();
+  r2.method.push('');
+  renderDetail();
+  var items = document.getElementById('methList').querySelectorAll('textarea');
+  if (items.length) items[items.length-1].focus();
+});
+
+// Save all
+document.getElementById('saveAllBtn').addEventListener('click', function() {
+  var r2 = getCurrentRecipe();
+  r2.title = document.getElementById('editTitleField').value.trim() || r2.title;
+  r2.notes = document.getElementById('editNotesField').value;
+  // Categories
+  var selected = [];
+  body.querySelectorAll('.det-cat-chip.selected').forEach(function(chip) { selected.push(chip.dataset.cat); });
+  r2.categories = selected;
+  r2.category = selected[0] || '';
+  // Ingredients
+  r2.ingredients = [];
+  document.getElementById('ingList').querySelectorAll('textarea').forEach(function(ta) { if (ta.value.trim()) r2.ingredients.push(ta.value.trim()); });
+  // Method
+  r2.method = [];
+  document.getElementById('methList').querySelectorAll('textarea').forEach(function(ta) { if (ta.value.trim()) r2.method.push(ta.value.trim()); });
   persist();
-  showScreen('homeScreen');
+  editMode = false;
+  document.getElementById('editBtn').textContent = '✏️';
+  document.getElementById('editBtn').classList.remove('active');
+  renderDetail();
+});
+```
+
+}
+}
+
+function deleteCurrentRecipe() {
+if (!currentRecipeId) return;
+var newRecipes = [];
+for (var i = 0; i < recipes.length; i++) { if (recipes[i].id !== currentRecipeId) newRecipes.push(recipes[i]); }
+recipes = newRecipes;
+persist();
+showScreen(‘homeScreen’);
 }
 
 function resetScan() {
-  currentB64 = null; pendingRecipe = null;
-  document.getElementById('uploadZone').style.display = 'block';
-  document.getElementById('previewSection').style.display = 'none';
-  document.getElementById('scanStatus').style.display = 'none';
-  document.getElementById('scanError').style.display = 'none';
-  document.getElementById('extractedSection').style.display = 'none';
-  document.getElementById('extractedSection').innerHTML = '';
-  document.getElementById('fileInput').value = '';
+currentB64 = null; pendingRecipe = null;
+document.getElementById(‘uploadZone’).style.display = ‘block’;
+document.getElementById(‘previewSection’).style.display = ‘none’;
+document.getElementById(‘scanStatus’).style.display = ‘none’;
+document.getElementById(‘scanError’).style.display = ‘none’;
+document.getElementById(‘extractedSection’).style.display = ‘none’;
+document.getElementById(‘extractedSection’).innerHTML = ‘’;
+document.getElementById(‘fileInput’).value = ‘’;
 }
 
 function handleFile(file) {
-  if (!file) return;
-  var reader = new FileReader();
-  reader.onload = function() {
-    var img = new Image();
-    img.onload = function() {
-      var scale = Math.min(1, 800 / Math.max(img.width, img.height));
-      var canvas = document.createElement('canvas');
-      canvas.width = Math.round(img.width * scale);
-      canvas.height = Math.round(img.height * scale);
-      canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height);
-      var compressed = canvas.toDataURL('image/jpeg', 0.7);
-      currentB64 = compressed.split(',')[1];
-      document.getElementById('uploadZone').style.display = 'none';
-      document.getElementById('previewSection').style.display = 'block';
-      document.getElementById('previewImg').src = compressed;
-      document.getElementById('previewMeta').textContent = file.name + ' · ~' + Math.round(currentB64.length * 0.75 / 1024) + 'KB';
-      document.getElementById('scanError').style.display = 'none';
-      document.getElementById('extractedSection').style.display = 'none';
-      document.getElementById('extractedSection').innerHTML = '';
-      pendingRecipe = null;
-    };
-    img.src = reader.result;
-  };
-  reader.readAsDataURL(file);
+if (!file) return;
+var reader = new FileReader();
+reader.onload = function() {
+var img = new Image();
+img.onload = function() {
+var scale = Math.min(1, 800 / Math.max(img.width, img.height));
+var canvas = document.createElement(‘canvas’);
+canvas.width = Math.round(img.width * scale);
+canvas.height = Math.round(img.height * scale);
+canvas.getContext(‘2d’).drawImage(img, 0, 0, canvas.width, canvas.height);
+var compressed = canvas.toDataURL(‘image/jpeg’, 0.7);
+currentB64 = compressed.split(’,’)[1];
+document.getElementById(‘uploadZone’).style.display = ‘none’;
+document.getElementById(‘previewSection’).style.display = ‘block’;
+document.getElementById(‘previewImg’).src = compressed;
+document.getElementById(‘previewMeta’).textContent = file.name + ’ · ~’ + Math.round(currentB64.length * 0.75 / 1024) + ‘KB’;
+document.getElementById(‘scanError’).style.display = ‘none’;
+document.getElementById(‘extractedSection’).style.display = ‘none’;
+document.getElementById(‘extractedSection’).innerHTML = ‘’;
+pendingRecipe = null;
+};
+img.src = reader.result;
+};
+reader.readAsDataURL(file);
 }
 
 function scanRecipe() {
-  if (!currentB64) { document.getElementById('scanError').style.display = 'block'; document.getElementById('scanError').textContent = 'Please select a photo first.'; return; }
-  var btn = document.getElementById('scanBtn');
-  var status = document.getElementById('scanStatus');
-  var errEl = document.getElementById('scanError');
-  btn.disabled = true; btn.textContent = 'Reading…';
-  status.style.display = 'block'; status.textContent = 'Sending to Claude…';
-  errEl.style.display = 'none';
-  var xhr = new XMLHttpRequest();
-  xhr.open('POST', window.location.origin + '/api/scan', true);
-  xhr.setRequestHeader('Content-Type', 'application/json');
-  xhr.onload = function() {
-    var data;
-    try { data = JSON.parse(xhr.responseText); } catch(e) { showErr('Unexpected: ' + xhr.responseText.slice(0,100)); return; }
-    if (data.error) { showErr(data.error); return; }
-    if (!data.recipe) { showErr('No recipe returned'); return; }
-    pendingRecipe = data.recipe;
-    status.style.display = 'none';
-    showExtracted(pendingRecipe);
-    btn.disabled = false; btn.textContent = '✦ Extract Recipe';
-  };
-  xhr.onerror = function() { showErr('Network error'); };
-  xhr.send(JSON.stringify({ imageBase64: currentB64, mediaType: 'image/jpeg' }));
-  function showErr(msg) { status.style.display = 'none'; errEl.style.display = 'block'; errEl.textContent = '⚠️ ' + msg; btn.disabled = false; btn.textContent = '✦ Extract Recipe'; }
+if (!currentB64) { document.getElementById(‘scanError’).style.display = ‘block’; document.getElementById(‘scanError’).textContent = ‘Please select a photo first.’; return; }
+var btn = document.getElementById(‘scanBtn’);
+var status = document.getElementById(‘scanStatus’);
+var errEl = document.getElementById(‘scanError’);
+btn.disabled = true; btn.textContent = ‘Reading…’;
+status.style.display = ‘block’; status.textContent = ‘Sending to Claude…’;
+errEl.style.display = ‘none’;
+var xhr = new XMLHttpRequest();
+xhr.open(‘POST’, window.location.origin + ‘/api/scan’, true);
+xhr.setRequestHeader(‘Content-Type’, ‘application/json’);
+xhr.onload = function() {
+var data;
+try { data = JSON.parse(xhr.responseText); } catch(e) { showErr(’Unexpected: ’ + xhr.responseText.slice(0,100)); return; }
+if (data.error) { showErr(data.error); return; }
+if (!data.recipe) { showErr(‘No recipe returned’); return; }
+pendingRecipe = data.recipe;
+status.style.display = ‘none’;
+showExtracted(pendingRecipe);
+btn.disabled = false; btn.textContent = ‘✦ Extract Recipe’;
+};
+xhr.onerror = function() { showErr(‘Network error’); };
+xhr.send(JSON.stringify({ imageBase64: currentB64, mediaType: ‘image/jpeg’ }));
+function showErr(msg) { status.style.display = ‘none’; errEl.style.display = ‘block’; errEl.textContent = ’⚠️ ’ + msg; btn.disabled = false; btn.textContent = ‘✦ Extract Recipe’; }
 }
 
 function showExtracted(r) {
-  var sec = document.getElementById('extractedSection');
-  sec.style.display = 'block';
-  var rCats = Array.isArray(r.categories) ? r.categories : (r.category ? [r.category] : []);
-  var catChips = categories.map(function(c) {
-    return '<button class="ext-cat-chip' + (rCats.indexOf(c)!==-1?' selected':'') + '" data-cat="' + c + '">' + c + '</button>';
-  }).join('');
-  var catHtml = categories.length ? '<div style="margin-bottom:16px"><div class="ext-section-label" style="margin-top:0">Categories</div><div class="cat-chips-wrap">' + catChips + '</div></div>' : '';
-  var ingHtml = r.ingredients.map(function(i) { return '<div class="ext-item">· ' + i + '</div>'; }).join('');
-  var methHtml = r.method.map(function(s, i) { return '<div class="ext-item">' + (i+1) + '. ' + s + '</div>'; }).join('');
-  sec.innerHTML = '<div class="extracted-card"><div class="ext-label">Extracted Recipe</div><div class="ext-title">' + r.title + '</div>' + catHtml + '<div class="ext-section-label">Ingredients</div>' + ingHtml + '<div class="ext-section-label">Method</div>' + methHtml + '<button class="save-btn" id="saveBtn">✓ Save to My Recipes</button></div>';
-  document.querySelectorAll('.ext-cat-chip').forEach(function(chip) {
-    chip.addEventListener('click', function() { this.classList.toggle('selected'); });
-  });
-  document.getElementById('saveBtn').addEventListener('click', saveRecipe);
+var sec = document.getElementById(‘extractedSection’);
+sec.style.display = ‘block’;
+var rCats = Array.isArray(r.categories) ? r.categories : (r.category ? [r.category] : []);
+var catChips = categories.map(function(c) {
+return ‘<button class="ext-cat-chip' + (rCats.indexOf(c)!==-1?' selected':'') + '" data-cat="' + c + '">’ + c + ‘</button>’;
+}).join(’’);
+var catHtml = categories.length ? ‘<div style="margin-bottom:16px"><div class="ext-section-label" style="margin-top:0">Categories</div><div class="cat-chips-wrap">’ + catChips + ‘</div></div>’ : ‘’;
+var ingHtml = r.ingredients.map(function(i) { return ‘<div class="ext-item">· ’ + i + ‘</div>’; }).join(’’);
+var methHtml = r.method.map(function(s, i) { return ‘<div class="ext-item">’ + (i+1) + ‘. ’ + s + ‘</div>’; }).join(’’);
+sec.innerHTML = ‘<div class="extracted-card"><div class="ext-label">Extracted Recipe</div><div class="ext-title">’ + r.title + ‘</div>’ + catHtml + ‘<div class="ext-section-label">Ingredients</div>’ + ingHtml + ‘<div class="ext-section-label">Method</div>’ + methHtml + ‘<button class="save-btn" id="saveBtn">✓ Save to My Recipes</button></div>’;
+document.querySelectorAll(’.ext-cat-chip’).forEach(function(chip) {
+chip.addEventListener(‘click’, function() { this.classList.toggle(‘selected’); });
+});
+document.getElementById(‘saveBtn’).addEventListener(‘click’, saveRecipe);
 }
 
 function saveRecipe() {
-  if (!pendingRecipe) return;
-  var selectedCats = [];
-  document.querySelectorAll('.ext-cat-chip.selected').forEach(function(chip) { selectedCats.push(chip.dataset.cat); });
-  var recipe = { title: pendingRecipe.title, categories: selectedCats, category: selectedCats[0]||'', ingredients: pendingRecipe.ingredients, method: pendingRecipe.method, notes: '', id: Date.now().toString(), savedAt: new Date().toISOString() };
-  recipes.unshift(recipe);
-  persist();
-  showScreen('homeScreen');
+if (!pendingRecipe) return;
+var selectedCats = [];
+document.querySelectorAll(’.ext-cat-chip.selected’).forEach(function(chip) { selectedCats.push(chip.dataset.cat); });
+var recipe = { title: pendingRecipe.title, categories: selectedCats, category: selectedCats[0]||’’, ingredients: pendingRecipe.ingredients, method: pendingRecipe.method, notes: ‘’, id: Date.now().toString(), savedAt: new Date().toISOString() };
+recipes.unshift(recipe);
+persist();
+showScreen(‘homeScreen’);
 }
 
 renderList();
