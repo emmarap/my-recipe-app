@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 
-<!-- v9 -->
+<!-- v10 -->
 
 <html lang="en">
 <head>
@@ -11,8 +11,6 @@
 <meta name="theme-color" content="#0f0e0c">
 <title>My Recipes</title>
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 <style>
 * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
 html, body { height: 100%; overflow: hidden; }
@@ -227,14 +225,11 @@ var pendingRecipe = null;
 try { categories = JSON.parse(localStorage.getItem('categories') || '[]'); } catch(e) { categories = []; }
 try { recipes = JSON.parse(localStorage.getItem('recipes') || '[]'); } catch(e) { recipes = []; }
 
-function saveToCloud(r) {
-  if (_db) _db.collection('recipes').doc(r.id).set(r).catch(function(e) { console.error(e); });
-}
-function deleteFromCloud(id) {
-  if (_db) _db.collection('recipes').doc(id).delete().catch(function(e) { console.error(e); });
-}
+function saveToCloud(r) {}
+function deleteFromCloud(id) {}
 function persistCats() {
   localStorage.setItem('categories', JSON.stringify(categories));
+  localStorage.setItem('recipes', JSON.stringify(recipes));
 }
 
 // Listen for recipe changes from Firestore
@@ -605,36 +600,13 @@ if (!pendingRecipe) return;
 var selectedCats = [];
 document.querySelectorAll(’.ext-cat-chip.selected’).forEach(function(chip) { selectedCats.push(chip.dataset.cat); });
 var recipe = { title: pendingRecipe.title, categories: selectedCats, category: selectedCats[0] || ‘’, ingredients: pendingRecipe.ingredients, method: pendingRecipe.method, notes: ‘’, photo: ‘’, id: Date.now().toString(), savedAt: new Date().toISOString() };
-try { recipes.unshift(recipe); localStorage.setItem(‘recipes’, JSON.stringify(recipes)); } catch(e) {}
-saveToCloud(recipe);
+recipes.unshift(recipe);
+persistCats();
 showScreen(‘homeScreen’);
 }
 
 try { renderList(); } catch(e) { console.error(e); }
 
-// Firebase init — after everything else is set up
-setTimeout(function() {
-try {
-if (typeof firebase !== ‘undefined’) {
-firebase.initializeApp({
-apiKey: “AIzaSyDXlva6A6PLVDo84xgpI3KhXSCeFBhP5bc”,
-authDomain: “my-recipe-app-dab1f.firebaseapp.com”,
-projectId: “my-recipe-app-dab1f”,
-storageBucket: “my-recipe-app-dab1f.firebasestorage.app”,
-messagingSenderId: “375704912319”,
-appId: “1:375704912319:web:0ece4c66f00ff11161210a”
-});
-_db = firebase.firestore();
-_db.collection(‘recipes’).orderBy(‘savedAt’, ‘desc’).onSnapshot(function(snapshot) {
-recipes = [];
-snapshot.forEach(function(d) { recipes.push(d.data()); });
-try { localStorage.setItem(‘recipes’, JSON.stringify(recipes)); } catch(e) {}
-try { renderList(); } catch(e) { console.error(e); }
-}, function(err) { console.error(‘Firestore error:’, err); });
-}
-} catch(e) { console.error(‘Firebase init error:’, e); }
-}, 500);
 </script>
-
 </body>
 </html>
