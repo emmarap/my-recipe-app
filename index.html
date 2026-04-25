@@ -463,6 +463,7 @@ function renderList() {
     list.innerHTML = '<div class="empty-state"><div class="empty-icon">📖</div><div class="empty-title">' + (recipes.length ? 'No matches' : 'No recipes yet') + '</div><div class="empty-sub">' + (recipes.length ? 'Try a different category' : 'Tap + to scan your first recipe') + '</div></div>';
     return;
   }
+  list.innerHTML = '';
   var grid = document.createElement('div');
   grid.className = 'recipe-list-grid';
   for (var i = 0; i < filtered.length; i++) {
