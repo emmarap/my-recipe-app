@@ -1,7 +1,5 @@
 <!DOCTYPE html>
-
 <!-- v3 -->
-
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -222,6 +220,12 @@ var currentRecipeId = null;
 var currentB64 = null;
 var pendingRecipe = null;
 
+// Global error catcher
+window.onerror = function(msg, src, line, col, err) {
+  document.body.insertAdjacentHTML('beforeend', '<div style="position:fixed;top:0;left:0;right:0;background:red;color:white;padding:20px;z-index:9999;font-size:12px;word-break:break-all">' + msg + ' (line ' + line + ')</div>');
+  return false;
+};
+
 try { recipes = JSON.parse(localStorage.getItem('recipes') || '[]'); } catch(e) { recipes = []; }
 try { categories = JSON.parse(localStorage.getItem('categories') || '[]'); } catch(e) { categories = []; }
 
@@ -234,7 +238,7 @@ function showScreen(id) {
   document.querySelectorAll('.screen').forEach(function(s) {
     s.classList.toggle('hidden', s.id !== id);
   });
-  if (id === 'homeScreen') { var ns = document.getElementById('notesSection'); if (ns) ns.style.display = 'none'; renderList(); }
+  if (id === 'homeScreen') { var ns = document.getElementById('notesSection'); if (ns) ns.style.display = 'none'; try { renderList(); } catch(e) { document.body.insertAdjacentHTML('beforeend', '<div style="position:fixed;top:60px;left:0;right:0;background:orange;color:black;padding:20px;z-index:9999;font-size:12px;word-break:break-all">renderList crash: ' + e.message + ' line:' + e.stack + '</div>'); } }
   if (id === 'scanScreen') resetScan();
 }
 
@@ -250,7 +254,7 @@ document.getElementById('scanBtn').addEventListener('click', scanRecipe);
 document.getElementById('addCatBtn').addEventListener('click', addCategory);
 document.getElementById('catDoneBtn').addEventListener('click', function() {
   document.getElementById('catModal').classList.remove('open');
-  renderList();
+  try { renderList(); } catch(e) { document.body.insertAdjacentHTML('beforeend', '<div style="position:fixed;top:60px;left:0;right:0;background:orange;color:black;padding:20px;z-index:9999;font-size:12px;word-break:break-all">renderList crash: ' + e.message + ' line:' + e.stack + '</div>'); }
 });
 document.getElementById('saveNotesBtn').addEventListener('click', function() {
   var notes = document.getElementById('notesField').value;
@@ -277,303 +281,301 @@ function openEditScreen() {
 
   var ingItems = r.ingredients.map(function(ing, idx) {
     return '<div class="edit-list-item"><textarea class="edit-list-ta" rows="1">' + ing.replace(/</g, '&lt;') + '</textarea><button class="rm-btn" data-type="ing" data-i="' + idx + '">×</button></div>';
+  }).join('');
 
-}).join(’’);
+  var methItems = r.method.map(function(s, idx) {
+    return '<div class="edit-list-item"><textarea class="edit-list-ta" rows="2">' + s.replace(/</g, '&lt;') + '</textarea><button class="rm-btn" data-type="meth" data-i="' + idx + '">×</button></div>';
+  }).join('');
 
-var methItems = r.method.map(function(s, idx) {
-return ‘<div class="edit-list-item"><textarea class="edit-list-ta" rows="2">’ + s.replace(/</g, ‘<’) + ‘</textarea><button class="rm-btn" data-type="meth" data-i="' + idx + '">×</button></div>’;
-}).join(’’);
+  var safeTitle = r.title.replace(/&/g, '&amp;').replace(/"/g, '&quot;');
+  var safeNotes = (r.notes || '').replace(/</g, '&lt;').replace(/&/g, '&amp;');
 
-var safeTitle = r.title.replace(/&/g, ‘&’).replace(/”/g, ‘"’);
-var safeNotes = (r.notes || ‘’).replace(/</g, ‘<’).replace(/&/g, ‘&’);
+  var body = document.getElementById('editBody');
+  body.innerHTML =
+    '<div class="edit-field-label" style="margin-top:0">Title</div>' +
+    '<input class="edit-title-input" id="editTitleInput" value="' + safeTitle + '">' +
+    catSection +
+    '<div class="edit-field-label">Ingredients</div>' +
+    '<div id="ingList">' + ingItems + '</div>' +
+    '<button class="add-item-btn" id="addIngBtn">+ Add ingredient</button>' +
+    '<div class="edit-field-label">Method</div>' +
+    '<div id="methList">' + methItems + '</div>' +
+    '<button class="add-item-btn" id="addMethBtn">+ Add step</button>' +
+    '<div class="edit-field-label">Notes</div>' +
+    '<textarea class="edit-notes-ta" id="editNotesField" placeholder="Add notes, tips, variations…">' + safeNotes + '</textarea>' +
+    '<button class="save-all-btn" id="saveAllBtn">✓ Save Recipe</button>';
 
-var body = document.getElementById(‘editBody’);
-body.innerHTML =
-‘<div class="edit-field-label" style="margin-top:0">Title</div>’ +
-‘<input class="edit-title-input" id="editTitleInput" value="' + safeTitle + '">’ +
-catSection +
-‘<div class="edit-field-label">Ingredients</div>’ +
-‘<div id="ingList">’ + ingItems + ‘</div>’ +
-‘<button class="add-item-btn" id="addIngBtn">+ Add ingredient</button>’ +
-‘<div class="edit-field-label">Method</div>’ +
-‘<div id="methList">’ + methItems + ‘</div>’ +
-‘<button class="add-item-btn" id="addMethBtn">+ Add step</button>’ +
-‘<div class="edit-field-label">Notes</div>’ +
-‘<textarea class="edit-notes-ta" id="editNotesField" placeholder="Add notes, tips, variations…">’ + safeNotes + ‘</textarea>’ +
-‘<button class="save-all-btn" id="saveAllBtn">✓ Save Recipe</button>’;
+  body.querySelectorAll('.edit-list-ta').forEach(function(ta) {
+    ta.style.height = 'auto';
+    ta.style.height = (ta.scrollHeight + 2) + 'px';
+    ta.addEventListener('input', function() { this.style.height = 'auto'; this.style.height = (this.scrollHeight + 2) + 'px'; });
+  });
 
-body.querySelectorAll(’.edit-list-ta’).forEach(function(ta) {
-ta.style.height = ‘auto’;
-ta.style.height = (ta.scrollHeight + 2) + ‘px’;
-ta.addEventListener(‘input’, function() { this.style.height = ‘auto’; this.style.height = (this.scrollHeight + 2) + ‘px’; });
-});
+  body.querySelectorAll('.det-cat-chip').forEach(function(chip) {
+    chip.addEventListener('click', function() { this.classList.toggle('selected'); });
+  });
 
-body.querySelectorAll(’.det-cat-chip’).forEach(function(chip) {
-chip.addEventListener(‘click’, function() { this.classList.toggle(‘selected’); });
-});
+  body.querySelectorAll('.rm-btn').forEach(function(btn) {
+    btn.addEventListener('click', function() {
+      var r2 = null;
+      for (var i = 0; i < recipes.length; i++) { if (recipes[i].id === currentRecipeId) { r2 = recipes[i]; break; } }
+      if (!r2) return;
+      var idx = parseInt(this.dataset.i);
+      if (this.dataset.type === 'ing') r2.ingredients.splice(idx, 1);
+      else r2.method.splice(idx, 1);
+      openEditScreen();
+    });
+  });
 
-body.querySelectorAll(’.rm-btn’).forEach(function(btn) {
-btn.addEventListener(‘click’, function() {
-var r2 = null;
-for (var i = 0; i < recipes.length; i++) { if (recipes[i].id === currentRecipeId) { r2 = recipes[i]; break; } }
-if (!r2) return;
-var idx = parseInt(this.dataset.i);
-if (this.dataset.type === ‘ing’) r2.ingredients.splice(idx, 1);
-else r2.method.splice(idx, 1);
-openEditScreen();
-});
-});
+  document.getElementById('addIngBtn').addEventListener('click', function() {
+    var r2 = null;
+    for (var i = 0; i < recipes.length; i++) { if (recipes[i].id === currentRecipeId) { r2 = recipes[i]; break; } }
+    if (!r2) return;
+    r2.ingredients.push('');
+    openEditScreen();
+    var tas = document.getElementById('ingList').querySelectorAll('textarea');
+    if (tas.length) tas[tas.length - 1].focus();
+  });
 
-document.getElementById(‘addIngBtn’).addEventListener(‘click’, function() {
-var r2 = null;
-for (var i = 0; i < recipes.length; i++) { if (recipes[i].id === currentRecipeId) { r2 = recipes[i]; break; } }
-if (!r2) return;
-r2.ingredients.push(’’);
-openEditScreen();
-var tas = document.getElementById(‘ingList’).querySelectorAll(‘textarea’);
-if (tas.length) tas[tas.length - 1].focus();
-});
+  document.getElementById('addMethBtn').addEventListener('click', function() {
+    var r2 = null;
+    for (var i = 0; i < recipes.length; i++) { if (recipes[i].id === currentRecipeId) { r2 = recipes[i]; break; } }
+    if (!r2) return;
+    r2.method.push('');
+    openEditScreen();
+    var tas = document.getElementById('methList').querySelectorAll('textarea');
+    if (tas.length) tas[tas.length - 1].focus();
+  });
 
-document.getElementById(‘addMethBtn’).addEventListener(‘click’, function() {
-var r2 = null;
-for (var i = 0; i < recipes.length; i++) { if (recipes[i].id === currentRecipeId) { r2 = recipes[i]; break; } }
-if (!r2) return;
-r2.method.push(’’);
-openEditScreen();
-var tas = document.getElementById(‘methList’).querySelectorAll(‘textarea’);
-if (tas.length) tas[tas.length - 1].focus();
-});
+  document.getElementById('saveAllBtn').addEventListener('click', function() {
+    var r2 = null;
+    for (var i = 0; i < recipes.length; i++) { if (recipes[i].id === currentRecipeId) { r2 = recipes[i]; break; } }
+    if (!r2) return;
+    r2.title = document.getElementById('editTitleInput').value.trim() || r2.title;
+    r2.notes = document.getElementById('editNotesField').value;
+    var selected = [];
+    body.querySelectorAll('.det-cat-chip.selected').forEach(function(chip) { selected.push(chip.dataset.cat); });
+    r2.categories = selected;
+    r2.category = selected[0] || '';
+    r2.ingredients = [];
+    document.getElementById('ingList').querySelectorAll('textarea').forEach(function(ta) { if (ta.value.trim()) r2.ingredients.push(ta.value.trim()); });
+    r2.method = [];
+    document.getElementById('methList').querySelectorAll('textarea').forEach(function(ta) { if (ta.value.trim()) r2.method.push(ta.value.trim()); });
+    persist();
+    openRecipe(currentRecipeId);
+  });
 
-document.getElementById(‘saveAllBtn’).addEventListener(‘click’, function() {
-var r2 = null;
-for (var i = 0; i < recipes.length; i++) { if (recipes[i].id === currentRecipeId) { r2 = recipes[i]; break; } }
-if (!r2) return;
-r2.title = document.getElementById(‘editTitleInput’).value.trim() || r2.title;
-r2.notes = document.getElementById(‘editNotesField’).value;
-var selected = [];
-body.querySelectorAll(’.det-cat-chip.selected’).forEach(function(chip) { selected.push(chip.dataset.cat); });
-r2.categories = selected;
-r2.category = selected[0] || ‘’;
-r2.ingredients = [];
-document.getElementById(‘ingList’).querySelectorAll(‘textarea’).forEach(function(ta) { if (ta.value.trim()) r2.ingredients.push(ta.value.trim()); });
-r2.method = [];
-document.getElementById(‘methList’).querySelectorAll(‘textarea’).forEach(function(ta) { if (ta.value.trim()) r2.method.push(ta.value.trim()); });
-persist();
-openRecipe(currentRecipeId);
-});
-
-showScreen(‘editScreen’);
+  showScreen('editScreen');
 }
 
 function buildCategories() {
-var bar = document.getElementById(‘categoryBar’);
-var html = ‘<button class="cat-btn ' + (activeCategory === 'All' ? 'active' : '') + '" data-cat="All">All</button>’;
-for (var i = 0; i < categories.length; i++) {
-html += ‘<button class="cat-btn ' + (activeCategory === categories[i] ? 'active' : '') + '" data-cat="' + categories[i] + '">’ + categories[i] + ‘</button>’;
-}
-html += ‘<button class="cat-add-btn" id="manageCatBtn">+ Category</button>’;
-bar.innerHTML = html;
-document.querySelectorAll(’.cat-btn’).forEach(function(btn) {
-btn.addEventListener(‘click’, function() { activeCategory = this.dataset.cat; renderList(); });
-});
-document.getElementById(‘manageCatBtn’).addEventListener(‘click’, function() {
-renderCatModal();
-document.getElementById(‘catModal’).classList.add(‘open’);
-});
+  var bar = document.getElementById('categoryBar');
+  var html = '<button class="cat-btn ' + (activeCategory === 'All' ? 'active' : '') + '" data-cat="All">All</button>';
+  for (var i = 0; i < categories.length; i++) {
+    html += '<button class="cat-btn ' + (activeCategory === categories[i] ? 'active' : '') + '" data-cat="' + categories[i] + '">' + categories[i] + '</button>';
+  }
+  html += '<button class="cat-add-btn" id="manageCatBtn">+ Category</button>';
+  bar.innerHTML = html;
+  document.querySelectorAll('.cat-btn').forEach(function(btn) {
+    btn.addEventListener('click', function() { activeCategory = this.dataset.cat; try { renderList(); } catch(e) { document.body.insertAdjacentHTML('beforeend', '<div style="position:fixed;top:60px;left:0;right:0;background:orange;color:black;padding:20px;z-index:9999;font-size:12px;word-break:break-all">renderList crash: ' + e.message + ' line:' + e.stack + '</div>'); } });
+  });
+  document.getElementById('manageCatBtn').addEventListener('click', function() {
+    renderCatModal();
+    document.getElementById('catModal').classList.add('open');
+  });
 }
 
 function renderCatModal() {
-var list = document.getElementById(‘catModalList’);
-if (!categories.length) {
-list.innerHTML = ‘<div style="font-size:13px;color:rgba(240,235,227,0.3);padding:8px 0 16px">No categories yet — add one below</div>’;
-return;
-}
-var html = ‘’;
-for (var i = 0; i < categories.length; i++) {
-html += ‘<div class="modal-cat-row"><span>’ + categories[i] + ‘</span><button class="modal-cat-del" data-i="' + i + '">×</button></div>’;
-}
-list.innerHTML = html;
-list.querySelectorAll(’.modal-cat-del’).forEach(function(btn) {
-btn.addEventListener(‘click’, function() {
-var idx = parseInt(this.dataset.i);
-if (activeCategory === categories[idx]) activeCategory = ‘All’;
-categories.splice(idx, 1);
-persist();
-renderCatModal();
-});
-});
+  var list = document.getElementById('catModalList');
+  if (!categories.length) {
+    list.innerHTML = '<div style="font-size:13px;color:rgba(240,235,227,0.3);padding:8px 0 16px">No categories yet — add one below</div>';
+    return;
+  }
+  var html = '';
+  for (var i = 0; i < categories.length; i++) {
+    html += '<div class="modal-cat-row"><span>' + categories[i] + '</span><button class="modal-cat-del" data-i="' + i + '">×</button></div>';
+  }
+  list.innerHTML = html;
+  list.querySelectorAll('.modal-cat-del').forEach(function(btn) {
+    btn.addEventListener('click', function() {
+      var idx = parseInt(this.dataset.i);
+      if (activeCategory === categories[idx]) activeCategory = 'All';
+      categories.splice(idx, 1);
+      persist();
+      renderCatModal();
+    });
+  });
 }
 
 function addCategory() {
-var val = document.getElementById(‘newCatInput’).value.trim();
-if (!val || categories.indexOf(val) !== -1) return;
-categories.push(val);
-persist();
-document.getElementById(‘newCatInput’).value = ‘’;
-renderCatModal();
+  var val = document.getElementById('newCatInput').value.trim();
+  if (!val || categories.indexOf(val) !== -1) return;
+  categories.push(val);
+  persist();
+  document.getElementById('newCatInput').value = '';
+  renderCatModal();
 }
 
 function renderList() {
-buildCategories();
-var q = document.getElementById(‘searchInput’).value.toLowerCase().trim();
-var list = document.getElementById(‘recipeList’);
-var filtered = recipes.filter(function(r) {
-var rCatsF = Array.isArray(r.categories) ? r.categories : (r.category ? [r.category] : []);
-var matchCat = activeCategory === ‘All’ || rCatsF.indexOf(activeCategory) !== -1;
-var matchQ = !q || r.title.toLowerCase().indexOf(q) !== -1 || (r.category || ‘’).toLowerCase().indexOf(q) !== -1;
-return matchCat && matchQ;
-});
-if (!filtered.length) {
-list.innerHTML = ‘<div class="empty-state"><div class="empty-icon">📖</div><div class="empty-title">’ + (recipes.length ? ‘No matches’ : ‘No recipes yet’) + ‘</div><div class="empty-sub">’ + (recipes.length ? ‘Try a different category’ : ‘Tap + to scan your first recipe’) + ‘</div></div>’;
-return;
-}
-list.innerHTML = filtered.map(function(r) {
-var cats = Array.isArray(r.categories) && r.categories.length ? r.categories : (r.category ? [r.category] : []);
-var tagHtml = cats.slice(0, 2).map(function(c) { return ‘<span class="recipe-cat-tag">’ + c + ‘</span>’; }).join(’’);
-return ‘<div class="recipe-card" data-id="' + r.id + '"><div class="recipe-card-header"><div class="recipe-card-title">’ + r.title + ‘</div><div style="display:flex;gap:4px;flex-wrap:wrap;justify-content:flex-end;flex-shrink:0">’ + tagHtml + ‘</div></div><div class="recipe-card-meta">’ + r.ingredients.length + ’ ingredients · ’ + r.method.length + ’ steps</div></div>’;
-}).join(’’);
-document.querySelectorAll(’.recipe-card’).forEach(function(card) {
-card.addEventListener(‘click’, function() { openRecipe(this.dataset.id); });
-});
+  buildCategories();
+  var q = document.getElementById('searchInput').value.toLowerCase().trim();
+  var list = document.getElementById('recipeList');
+  var filtered = recipes.filter(function(r) {
+    var rCatsF = Array.isArray(r.categories) ? r.categories : (r.category ? [r.category] : []);
+    var matchCat = activeCategory === 'All' || rCatsF.indexOf(activeCategory) !== -1;
+    var matchQ = !q || r.title.toLowerCase().indexOf(q) !== -1 || (r.category || '').toLowerCase().indexOf(q) !== -1;
+    return matchCat && matchQ;
+  });
+  if (!filtered.length) {
+    list.innerHTML = '<div class="empty-state"><div class="empty-icon">📖</div><div class="empty-title">' + (recipes.length ? 'No matches' : 'No recipes yet') + '</div><div class="empty-sub">' + (recipes.length ? 'Try a different category' : 'Tap + to scan your first recipe') + '</div></div>';
+    return;
+  }
+  list.innerHTML = filtered.map(function(r) {
+    var cats = Array.isArray(r.categories) && r.categories.length ? r.categories : (r.category ? [r.category] : []);
+    var tagHtml = cats.slice(0, 2).map(function(c) { return '<span class="recipe-cat-tag">' + c + '</span>'; }).join('');
+    return '<div class="recipe-card" data-id="' + r.id + '"><div class="recipe-card-header"><div class="recipe-card-title">' + r.title + '</div><div style="display:flex;gap:4px;flex-wrap:wrap;justify-content:flex-end;flex-shrink:0">' + tagHtml + '</div></div><div class="recipe-card-meta">' + r.ingredients.length + ' ingredients · ' + r.method.length + ' steps</div></div>';
+  }).join('');
+  document.querySelectorAll('.recipe-card').forEach(function(card) {
+    card.addEventListener('click', function() { openRecipe(this.dataset.id); });
+  });
 }
 
 function openRecipe(id) {
-var r = null;
-for (var i = 0; i < recipes.length; i++) { if (recipes[i].id === id) { r = recipes[i]; break; } }
-if (!r) return;
-currentRecipeId = id;
-document.getElementById(‘detailLabel’).textContent = r.category || ‘Recipe’;
-document.getElementById(‘detailHeaderTitle’).textContent = r.title;
-var ingHtml = r.ingredients.map(function(ing) { return ‘<div class="ingredient-row"><div class="ingredient-dot"></div><div class="ingredient-text">’ + ing + ‘</div></div>’; }).join(’’);
-var methHtml = r.method.map(function(s, i) { return ‘<div class="method-row"><div class="step-num">0’ + (i + 1) + ‘</div><div class="step-text">’ + s + ‘</div></div>’; }).join(’’);
-var rCats2 = Array.isArray(r.categories) ? r.categories : (r.category ? [r.category] : []);
-var detChips = categories.map(function(c) {
-return ‘<button class="det-cat-chip' + (rCats2.indexOf(c) !== -1 ? ' selected' : '') + '" data-cat="' + c + '">’ + c + ‘</button>’;
-}).join(’’);
-var catSection = categories.length ? ‘<div style="margin-bottom:20px"><div style="font-size:10px;letter-spacing:0.2em;text-transform:uppercase;color:rgba(240,235,227,0.35);margin-bottom:10px">Categories</div><div class="cat-chips-wrap">’ + detChips + ‘</div><button id="saveCatBtn" style="margin-top:10px;background:rgba(201,169,110,0.15);border:1px solid rgba(201,169,110,0.3);color:#c9a96e;border-radius:8px;padding:7px 16px;font-family:DM Sans,sans-serif;font-size:12px;cursor:pointer">Save categories</button></div>’ : ‘’;
-document.getElementById(‘detailBody’).innerHTML = ‘<div class="detail-full-title">’ + r.title + ‘</div>’ + catSection + ‘<div class="detail-section"><div class="detail-section-header"><div class="detail-section-label">Ingredients</div><div class="detail-section-line"></div></div>’ + ingHtml + ‘</div><div class="detail-section"><div class="detail-section-header"><div class="detail-section-label">Method</div><div class="detail-section-line"></div></div>’ + methHtml + ‘</div>’;
-if (categories.length) {
-document.querySelectorAll(’.det-cat-chip’).forEach(function(chip) {
-chip.addEventListener(‘click’, function() { this.classList.toggle(‘selected’); });
-});
-document.getElementById(‘saveCatBtn’).addEventListener(‘click’, function() {
-var selected = [];
-document.querySelectorAll(’.det-cat-chip.selected’).forEach(function(chip) { selected.push(chip.dataset.cat); });
-for (var i = 0; i < recipes.length; i++) {
-if (recipes[i].id === currentRecipeId) { recipes[i].categories = selected; recipes[i].category = selected[0] || ‘’; break; }
-}
-persist();
-document.getElementById(‘detailLabel’).textContent = selected.join(’, ’) || ‘Recipe’;
-});
-}
-document.getElementById(‘notesField’).value = r.notes || ‘’;
-document.getElementById(‘notesSection’).style.display = ‘block’;
-document.getElementById(‘saveNotesBtn’).textContent = ‘Save notes’;
-showScreen(‘detailScreen’);
+  var r = null;
+  for (var i = 0; i < recipes.length; i++) { if (recipes[i].id === id) { r = recipes[i]; break; } }
+  if (!r) return;
+  currentRecipeId = id;
+  document.getElementById('detailLabel').textContent = r.category || 'Recipe';
+  document.getElementById('detailHeaderTitle').textContent = r.title;
+  var ingHtml = r.ingredients.map(function(ing) { return '<div class="ingredient-row"><div class="ingredient-dot"></div><div class="ingredient-text">' + ing + '</div></div>'; }).join('');
+  var methHtml = r.method.map(function(s, i) { return '<div class="method-row"><div class="step-num">0' + (i + 1) + '</div><div class="step-text">' + s + '</div></div>'; }).join('');
+  var rCats2 = Array.isArray(r.categories) ? r.categories : (r.category ? [r.category] : []);
+  var detChips = categories.map(function(c) {
+    return '<button class="det-cat-chip' + (rCats2.indexOf(c) !== -1 ? ' selected' : '') + '" data-cat="' + c + '">' + c + '</button>';
+  }).join('');
+  var catSection = categories.length ? '<div style="margin-bottom:20px"><div style="font-size:10px;letter-spacing:0.2em;text-transform:uppercase;color:rgba(240,235,227,0.35);margin-bottom:10px">Categories</div><div class="cat-chips-wrap">' + detChips + '</div><button id="saveCatBtn" style="margin-top:10px;background:rgba(201,169,110,0.15);border:1px solid rgba(201,169,110,0.3);color:#c9a96e;border-radius:8px;padding:7px 16px;font-family:DM Sans,sans-serif;font-size:12px;cursor:pointer">Save categories</button></div>' : '';
+  document.getElementById('detailBody').innerHTML = '<div class="detail-full-title">' + r.title + '</div>' + catSection + '<div class="detail-section"><div class="detail-section-header"><div class="detail-section-label">Ingredients</div><div class="detail-section-line"></div></div>' + ingHtml + '</div><div class="detail-section"><div class="detail-section-header"><div class="detail-section-label">Method</div><div class="detail-section-line"></div></div>' + methHtml + '</div>';
+  if (categories.length) {
+    document.querySelectorAll('.det-cat-chip').forEach(function(chip) {
+      chip.addEventListener('click', function() { this.classList.toggle('selected'); });
+    });
+    document.getElementById('saveCatBtn').addEventListener('click', function() {
+      var selected = [];
+      document.querySelectorAll('.det-cat-chip.selected').forEach(function(chip) { selected.push(chip.dataset.cat); });
+      for (var i = 0; i < recipes.length; i++) {
+        if (recipes[i].id === currentRecipeId) { recipes[i].categories = selected; recipes[i].category = selected[0] || ''; break; }
+      }
+      persist();
+      document.getElementById('detailLabel').textContent = selected.join(', ') || 'Recipe';
+    });
+  }
+  document.getElementById('notesField').value = r.notes || '';
+  document.getElementById('notesSection').style.display = 'block';
+  document.getElementById('saveNotesBtn').textContent = 'Save notes';
+  showScreen('detailScreen');
 }
 
 function deleteCurrentRecipe() {
-if (!currentRecipeId) return;
-var newRecipes = [];
-for (var i = 0; i < recipes.length; i++) { if (recipes[i].id !== currentRecipeId) newRecipes.push(recipes[i]); }
-recipes = newRecipes;
-persist();
-showScreen(‘homeScreen’);
+  if (!currentRecipeId) return;
+  var newRecipes = [];
+  for (var i = 0; i < recipes.length; i++) { if (recipes[i].id !== currentRecipeId) newRecipes.push(recipes[i]); }
+  recipes = newRecipes;
+  persist();
+  showScreen('homeScreen');
 }
 
 function resetScan() {
-currentB64 = null; pendingRecipe = null;
-document.getElementById(‘uploadZone’).style.display = ‘block’;
-document.getElementById(‘previewSection’).style.display = ‘none’;
-document.getElementById(‘scanStatus’).style.display = ‘none’;
-document.getElementById(‘scanError’).style.display = ‘none’;
-document.getElementById(‘extractedSection’).style.display = ‘none’;
-document.getElementById(‘extractedSection’).innerHTML = ‘’;
-document.getElementById(‘fileInput’).value = ‘’;
+  currentB64 = null; pendingRecipe = null;
+  document.getElementById('uploadZone').style.display = 'block';
+  document.getElementById('previewSection').style.display = 'none';
+  document.getElementById('scanStatus').style.display = 'none';
+  document.getElementById('scanError').style.display = 'none';
+  document.getElementById('extractedSection').style.display = 'none';
+  document.getElementById('extractedSection').innerHTML = '';
+  document.getElementById('fileInput').value = '';
 }
 
 function handleFile(file) {
-if (!file) return;
-var reader = new FileReader();
-reader.onload = function() {
-var img = new Image();
-img.onload = function() {
-var scale = Math.min(1, 800 / Math.max(img.width, img.height));
-var canvas = document.createElement(‘canvas’);
-canvas.width = Math.round(img.width * scale);
-canvas.height = Math.round(img.height * scale);
-canvas.getContext(‘2d’).drawImage(img, 0, 0, canvas.width, canvas.height);
-var compressed = canvas.toDataURL(‘image/jpeg’, 0.7);
-currentB64 = compressed.split(’,’)[1];
-document.getElementById(‘uploadZone’).style.display = ‘none’;
-document.getElementById(‘previewSection’).style.display = ‘block’;
-document.getElementById(‘previewImg’).src = compressed;
-document.getElementById(‘previewMeta’).textContent = file.name + ’ · ~’ + Math.round(currentB64.length * 0.75 / 1024) + ‘KB’;
-document.getElementById(‘scanError’).style.display = ‘none’;
-document.getElementById(‘extractedSection’).style.display = ‘none’;
-document.getElementById(‘extractedSection’).innerHTML = ‘’;
-pendingRecipe = null;
-};
-img.src = reader.result;
-};
-reader.readAsDataURL(file);
+  if (!file) return;
+  var reader = new FileReader();
+  reader.onload = function() {
+    var img = new Image();
+    img.onload = function() {
+      var scale = Math.min(1, 800 / Math.max(img.width, img.height));
+      var canvas = document.createElement('canvas');
+      canvas.width = Math.round(img.width * scale);
+      canvas.height = Math.round(img.height * scale);
+      canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height);
+      var compressed = canvas.toDataURL('image/jpeg', 0.7);
+      currentB64 = compressed.split(',')[1];
+      document.getElementById('uploadZone').style.display = 'none';
+      document.getElementById('previewSection').style.display = 'block';
+      document.getElementById('previewImg').src = compressed;
+      document.getElementById('previewMeta').textContent = file.name + ' · ~' + Math.round(currentB64.length * 0.75 / 1024) + 'KB';
+      document.getElementById('scanError').style.display = 'none';
+      document.getElementById('extractedSection').style.display = 'none';
+      document.getElementById('extractedSection').innerHTML = '';
+      pendingRecipe = null;
+    };
+    img.src = reader.result;
+  };
+  reader.readAsDataURL(file);
 }
 
 function scanRecipe() {
-if (!currentB64) { document.getElementById(‘scanError’).style.display = ‘block’; document.getElementById(‘scanError’).textContent = ‘Please select a photo first.’; return; }
-var btn = document.getElementById(‘scanBtn’);
-var status = document.getElementById(‘scanStatus’);
-var errEl = document.getElementById(‘scanError’);
-btn.disabled = true; btn.textContent = ‘Reading…’;
-status.style.display = ‘block’; status.textContent = ‘Sending to Claude…’;
-errEl.style.display = ‘none’;
-var xhr = new XMLHttpRequest();
-xhr.open(‘POST’, window.location.origin + ‘/api/scan’, true);
-xhr.setRequestHeader(‘Content-Type’, ‘application/json’);
-xhr.onload = function() {
-var data;
-try { data = JSON.parse(xhr.responseText); } catch(e) { showErr(’Unexpected: ’ + xhr.responseText.slice(0, 100)); return; }
-if (data.error) { showErr(data.error); return; }
-if (!data.recipe) { showErr(‘No recipe returned’); return; }
-pendingRecipe = data.recipe;
-status.style.display = ‘none’;
-showExtracted(pendingRecipe);
-btn.disabled = false; btn.textContent = ‘✦ Extract Recipe’;
-};
-xhr.onerror = function() { showErr(‘Network error’); };
-xhr.send(JSON.stringify({ imageBase64: currentB64, mediaType: ‘image/jpeg’ }));
-function showErr(msg) { status.style.display = ‘none’; errEl.style.display = ‘block’; errEl.textContent = ’⚠️ ’ + msg; btn.disabled = false; btn.textContent = ‘✦ Extract Recipe’; }
+  if (!currentB64) { document.getElementById('scanError').style.display = 'block'; document.getElementById('scanError').textContent = 'Please select a photo first.'; return; }
+  var btn = document.getElementById('scanBtn');
+  var status = document.getElementById('scanStatus');
+  var errEl = document.getElementById('scanError');
+  btn.disabled = true; btn.textContent = 'Reading…';
+  status.style.display = 'block'; status.textContent = 'Sending to Claude…';
+  errEl.style.display = 'none';
+  var xhr = new XMLHttpRequest();
+  xhr.open('POST', window.location.origin + '/api/scan', true);
+  xhr.setRequestHeader('Content-Type', 'application/json');
+  xhr.onload = function() {
+    var data;
+    try { data = JSON.parse(xhr.responseText); } catch(e) { showErr('Unexpected: ' + xhr.responseText.slice(0, 100)); return; }
+    if (data.error) { showErr(data.error); return; }
+    if (!data.recipe) { showErr('No recipe returned'); return; }
+    pendingRecipe = data.recipe;
+    status.style.display = 'none';
+    showExtracted(pendingRecipe);
+    btn.disabled = false; btn.textContent = '✦ Extract Recipe';
+  };
+  xhr.onerror = function() { showErr('Network error'); };
+  xhr.send(JSON.stringify({ imageBase64: currentB64, mediaType: 'image/jpeg' }));
+  function showErr(msg) { status.style.display = 'none'; errEl.style.display = 'block'; errEl.textContent = '⚠️ ' + msg; btn.disabled = false; btn.textContent = '✦ Extract Recipe'; }
 }
 
 function showExtracted(r) {
-var sec = document.getElementById(‘extractedSection’);
-sec.style.display = ‘block’;
-var rCats = Array.isArray(r.categories) ? r.categories : (r.category ? [r.category] : []);
-var catChips = categories.map(function(c) {
-return ‘<button class="ext-cat-chip' + (rCats.indexOf(c) !== -1 ? ' selected' : '') + '" data-cat="' + c + '">’ + c + ‘</button>’;
-}).join(’’);
-var catHtml = categories.length ? ‘<div style="margin-bottom:16px"><div class="ext-section-label" style="margin-top:0">Categories</div><div class="cat-chips-wrap">’ + catChips + ‘</div></div>’ : ‘’;
-var ingHtml = r.ingredients.map(function(ing) { return ‘<div class="ext-item">· ’ + ing + ‘</div>’; }).join(’’);
-var methHtml = r.method.map(function(s, i) { return ‘<div class="ext-item">’ + (i + 1) + ‘. ’ + s + ‘</div>’; }).join(’’);
-sec.innerHTML = ‘<div class="extracted-card"><div class="ext-label">Extracted Recipe</div><div class="ext-title">’ + r.title + ‘</div>’ + catHtml + ‘<div class="ext-section-label">Ingredients</div>’ + ingHtml + ‘<div class="ext-section-label">Method</div>’ + methHtml + ‘<button class="save-btn" id="saveBtn">✓ Save to My Recipes</button></div>’;
-document.querySelectorAll(’.ext-cat-chip’).forEach(function(chip) {
-chip.addEventListener(‘click’, function() { this.classList.toggle(‘selected’); });
-});
-document.getElementById(‘saveBtn’).addEventListener(‘click’, saveRecipe);
+  var sec = document.getElementById('extractedSection');
+  sec.style.display = 'block';
+  var rCats = Array.isArray(r.categories) ? r.categories : (r.category ? [r.category] : []);
+  var catChips = categories.map(function(c) {
+    return '<button class="ext-cat-chip' + (rCats.indexOf(c) !== -1 ? ' selected' : '') + '" data-cat="' + c + '">' + c + '</button>';
+  }).join('');
+  var catHtml = categories.length ? '<div style="margin-bottom:16px"><div class="ext-section-label" style="margin-top:0">Categories</div><div class="cat-chips-wrap">' + catChips + '</div></div>' : '';
+  var ingHtml = r.ingredients.map(function(ing) { return '<div class="ext-item">· ' + ing + '</div>'; }).join('');
+  var methHtml = r.method.map(function(s, i) { return '<div class="ext-item">' + (i + 1) + '. ' + s + '</div>'; }).join('');
+  sec.innerHTML = '<div class="extracted-card"><div class="ext-label">Extracted Recipe</div><div class="ext-title">' + r.title + '</div>' + catHtml + '<div class="ext-section-label">Ingredients</div>' + ingHtml + '<div class="ext-section-label">Method</div>' + methHtml + '<button class="save-btn" id="saveBtn">✓ Save to My Recipes</button></div>';
+  document.querySelectorAll('.ext-cat-chip').forEach(function(chip) {
+    chip.addEventListener('click', function() { this.classList.toggle('selected'); });
+  });
+  document.getElementById('saveBtn').addEventListener('click', saveRecipe);
 }
 
 function saveRecipe() {
-if (!pendingRecipe) return;
-var selectedCats = [];
-document.querySelectorAll(’.ext-cat-chip.selected’).forEach(function(chip) { selectedCats.push(chip.dataset.cat); });
-var recipe = { title: pendingRecipe.title, categories: selectedCats, category: selectedCats[0] || ‘’, ingredients: pendingRecipe.ingredients, method: pendingRecipe.method, notes: ‘’, id: Date.now().toString(), savedAt: new Date().toISOString() };
-recipes.unshift(recipe);
-persist();
-showScreen(‘homeScreen’);
+  if (!pendingRecipe) return;
+  var selectedCats = [];
+  document.querySelectorAll('.ext-cat-chip.selected').forEach(function(chip) { selectedCats.push(chip.dataset.cat); });
+  var recipe = { title: pendingRecipe.title, categories: selectedCats, category: selectedCats[0] || '', ingredients: pendingRecipe.ingredients, method: pendingRecipe.method, notes: '', id: Date.now().toString(), savedAt: new Date().toISOString() };
+  recipes.unshift(recipe);
+  persist();
+  showScreen('homeScreen');
 }
 
-renderList();
+try { renderList(); } catch(e) { document.body.insertAdjacentHTML('beforeend', '<div style="position:fixed;top:60px;left:0;right:0;background:orange;color:black;padding:20px;z-index:9999;font-size:12px;word-break:break-all">renderList crash: ' + e.message + ' line:' + e.stack + '</div>'); }
 </script>
-
 </body>
 </html>
