@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- v3 -->
+<!-- v4 -->
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -37,12 +37,14 @@ body { font-family: 'DM Sans', sans-serif; background: #0f0e0c; color: #f0ebe3; 
 .empty-icon { font-size: 48px; margin-bottom: 16px; opacity: 0.4; }
 .empty-title { font-family: 'Playfair Display', serif; font-size: 20px; font-weight: 400; margin-bottom: 8px; color: rgba(240,235,227,0.5); }
 .empty-sub { font-size: 13px; color: rgba(240,235,227,0.25); line-height: 1.6; }
-.recipe-card { background: rgba(240,235,227,0.04); border-radius: 14px; padding: 16px; margin-bottom: 10px; cursor: pointer; border: 1px solid rgba(240,235,227,0.06); }
+.recipe-card { background: rgba(240,235,227,0.04); border-radius: 14px; padding: 16px; margin-bottom: 10px; cursor: pointer; border: 1px solid rgba(240,235,227,0.06); display: flex; align-items: center; gap: 12px; }
 .recipe-card:active { background: rgba(240,235,227,0.08); }
+.recipe-card-body { flex: 1; min-width: 0; }
 .recipe-card-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
 .recipe-card-title { font-family: 'Playfair Display', serif; font-size: 18px; font-weight: 700; line-height: 1.2; flex: 1; }
 .recipe-cat-tag { font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; color: #c9a96e; background: rgba(201,169,110,0.1); border-radius: 6px; padding: 3px 8px; white-space: nowrap; flex-shrink: 0; margin-top: 3px; }
 .recipe-card-meta { font-size: 12px; color: rgba(240,235,227,0.3); margin-top: 6px; }
+.recipe-card-thumb { width: 56px; height: 56px; border-radius: 10px; object-fit: cover; flex-shrink: 0; }
 #scanScreen { background: #0f0e0c; }
 .scan-header { padding: 56px 24px 20px; display: flex; align-items: center; gap: 16px; flex-shrink: 0; border-bottom: 1px solid rgba(240,235,227,0.07); }
 .back-btn { width: 36px; height: 36px; border-radius: 50%; background: rgba(240,235,227,0.06); border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 16px; color: #f0ebe3; }
@@ -121,6 +123,8 @@ body { font-family: 'DM Sans', sans-serif; background: #0f0e0c; color: #f0ebe3; 
 .edit-notes-ta:focus { border-color: rgba(201,169,110,0.3); }
 .edit-notes-ta::placeholder { color: rgba(240,235,227,0.2); }
 .save-all-btn { width: 100%; background: #c9a96e; color: #0f0e0c; border: none; border-radius: 13px; padding: 17px; font-family: 'DM Sans', sans-serif; font-size: 14px; font-weight: 500; letter-spacing: 0.06em; text-transform: uppercase; cursor: pointer; margin-top: 24px; }
+.photo-upload-btn { display: inline-block; background: rgba(201,169,110,0.12); border: 1px solid rgba(201,169,110,0.25); color: #c9a96e; border-radius: 8px; padding: 8px 16px; font-family: 'DM Sans', sans-serif; font-size: 12px; cursor: pointer; margin-bottom: 8px; }
+.photo-remove-btn { display: inline-block; background: rgba(220,80,60,0.1); border: 1px solid rgba(220,80,60,0.2); color: rgba(220,80,60,0.6); border-radius: 8px; padding: 8px 16px; font-family: 'DM Sans', sans-serif; font-size: 12px; cursor: pointer; margin-bottom: 8px; margin-left: 8px; }
 </style>
 </head>
 <body>
@@ -202,6 +206,9 @@ body { font-family: 'DM Sans', sans-serif; background: #0f0e0c; color: #f0ebe3; 
   <div class="edit-body" id="editBody"></div>
 </div>
 
+<!-- Hidden photo input — lives outside editBody so it persists -->
+<input type="file" accept="image/*" id="photoFileInput" style="display:none">
+
 <div class="modal-overlay" id="catModal">
   <div class="modal-box">
     <h3>My Categories</h3>
@@ -232,7 +239,7 @@ function showScreen(id) {
   document.querySelectorAll('.screen').forEach(function(s) {
     s.classList.toggle('hidden', s.id !== id);
   });
-  if (id === 'homeScreen') { var ns = document.getElementById('notesSection'); if (ns) ns.style.display = 'none'; try { renderList(); } catch(e) { console.error('renderList error:', e); } }
+  if (id === 'homeScreen') { var ns = document.getElementById('notesSection'); if (ns) ns.style.display = 'none'; try { renderList(); } catch(e) { console.error(e); } }
   if (id === 'scanScreen') resetScan();
 }
 
@@ -248,7 +255,7 @@ document.getElementById('scanBtn').addEventListener('click', scanRecipe);
 document.getElementById('addCatBtn').addEventListener('click', addCategory);
 document.getElementById('catDoneBtn').addEventListener('click', function() {
   document.getElementById('catModal').classList.remove('open');
-  try { renderList(); } catch(e) { console.error('renderList error:', e); }
+  try { renderList(); } catch(e) { console.error(e); }
 });
 document.getElementById('saveNotesBtn').addEventListener('click', function() {
   var notes = document.getElementById('notesField').value;
@@ -261,6 +268,30 @@ document.getElementById('saveNotesBtn').addEventListener('click', function() {
   setTimeout(function() { btn.textContent = 'Save notes'; }, 1500);
 });
 document.getElementById('editBtn').addEventListener('click', function() { openEditScreen(); });
+
+// Photo file input — wired once, persists outside editBody
+document.getElementById('photoFileInput').addEventListener('change', function() {
+  var file = this.files && this.files[0];
+  if (!file) return;
+  var fr = new FileReader();
+  fr.onload = function() {
+    var img = new Image();
+    img.onload = function() {
+      var scale = Math.min(1, 800 / Math.max(img.width, img.height));
+      var cv = document.createElement('canvas');
+      cv.width = Math.round(img.width * scale);
+      cv.height = Math.round(img.height * scale);
+      cv.getContext('2d').drawImage(img, 0, 0, cv.width, cv.height);
+      var r2 = null;
+      for (var i = 0; i < recipes.length; i++) { if (recipes[i].id === currentRecipeId) { r2 = recipes[i]; break; } }
+      if (r2) { r2.photo = cv.toDataURL('image/jpeg', 0.75); persist(); }
+      openEditScreen();
+    };
+    img.src = fr.result;
+  };
+  fr.readAsDataURL(file);
+  this.value = '';
+});
 
 function openEditScreen() {
   var r = null;
@@ -284,14 +315,21 @@ function openEditScreen() {
   var safeTitle = r.title.replace(/&/g, '&amp;').replace(/"/g, '&quot;');
   var safeNotes = (r.notes || '').replace(/</g, '&lt;').replace(/&/g, '&amp;');
 
+  var photoSection = '<div class="edit-field-label">Photo</div>';
+  if (r.photo) {
+    photoSection += '<img src="' + r.photo + '" style="width:100%;max-height:200px;object-fit:cover;border-radius:12px;display:block;margin-bottom:8px">';
+    photoSection += '<button class="photo-upload-btn" id="changePhotoBtn">📷 Change photo</button>';
+    photoSection += '<button class="photo-remove-btn" id="removePhotoBtn">Remove</button>';
+  } else {
+    photoSection += '<button class="photo-upload-btn" id="changePhotoBtn">📷 Add photo</button>';
+  }
+
   var body = document.getElementById('editBody');
   body.innerHTML =
     '<div class="edit-field-label" style="margin-top:0">Title</div>' +
     '<input class="edit-title-input" id="editTitleInput" value="' + safeTitle + '">' +
     catSection +
-    '<div class="edit-field-label">Photo</div>' +
-    '<div style="margin-bottom:8px" id="photoSection"></div>' +
-    '<label style="display:inline-block;background:rgba(201,169,110,0.12);border:1px solid rgba(201,169,110,0.25);color:#c9a96e;border-radius:8px;padding:8px 16px;font-family:DM Sans,sans-serif;font-size:12px;cursor:pointer">📷 Add / Change photo<input type="file" accept="image/*" id="photoInput" style="display:none"></label>' +
+    photoSection +
     '<div class="edit-field-label">Ingredients</div>' +
     '<div id="ingList">' + ingItems + '</div>' +
     '<button class="add-item-btn" id="addIngBtn">+ Add ingredient</button>' +
@@ -308,42 +346,22 @@ function openEditScreen() {
     ta.addEventListener('input', function() { this.style.height = 'auto'; this.style.height = (this.scrollHeight + 2) + 'px'; });
   });
 
-  // Photo section setup
-  var photoSection = document.getElementById('photoSection');
-  if (photoSection) {
-    var rPhoto = null;
-    for (var pi = 0; pi < recipes.length; pi++) { if (recipes[pi].id === currentRecipeId) { rPhoto = recipes[pi]; break; } }
-    if (rPhoto && rPhoto.photo) {
-      photoSection.innerHTML = '<img src="' + rPhoto.photo + '" style="width:100%;max-height:200px;object-fit:cover;border-radius:12px;display:block;margin-bottom:8px"><button id="removePhotoBtn" style="background:rgba(220,80,60,0.1);border:1px solid rgba(220,80,60,0.2);color:rgba(220,80,60,0.6);border-radius:8px;padding:6px 14px;font-size:12px;cursor:pointer;font-family:DM Sans,sans-serif;margin-bottom:8px">Remove photo</button>';
-      document.getElementById('removePhotoBtn').addEventListener('click', function() {
-        for (var i = 0; i < recipes.length; i++) { if (recipes[i].id === currentRecipeId) { recipes[i].photo = ''; break; } }
-        persist(); openEditScreen();
-      });
-    }
-  }
-  var photoInput = document.getElementById('photoInput');
-  if (photoInput) {
-    photoInput.addEventListener('change', function() {
-      var file = this.files && this.files[0]; if (!file) return;
-      var fr = new FileReader();
-      fr.onload = function() {
-        var img = new Image();
-        img.onload = function() {
-          var scale = Math.min(1, 800 / Math.max(img.width, img.height));
-          var cv = document.createElement('canvas');
-          cv.width = Math.round(img.width * scale); cv.height = Math.round(img.height * scale);
-          cv.getContext('2d').drawImage(img, 0, 0, cv.width, cv.height);
-          for (var i = 0; i < recipes.length; i++) { if (recipes[i].id === currentRecipeId) { recipes[i].photo = cv.toDataURL('image/jpeg', 0.75); break; } }
-          persist(); openEditScreen();
-        };
-        img.src = fr.result;
-      };
-      fr.readAsDataURL(file);
-    });
-  }
   body.querySelectorAll('.det-cat-chip').forEach(function(chip) {
     chip.addEventListener('click', function() { this.classList.toggle('selected'); });
   });
+
+  document.getElementById('changePhotoBtn').addEventListener('click', function() {
+    document.getElementById('photoFileInput').click();
+  });
+
+  var removeBtn = document.getElementById('removePhotoBtn');
+  if (removeBtn) {
+    removeBtn.addEventListener('click', function() {
+      for (var i = 0; i < recipes.length; i++) { if (recipes[i].id === currentRecipeId) { recipes[i].photo = ''; break; } }
+      persist();
+      openEditScreen();
+    });
+  }
 
   body.querySelectorAll('.rm-btn').forEach(function(btn) {
     btn.addEventListener('click', function() {
@@ -382,7 +400,6 @@ function openEditScreen() {
     for (var i = 0; i < recipes.length; i++) { if (recipes[i].id === currentRecipeId) { r2 = recipes[i]; break; } }
     if (!r2) return;
     r2.title = document.getElementById('editTitleInput').value.trim() || r2.title;
-if (body.dataset.pendingPhoto) { r2.photo = body.dataset.pendingPhoto; delete body.dataset.pendingPhoto; }
     r2.notes = document.getElementById('editNotesField').value;
     var selected = [];
     body.querySelectorAll('.det-cat-chip.selected').forEach(function(chip) { selected.push(chip.dataset.cat); });
@@ -408,7 +425,7 @@ function buildCategories() {
   html += '<button class="cat-add-btn" id="manageCatBtn">+ Category</button>';
   bar.innerHTML = html;
   document.querySelectorAll('.cat-btn').forEach(function(btn) {
-    btn.addEventListener('click', function() { activeCategory = this.dataset.cat; try { renderList(); } catch(e) { console.error('renderList error:', e); } });
+    btn.addEventListener('click', function() { activeCategory = this.dataset.cat; try { renderList(); } catch(e) { console.error(e); } });
   });
   document.getElementById('manageCatBtn').addEventListener('click', function() {
     renderCatModal();
@@ -461,15 +478,19 @@ function renderList() {
     list.innerHTML = '<div class="empty-state"><div class="empty-icon">📖</div><div class="empty-title">' + (recipes.length ? 'No matches' : 'No recipes yet') + '</div><div class="empty-sub">' + (recipes.length ? 'Try a different category' : 'Tap + to scan your first recipe') + '</div></div>';
     return;
   }
-  list.innerHTML = filtered.map(function(r) {
+  list.innerHTML = '';
+  for (var i = 0; i < filtered.length; i++) {
+    var r = filtered[i];
     var cats = Array.isArray(r.categories) && r.categories.length ? r.categories : (r.category ? [r.category] : []);
     var tagHtml = cats.slice(0, 2).map(function(c) { return '<span class="recipe-cat-tag">' + c + '</span>'; }).join('');
-    var cardThumb = r.photo ? '<img src="' + r.photo + '" style="width:52px;height:52px;object-fit:cover;border-radius:8px;flex-shrink:0;margin-left:12px">' : '';
-    return '<div class="recipe-card" data-id="' + r.id + '" style="display:flex;align-items:center"><div style="flex:1;min-width:0"><div class="recipe-card-header"><div class="recipe-card-title">' + r.title + '</div><div style="display:flex;gap:4px;flex-wrap:wrap;justify-content:flex-end;flex-shrink:0">' + tagHtml + '</div></div><div class="recipe-card-meta">' + r.ingredients.length + ' ingredients · ' + r.method.length + ' steps</div></div>' + cardThumb + '</div>';
-  }).join('');
-  document.querySelectorAll('.recipe-card').forEach(function(card) {
-    card.addEventListener('click', function() { openRecipe(this.dataset.id); });
-  });
+    var thumbHtml = r.photo ? '<img class="recipe-card-thumb" src="' + r.photo + '">' : '';
+    var div = document.createElement('div');
+    div.className = 'recipe-card';
+    div.dataset.id = r.id;
+    div.innerHTML = '<div class="recipe-card-body"><div class="recipe-card-header"><div class="recipe-card-title">' + r.title + '</div><div style="display:flex;gap:4px;flex-wrap:wrap;justify-content:flex-end;flex-shrink:0">' + tagHtml + '</div></div><div class="recipe-card-meta">' + r.ingredients.length + ' ingredients · ' + r.method.length + ' steps</div></div>' + thumbHtml;
+    div.addEventListener('click', function() { openRecipe(this.dataset.id); });
+    list.appendChild(div);
+  }
 }
 
 function openRecipe(id) {
@@ -479,6 +500,7 @@ function openRecipe(id) {
   currentRecipeId = id;
   document.getElementById('detailLabel').textContent = r.category || 'Recipe';
   document.getElementById('detailHeaderTitle').textContent = r.title;
+  var photoHtml = r.photo ? '<img src="' + r.photo + '" style="width:100%;max-height:280px;object-fit:cover;border-radius:14px;display:block;margin-bottom:24px">' : '';
   var ingHtml = r.ingredients.map(function(ing) { return '<div class="ingredient-row"><div class="ingredient-dot"></div><div class="ingredient-text">' + ing + '</div></div>'; }).join('');
   var methHtml = r.method.map(function(s, i) { return '<div class="method-row"><div class="step-num">0' + (i + 1) + '</div><div class="step-text">' + s + '</div></div>'; }).join('');
   var rCats2 = Array.isArray(r.categories) ? r.categories : (r.category ? [r.category] : []);
@@ -601,13 +623,13 @@ function saveRecipe() {
   if (!pendingRecipe) return;
   var selectedCats = [];
   document.querySelectorAll('.ext-cat-chip.selected').forEach(function(chip) { selectedCats.push(chip.dataset.cat); });
-  var recipe = { title: pendingRecipe.title, categories: selectedCats, category: selectedCats[0] || '', ingredients: pendingRecipe.ingredients, method: pendingRecipe.method, notes: '', id: Date.now().toString(), savedAt: new Date().toISOString() };
+  var recipe = { title: pendingRecipe.title, categories: selectedCats, category: selectedCats[0] || '', ingredients: pendingRecipe.ingredients, method: pendingRecipe.method, notes: '', photo: '', id: Date.now().toString(), savedAt: new Date().toISOString() };
   recipes.unshift(recipe);
   persist();
   showScreen('homeScreen');
 }
 
-try { renderList(); } catch(e) { console.error('renderList error:', e); }
+try { renderList(); } catch(e) { console.error(e); }
 </script>
 </body>
 </html>
