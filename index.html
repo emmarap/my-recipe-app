@@ -292,7 +292,7 @@ return ‘<div class="edit-list-item"><textarea class="edit-list-ta" data-i="' +
 var body = document.getElementById(‘editBody’);
 body.innerHTML =
 ‘<div class="edit-field-label">Title</div>’ +
-‘<input class=“edit-title-input” id=“editTitleInput” value=”’ + r.title.replace(/”/g,’"’) + ‘”>’ +
+‘<input class=“edit-title-input” id=“editTitleInput” value=”’ + r.title.replace(/[”]/g,’"’) + ‘”>’ +
 catSection +
 ‘<div class="edit-field-label">Ingredients</div>’ +
 ‘<div id="ingList">’ + ingItems + ‘</div>’ +
