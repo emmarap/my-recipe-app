@@ -158,15 +158,15 @@ body { font-family: 'DM Sans', sans-serif; background: #0f0e0c; color: #f0ebe3; 
   </div>
   <div class="scan-body">
     <label class="upload-zone" id="uploadZone">
-      <input type="file" accept="image/*" id="fileInput" style="display:none">
+      <input type="file" accept="image/*" multiple id="fileInput" style="display:none">
       <div class="upload-icon">📷</div>
-      <h3>Upload a recipe photo</h3>
-      <p>Tap to choose from your library</p>
+      <h3>Upload recipe photos</h3>
+      <p>Select one or more photos</p>
     </label>
     <div id="previewSection" style="display:none">
-      <img class="preview-img" id="previewImg" src="" alt="">
+      <div id="thumbStrip" style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px"></div>
       <div class="preview-meta" id="previewMeta"></div>
-      <label class="change-link">Change photo<input type="file" accept="image/*" id="changeInput" style="display:none"></label>
+      <label class="change-link">Add more photos<input type="file" accept="image/*" multiple id="changeInput" style="display:none"></label>
       <button class="primary-btn" id="scanBtn">✦ Extract Recipe</button>
     </div>
     <div class="status-msg" id="scanStatus" style="display:none"></div>
@@ -218,7 +218,7 @@ var recipes = [];
 var categories = [];
 var activeCategory = 'All';
 var currentRecipeId = null;
-var currentB64 = null;
+var currentImages = []; // array of {b64, mediaType}
 var pendingRecipe = null;
 
 try { recipes = JSON.parse(localStorage.getItem('recipes') || '[]'); } catch(e) { recipes = []; }
@@ -243,8 +243,8 @@ document.getElementById('detailBackBtn').addEventListener('click', function() { 
 document.getElementById('editBackBtn').addEventListener('click', function() { openRecipe(currentRecipeId); });
 document.getElementById('searchInput').addEventListener('input', renderList);
 document.getElementById('deleteBtn').addEventListener('click', deleteCurrentRecipe);
-document.getElementById('fileInput').addEventListener('change', function() { if (this.files && this.files[0]) handleFile(this.files[0]); });
-document.getElementById('changeInput').addEventListener('change', function() { if (this.files && this.files[0]) handleFile(this.files[0]); });
+document.getElementById('fileInput').addEventListener('change', function() { if (this.files && this.files.length) handleFiles(this.files); });
+document.getElementById('changeInput').addEventListener('change', function() { if (this.files && this.files.length) handleFiles(this.files); });
 document.getElementById('scanBtn').addEventListener('click', scanRecipe);
 document.getElementById('addCatBtn').addEventListener('click', addCategory);
 document.getElementById('catDoneBtn').addEventListener('click', function() {
@@ -538,7 +538,7 @@ function deleteCurrentRecipe() {
 }
 
 function resetScan() {
-  currentB64 = null; pendingRecipe = null;
+  currentImages = []; pendingRecipe = null;
   document.getElementById('uploadZone').style.display = 'block';
   document.getElementById('previewSection').style.display = 'none';
   document.getElementById('scanStatus').style.display = 'none';
@@ -548,40 +548,72 @@ function resetScan() {
   document.getElementById('fileInput').value = '';
 }
 
-function handleFile(file) {
-  if (!file) return;
-  var reader = new FileReader();
-  reader.onload = function() {
-    var img = new Image();
-    img.onload = function() {
-      var scale = Math.min(1, 800 / Math.max(img.width, img.height));
-      var canvas = document.createElement('canvas');
-      canvas.width = Math.round(img.width * scale);
-      canvas.height = Math.round(img.height * scale);
-      canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height);
-      var compressed = canvas.toDataURL('image/jpeg', 0.7);
-      currentB64 = compressed.split(',')[1];
-      document.getElementById('uploadZone').style.display = 'none';
-      document.getElementById('previewSection').style.display = 'block';
-      document.getElementById('previewImg').src = compressed;
-      document.getElementById('previewMeta').textContent = file.name + ' · ~' + Math.round(currentB64.length * 0.75 / 1024) + 'KB';
-      document.getElementById('scanError').style.display = 'none';
-      document.getElementById('extractedSection').style.display = 'none';
-      document.getElementById('extractedSection').innerHTML = '';
-      pendingRecipe = null;
-    };
-    img.src = reader.result;
-  };
-  reader.readAsDataURL(file);
+function handleFiles(files) {
+  if (!files || !files.length) return;
+  var total = files.length;
+  var done = 0;
+  for (var fi = 0; fi < files.length; fi++) {
+    (function(file) {
+      var reader = new FileReader();
+      reader.onload = function() {
+        var img = new Image();
+        img.onload = function() {
+          var scale = Math.min(1, 800 / Math.max(img.width, img.height));
+          var canvas = document.createElement('canvas');
+          canvas.width = Math.round(img.width * scale);
+          canvas.height = Math.round(img.height * scale);
+          canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height);
+          var compressed = canvas.toDataURL('image/jpeg', 0.7);
+          currentImages.push({ b64: compressed.split(',')[1], mediaType: 'image/jpeg', src: compressed });
+          done++;
+          if (done === total) renderThumbs();
+        };
+        img.src = reader.result;
+      };
+      reader.readAsDataURL(file);
+    })(files[fi]);
+  }
+}
+
+function renderThumbs() {
+  document.getElementById('uploadZone').style.display = 'none';
+  document.getElementById('previewSection').style.display = 'block';
+  document.getElementById('scanError').style.display = 'none';
+  document.getElementById('extractedSection').style.display = 'none';
+  document.getElementById('extractedSection').innerHTML = '';
+  pendingRecipe = null;
+  var strip = document.getElementById('thumbStrip');
+  strip.innerHTML = '';
+  var totalKB = 0;
+  for (var i = 0; i < currentImages.length; i++) {
+    totalKB += Math.round(currentImages[i].b64.length * 0.75 / 1024);
+    var wrap = document.createElement('div');
+    wrap.style.cssText = 'position:relative;flex-shrink:0';
+    var img = document.createElement('img');
+    img.src = currentImages[i].src;
+    img.style.cssText = 'width:80px;height:80px;object-fit:cover;border-radius:10px;display:block';
+    var rm = document.createElement('button');
+    rm.textContent = '×';
+    rm.dataset.i = i;
+    rm.style.cssText = 'position:absolute;top:-6px;right:-6px;width:20px;height:20px;border-radius:50%;background:#c9a96e;border:none;color:#0f0e0c;font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;line-height:1';
+    rm.addEventListener('click', function() {
+      currentImages.splice(parseInt(this.dataset.i), 1);
+      if (currentImages.length === 0) resetScan();
+      else renderThumbs();
+    });
+    wrap.appendChild(img); wrap.appendChild(rm);
+    strip.appendChild(wrap);
+  }
+  document.getElementById('previewMeta').textContent = currentImages.length + ' photo' + (currentImages.length > 1 ? 's' : '') + ' · ~' + totalKB + 'KB total';
 }
 
 function scanRecipe() {
-  if (!currentB64) { document.getElementById('scanError').style.display = 'block'; document.getElementById('scanError').textContent = 'Please select a photo first.'; return; }
+  if (!currentImages.length) { document.getElementById('scanError').style.display = 'block'; document.getElementById('scanError').textContent = 'Please select at least one photo.'; return; }
   var btn = document.getElementById('scanBtn');
   var status = document.getElementById('scanStatus');
   var errEl = document.getElementById('scanError');
   btn.disabled = true; btn.textContent = 'Reading…';
-  status.style.display = 'block'; status.textContent = 'Sending to Claude…';
+  status.style.display = 'block'; status.textContent = 'Sending ' + currentImages.length + ' photo' + (currentImages.length > 1 ? 's' : '') + ' to Claude…';
   errEl.style.display = 'none';
   var xhr = new XMLHttpRequest();
   xhr.open('POST', window.location.origin + '/api/scan', true);
@@ -597,7 +629,7 @@ function scanRecipe() {
     btn.disabled = false; btn.textContent = '✦ Extract Recipe';
   };
   xhr.onerror = function() { showErr('Network error'); };
-  xhr.send(JSON.stringify({ imageBase64: currentB64, mediaType: 'image/jpeg' }));
+  xhr.send(JSON.stringify({ images: currentImages.map(function(im) { return { imageBase64: im.b64, mediaType: im.mediaType }; }) }));
   function showErr(msg) { status.style.display = 'none'; errEl.style.display = 'block'; errEl.textContent = '⚠️ ' + msg; btn.disabled = false; btn.textContent = '✦ Extract Recipe'; }
 }
 
