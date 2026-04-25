@@ -91,10 +91,12 @@ body { font-family: 'DM Sans', sans-serif; background: #0f0e0c; color: #f0ebe3; 
 .step-num { font-family: 'Playfair Display', serif; font-size: 20px; color: rgba(201,169,110,0.28); font-weight: 700; line-height: 1; min-width: 26px; padding-top: 2px; }
 .step-text { font-size: 14px; line-height: 1.7; color: rgba(240,235,227,0.78); font-weight: 300; padding-bottom: 13px; border-bottom: 1px solid rgba(240,235,227,0.05); flex: 1; }
 .method-row:last-child .step-text { border-bottom: none; }
+.notes-ta { width: 100%; background: rgba(240,235,227,0.05); border: 1px solid rgba(240,235,227,0.1); border-radius: 12px; padding: 14px; color: #f0ebe3; font-family: 'DM Sans', sans-serif; font-size: 14px; line-height: 1.6; resize: none; min-height: 100px; outline: none; display: block; }
+.notes-ta::placeholder { color: rgba(240,235,227,0.2); }
+.notes-save-btn { margin-top: 10px; background: rgba(201,169,110,0.15); border: 1px solid rgba(201,169,110,0.3); color: #c9a96e; border-radius: 8px; padding: 8px 16px; font-family: 'DM Sans', sans-serif; font-size: 12px; cursor: pointer; }
 .cat-chips-wrap { display: flex; flex-wrap: wrap; gap: 8px; }
 .ext-cat-chip, .det-cat-chip { padding: 7px 14px; border-radius: 20px; border: 1px solid rgba(240,235,227,0.15); background: transparent; color: rgba(240,235,227,0.45); font-family: 'DM Sans', sans-serif; font-size: 12px; cursor: pointer; }
 .ext-cat-chip.selected, .det-cat-chip.selected { background: #c9a96e; border-color: #c9a96e; color: #0f0e0c; font-weight: 500; }
-/* Category modal */
 .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.7); z-index: 50; display: none; align-items: flex-end; justify-content: center; }
 .modal-overlay.open { display: flex; }
 .modal-box { background: #1a1917; border-radius: 20px 20px 0 0; padding: 28px 24px 48px; width: 100%; max-width: 430px; }
@@ -104,9 +106,6 @@ body { font-family: 'DM Sans', sans-serif; background: #0f0e0c; color: #f0ebe3; 
 .modal-done-btn { width: 100%; background: none; border: none; color: rgba(240,235,227,0.4); font-family: 'DM Sans', sans-serif; font-size: 14px; cursor: pointer; padding: 10px; }
 .modal-cat-row { display: flex; align-items: center; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid rgba(240,235,227,0.06); font-size: 14px; }
 .modal-cat-del { background: none; border: none; color: rgba(220,80,60,0.4); font-size: 20px; cursor: pointer; }
-/* Cat select in scan */
-.cat-sel { background: rgba(201,169,110,0.08); border: 1px solid rgba(201,169,110,0.2); border-radius: 8px; color: #c9a96e; font-family: 'DM Sans', sans-serif; font-size: 12px; padding: 6px 10px; outline: none; margin-bottom: 16px; }
-.cat-sel option { background: #1a1917; color: #f0ebe3; }
 </style>
 </head>
 <body>
@@ -166,9 +165,16 @@ body { font-family: 'DM Sans', sans-serif; background: #0f0e0c; color: #f0ebe3; 
     <button class="delete-btn" id="deleteBtn">🗑</button>
   </div>
   <div class="detail-body" id="detailBody"></div>
+  <!-- Notes section lives OUTSIDE detailBody so it never gets wiped -->
+  <div id="notesSection" style="display:none;padding:0 24px 80px;flex-shrink:0">
+    <div class="detail-section-header" style="margin-bottom:10px">
+      <div class="detail-section-label">Notes</div>
+      <div class="detail-section-line"></div>
+    </div>
+    <textarea class="notes-ta" id="notesField" placeholder="Add notes, tips, variations…"></textarea>
+    <button class="notes-save-btn" id="saveNotesBtn">Save notes</button>
+  </div>
 </div>
-
-<!-- Category Modal -->
 
 <div class="modal-overlay" id="catModal">
   <div class="modal-box">
@@ -200,7 +206,7 @@ function showScreen(id) {
   document.querySelectorAll('.screen').forEach(function(s) {
     s.classList.toggle('hidden', s.id !== id);
   });
-  if (id === 'homeScreen') renderList();
+  if (id === 'homeScreen') { document.getElementById('notesSection').style.display = 'none'; renderList(); }
   if (id === 'scanScreen') resetScan();
 }
 
@@ -216,6 +222,16 @@ document.getElementById('addCatBtn').addEventListener('click', addCategory);
 document.getElementById('catDoneBtn').addEventListener('click', function() {
   document.getElementById('catModal').classList.remove('open');
   renderList();
+});
+document.getElementById('saveNotesBtn').addEventListener('click', function() {
+  var notes = document.getElementById('notesField').value;
+  for (var i = 0; i < recipes.length; i++) {
+    if (recipes[i].id === currentRecipeId) { recipes[i].notes = notes; break; }
+  }
+  persist();
+  var btn = document.getElementById('saveNotesBtn');
+  btn.textContent = '✓ Saved!';
+  setTimeout(function() { btn.textContent = 'Save notes'; }, 1500);
 });
 
 function buildCategories() {
@@ -305,6 +321,7 @@ function openRecipe(id) {
   }).join('');
   var catSection = categories.length ? '<div style="margin-bottom:20px"><div style="font-size:10px;letter-spacing:0.2em;text-transform:uppercase;color:rgba(240,235,227,0.35);margin-bottom:10px">Categories</div><div class="cat-chips-wrap">' + detChips + '</div><button id="saveCatBtn" style="margin-top:10px;background:rgba(201,169,110,0.15);border:1px solid rgba(201,169,110,0.3);color:#c9a96e;border-radius:8px;padding:7px 16px;font-family:DM Sans,sans-serif;font-size:12px;cursor:pointer">Save categories</button></div>' : '';
   document.getElementById('detailBody').innerHTML = '<div class="detail-full-title">' + r.title + '</div>' + catSection + '<div class="detail-section"><div class="detail-section-header"><div class="detail-section-label">Ingredients</div><div class="detail-section-line"></div></div>' + ingHtml + '</div><div class="detail-section"><div class="detail-section-header"><div class="detail-section-label">Method</div><div class="detail-section-line"></div></div>' + methHtml + '</div>';
+
   if (categories.length) {
     document.querySelectorAll('.det-cat-chip').forEach(function(chip) {
       chip.addEventListener('click', function() { this.classList.toggle('selected'); });
@@ -313,17 +330,18 @@ function openRecipe(id) {
       var selected = [];
       document.querySelectorAll('.det-cat-chip.selected').forEach(function(chip) { selected.push(chip.dataset.cat); });
       for (var i = 0; i < recipes.length; i++) {
-        if (recipes[i].id === currentRecipeId) {
-          recipes[i].categories = selected;
-          recipes[i].category = selected[0] || '';
-          break;
-        }
+        if (recipes[i].id === currentRecipeId) { recipes[i].categories = selected; recipes[i].category = selected[0] || ''; break; }
       }
       persist();
       document.getElementById('detailLabel').textContent = selected.join(', ') || 'Recipe';
-      document.getElementById('detailHeaderTitle').textContent = r.title;
     });
   }
+
+  // Show notes section with current notes
+  document.getElementById('notesField').value = r.notes || '';
+  document.getElementById('notesSection').style.display = 'block';
+  document.getElementById('saveNotesBtn').textContent = 'Save notes';
+
   showScreen('detailScreen');
 }
 
@@ -421,7 +439,7 @@ function saveRecipe() {
   if (!pendingRecipe) return;
   var selectedCats = [];
   document.querySelectorAll('.ext-cat-chip.selected').forEach(function(chip) { selectedCats.push(chip.dataset.cat); });
-  var recipe = { title: pendingRecipe.title, categories: selectedCats, category: selectedCats[0]||'', ingredients: pendingRecipe.ingredients, method: pendingRecipe.method, id: Date.now().toString(), savedAt: new Date().toISOString() };
+  var recipe = { title: pendingRecipe.title, categories: selectedCats, category: selectedCats[0]||'', ingredients: pendingRecipe.ingredients, method: pendingRecipe.method, notes: '', id: Date.now().toString(), savedAt: new Date().toISOString() };
   recipes.unshift(recipe);
   persist();
   showScreen('homeScreen');
