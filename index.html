@@ -185,14 +185,7 @@ body { font-family: 'DM Sans', sans-serif; background: #0f0e0c; color: #f0ebe3; 
     <button class="delete-btn" id="deleteBtn">🗑</button>
   </div>
   <div class="detail-body" id="detailBody"></div>
-  <div id="notesSection" style="display:none;padding:0 24px 80px;flex-shrink:0">
-    <div class="detail-section-header" style="margin-bottom:10px">
-      <div class="detail-section-label">Notes</div>
-      <div class="detail-section-line"></div>
-    </div>
-    <textarea class="notes-ta" id="notesField" placeholder="Add notes, tips, variations…"></textarea>
-    <button class="notes-save-btn" id="saveNotesBtn">Save notes</button>
-  </div>
+
 </div>
 
 <div class="screen hidden" id="editScreen">
@@ -239,7 +232,7 @@ function showScreen(id) {
   document.querySelectorAll('.screen').forEach(function(s) {
     s.classList.toggle('hidden', s.id !== id);
   });
-  if (id === 'homeScreen') { var ns = document.getElementById('notesSection'); if (ns) ns.style.display = 'none'; try { renderList(); } catch(e) { console.error(e); } }
+  if (id === 'homeScreen') { try { renderList(); } catch(e) { console.error(e); } }
   if (id === 'scanScreen') resetScan();
 }
 
@@ -257,16 +250,7 @@ document.getElementById('catDoneBtn').addEventListener('click', function() {
   document.getElementById('catModal').classList.remove('open');
   try { renderList(); } catch(e) { console.error(e); }
 });
-document.getElementById('saveNotesBtn').addEventListener('click', function() {
-  var notes = document.getElementById('notesField').value;
-  for (var i = 0; i < recipes.length; i++) {
-    if (recipes[i].id === currentRecipeId) { recipes[i].notes = notes; break; }
-  }
-  persist();
-  var btn = document.getElementById('saveNotesBtn');
-  btn.textContent = '✓ Saved!';
-  setTimeout(function() { btn.textContent = 'Save notes'; }, 1500);
-});
+
 document.getElementById('editBtn').addEventListener('click', function() { openEditScreen(); });
 
 // Photo file input — wired once, persists outside editBody
@@ -508,7 +492,9 @@ function openRecipe(id) {
     return '<button class="det-cat-chip' + (rCats2.indexOf(c) !== -1 ? ' selected' : '') + '" data-cat="' + c + '">' + c + '</button>';
   }).join('');
   var catSection = categories.length ? '<div style="margin-bottom:20px"><div style="font-size:10px;letter-spacing:0.2em;text-transform:uppercase;color:rgba(240,235,227,0.35);margin-bottom:10px">Categories</div><div class="cat-chips-wrap">' + detChips + '</div><button id="saveCatBtn" style="margin-top:10px;background:rgba(201,169,110,0.15);border:1px solid rgba(201,169,110,0.3);color:#c9a96e;border-radius:8px;padding:7px 16px;font-family:DM Sans,sans-serif;font-size:12px;cursor:pointer">Save categories</button></div>' : '';
-  document.getElementById('detailBody').innerHTML = '<div class="detail-full-title">' + r.title + '</div>' + photoHtml + catSection + '<div class="detail-section"><div class="detail-section-header"><div class="detail-section-label">Ingredients</div><div class="detail-section-line"></div></div>' + ingHtml + '</div><div class="detail-section"><div class="detail-section-header"><div class="detail-section-label">Method</div><div class="detail-section-line"></div></div>' + methHtml + '</div>';
+  var notesVal = r.notes || '';
+  var notesSection = '<div class="detail-section"><div class="detail-section-header"><div class="detail-section-label">Notes</div><div class="detail-section-line"></div></div><textarea class="notes-ta" id="notesField" placeholder="Add notes, tips, variations…">' + notesVal.replace(/</g,'&lt;') + '</textarea><button class="notes-save-btn" id="saveNotesBtn">Save notes</button></div>';
+  document.getElementById('detailBody').innerHTML = '<div class="detail-full-title">' + r.title + '</div>' + photoHtml + catSection + '<div class="detail-section"><div class="detail-section-header"><div class="detail-section-label">Ingredients</div><div class="detail-section-line"></div></div>' + ingHtml + '</div><div class="detail-section"><div class="detail-section-header"><div class="detail-section-label">Method</div><div class="detail-section-line"></div></div>' + methHtml + '</div>' + notesSection;
   if (categories.length) {
     document.querySelectorAll('.det-cat-chip').forEach(function(chip) {
       chip.addEventListener('click', function() { this.classList.toggle('selected'); });
@@ -523,9 +509,16 @@ function openRecipe(id) {
       document.getElementById('detailLabel').textContent = selected.join(', ') || 'Recipe';
     });
   }
-  document.getElementById('notesField').value = r.notes || '';
-  document.getElementById('notesSection').style.display = 'block';
-  document.getElementById('saveNotesBtn').textContent = 'Save notes';
+  document.getElementById('saveNotesBtn').addEventListener('click', function() {
+    var notes = document.getElementById('notesField').value;
+    for (var i = 0; i < recipes.length; i++) {
+      if (recipes[i].id === currentRecipeId) { recipes[i].notes = notes; break; }
+    }
+    persist();
+    this.textContent = '✓ Saved!';
+    var btn = this;
+    setTimeout(function() { btn.textContent = 'Save notes'; }, 1500);
+  });
   showScreen('detailScreen');
 }
 
