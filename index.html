@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 
-<!-- v7 -->
+<!-- v8 -->
 
 <html lang="en">
 <head>
@@ -238,6 +238,7 @@ var currentImages = [];
 var pendingRecipe = null;
 
 try { categories = JSON.parse(localStorage.getItem('categories') || '[]'); } catch(e) { categories = []; }
+try { recipes = JSON.parse(localStorage.getItem('recipes') || '[]'); } catch(e) { recipes = []; }
 
 function saveToCloud(r) {
   if (_db) _db.collection('recipes').doc(r.id).set(r).catch(function(e) { console.error(e); });
@@ -254,6 +255,7 @@ if (_db) {
   _db.collection('recipes').orderBy('savedAt', 'desc').onSnapshot(function(snapshot) {
     recipes = [];
     snapshot.forEach(function(d) { recipes.push(d.data()); });
+    try { localStorage.setItem('recipes', JSON.stringify(recipes)); } catch(e) {}
     try { renderList(); } catch(e) {
       document.getElementById('recipeList').innerHTML = '<div style="padding:20px;color:#c9a96e;font-size:12px">renderList error: ' + e.message + '</div>';
     }
@@ -629,6 +631,7 @@ if (!pendingRecipe) return;
 var selectedCats = [];
 document.querySelectorAll(’.ext-cat-chip.selected’).forEach(function(chip) { selectedCats.push(chip.dataset.cat); });
 var recipe = { title: pendingRecipe.title, categories: selectedCats, category: selectedCats[0] || ‘’, ingredients: pendingRecipe.ingredients, method: pendingRecipe.method, notes: ‘’, photo: ‘’, id: Date.now().toString(), savedAt: new Date().toISOString() };
+try { recipes.unshift(recipe); localStorage.setItem(‘recipes’, JSON.stringify(recipes)); } catch(e) {}
 saveToCloud(recipe);
 showScreen(‘homeScreen’);
 }
