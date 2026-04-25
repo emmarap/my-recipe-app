@@ -237,14 +237,14 @@ function showScreen(id) {
   document.querySelectorAll('.screen').forEach(function(s) {
     s.classList.toggle('hidden', s.id !== id);
   });
-  if (id === 'homeScreen') { document.getElementById('notesSection').style.display = 'none'; renderList(); }
+  if (id === 'homeScreen') { var ns = document.getElementById('notesSection'); if (ns) ns.style.display = 'none'; renderList(); }
   if (id === 'scanScreen') resetScan();
 }
 
 document.getElementById('addBtn').addEventListener('click', function() { showScreen('scanScreen'); });
 document.getElementById('backBtn').addEventListener('click', function() { showScreen('homeScreen'); });
 document.getElementById('detailBackBtn').addEventListener('click', function() { showScreen('homeScreen'); });
-document.getElementById('editBackBtn').addEventListener('click', function() { showScreen('detailScreen'); openRecipe(currentRecipeId); });
+document.getElementById('editBackBtn').addEventListener('click', function() { openRecipe(currentRecipeId); });
 document.getElementById('searchInput').addEventListener('input', renderList);
 document.getElementById('deleteBtn').addEventListener('click', deleteCurrentRecipe);
 document.getElementById('fileInput').addEventListener('change', function() { if (this.files && this.files[0]) handleFile(this.files[0]); });
