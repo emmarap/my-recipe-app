@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 
-<!-- v8 -->
+<!-- v9 -->
 
 <html lang="en">
 <head>
@@ -216,20 +216,7 @@ body { font-family: 'DM Sans', sans-serif; background: #0f0e0c; color: #f0ebe3; 
 </div>
 
 <script>
-// Firebase init — runs after compat scripts above have loaded
 var _db = null;
-try {
-  firebase.initializeApp({
-    apiKey: "AIzaSyDXlva6A6PLVDo84xgpI3KhXSCeFBhP5bc",
-    authDomain: "my-recipe-app-dab1f.firebaseapp.com",
-    projectId: "my-recipe-app-dab1f",
-    storageBucket: "my-recipe-app-dab1f.firebasestorage.app",
-    messagingSenderId: "375704912319",
-    appId: "1:375704912319:web:0ece4c66f00ff11161210a"
-  });
-  _db = firebase.firestore();
-} catch(e) { console.error('Firebase init error:', e); }
-
 var recipes = [];
 var categories = [];
 var activeCategory = 'All';
@@ -251,20 +238,7 @@ function persistCats() {
 }
 
 // Listen for recipe changes from Firestore
-if (_db) {
-  _db.collection('recipes').orderBy('savedAt', 'desc').onSnapshot(function(snapshot) {
-    recipes = [];
-    snapshot.forEach(function(d) { recipes.push(d.data()); });
-    try { localStorage.setItem('recipes', JSON.stringify(recipes)); } catch(e) {}
-    try { renderList(); } catch(e) {
-      document.getElementById('recipeList').innerHTML = '<div style="padding:20px;color:#c9a96e;font-size:12px">renderList error: ' + e.message + '</div>';
-    }
-  }, function(err) {
-    document.getElementById('recipeList').innerHTML = '<div style="padding:20px;color:#c9a96e;font-size:12px">Firestore error: ' + err.message + '</div>';
-  });
-} else {
-  document.getElementById('recipeList').innerHTML = '<div style="padding:20px;color:#c9a96e;font-size:12px">Firebase not loaded</div>';
-}
+
 
 function showScreen(id) {
   document.querySelectorAll('.screen').forEach(function(s) {
@@ -637,6 +611,29 @@ showScreen(‘homeScreen’);
 }
 
 try { renderList(); } catch(e) { console.error(e); }
+
+// Firebase init — after everything else is set up
+setTimeout(function() {
+try {
+if (typeof firebase !== ‘undefined’) {
+firebase.initializeApp({
+apiKey: “AIzaSyDXlva6A6PLVDo84xgpI3KhXSCeFBhP5bc”,
+authDomain: “my-recipe-app-dab1f.firebaseapp.com”,
+projectId: “my-recipe-app-dab1f”,
+storageBucket: “my-recipe-app-dab1f.firebasestorage.app”,
+messagingSenderId: “375704912319”,
+appId: “1:375704912319:web:0ece4c66f00ff11161210a”
+});
+_db = firebase.firestore();
+_db.collection(‘recipes’).orderBy(‘savedAt’, ‘desc’).onSnapshot(function(snapshot) {
+recipes = [];
+snapshot.forEach(function(d) { recipes.push(d.data()); });
+try { localStorage.setItem(‘recipes’, JSON.stringify(recipes)); } catch(e) {}
+try { renderList(); } catch(e) { console.error(e); }
+}, function(err) { console.error(‘Firestore error:’, err); });
+}
+} catch(e) { console.error(‘Firebase init error:’, e); }
+}, 500);
 </script>
 
 </body>
