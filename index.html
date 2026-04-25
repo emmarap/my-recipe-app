@@ -254,8 +254,14 @@ if (_db) {
   _db.collection('recipes').orderBy('savedAt', 'desc').onSnapshot(function(snapshot) {
     recipes = [];
     snapshot.forEach(function(d) { recipes.push(d.data()); });
-    try { renderList(); } catch(e) { console.error(e); }
-  }, function(err) { console.error('Firestore error:', err); });
+    try { renderList(); } catch(e) {
+      document.getElementById('recipeList').innerHTML = '<div style="padding:20px;color:#c9a96e;font-size:12px">renderList error: ' + e.message + '</div>';
+    }
+  }, function(err) {
+    document.getElementById('recipeList').innerHTML = '<div style="padding:20px;color:#c9a96e;font-size:12px">Firestore error: ' + err.message + '</div>';
+  });
+} else {
+  document.getElementById('recipeList').innerHTML = '<div style="padding:20px;color:#c9a96e;font-size:12px">Firebase not loaded</div>';
 }
 
 function showScreen(id) {
