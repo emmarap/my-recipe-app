@@ -375,6 +375,10 @@ function openEditScreen() {
   body.innerHTML =
     '<div class="edit-field-label" style="margin-top:0">Title</div>' +
     '<input class="edit-title-input" id="editTitleInput" value="' + safeTitle + '">' +
+    '<div class="edit-field-label">Author</div>' +
+    '<input class="edit-title-input" id="editAuthorInput" value="' + (r.author || '').replace(/&/g,'&amp;').replace(/"/g,'&quot;') + '" placeholder="e.g. Nigella Lawson" style="font-family:DM Sans,sans-serif;font-size:14px;font-weight:400">' +
+    '<div class="edit-field-label">Servings</div>' +
+    '<input class="edit-title-input" id="editServingsInput" value="' + (r.servings || '').replace(/&/g,'&amp;').replace(/"/g,'&quot;') + '" placeholder="e.g. 4 or 4-6" style="font-family:DM Sans,sans-serif;font-size:14px;font-weight:400">' +
     catSection +
     photoSection +
     '<div class="edit-field-label">Ingredients</div>' +
@@ -490,6 +494,8 @@ function openEditScreen() {
     for (var i = 0; i < recipes.length; i++) { if (recipes[i].id === currentRecipeId) { r2 = recipes[i]; break; } }
     if (!r2) return;
     r2.title = document.getElementById('editTitleInput').value.trim() || r2.title;
+    r2.author = document.getElementById('editAuthorInput') ? document.getElementById('editAuthorInput').value.trim() : (r2.author || '');
+    r2.servings = document.getElementById('editServingsInput') ? document.getElementById('editServingsInput').value.trim() : (r2.servings || '');
     r2.notes = document.getElementById('editNotesField').value;
     var selected = [];
     body.querySelectorAll('.det-cat-chip.selected').forEach(function(chip) { selected.push(chip.dataset.cat); });
@@ -612,6 +618,13 @@ function openRecipe(id) {
   currentRecipeId = id;
   document.getElementById('detailLabel').textContent = r.category || 'Recipe';
   document.getElementById('detailHeaderTitle').textContent = r.title;
+  var authorHtml = '';
+  if (r.author || r.servings) {
+    authorHtml = '<div style="display:flex;gap:16px;margin-bottom:12px;flex-wrap:wrap">';
+    if (r.author) authorHtml += '<div style="font-size:12px;color:rgba(0,0,0,0.4)">By <span style="color:rgba(74,124,89,0.8);font-weight:500">' + r.author + '</span></div>';
+    if (r.servings) authorHtml += '<div style="font-size:12px;color:rgba(0,0,0,0.4)">Serves <span style="font-weight:500;color:rgba(0,0,0,0.6)">' + r.servings + '</span></div>';
+    authorHtml += '</div>';
+  }
   var photoHtml = r.photo ? '<img src="' + r.photo + '" style="width:100%;max-height:280px;object-fit:cover;border-radius:14px;display:block;margin-bottom:24px">' : '';
   var ingHtml = r.ingredients.map(function(ing) { return '<div class="ingredient-row"><div class="ingredient-dot"></div><div class="ingredient-text">' + ing + '</div></div>'; }).join('');
   var methHtml = r.method.map(function(s, i) { return '<div class="method-row"><div class="step-num">0' + (i + 1) + '</div><div class="step-text">' + s + '</div></div>'; }).join('');
@@ -626,7 +639,7 @@ function openRecipe(id) {
     return '<span class="tag-chip" data-tag="' + t + '">' + t + '</span>';
   }).join('') + '</div>' : '';
   var notesSection = '<div class="detail-section"><div class="detail-section-header"><div class="detail-section-label">Notes</div><div class="detail-section-line"></div></div><textarea class="notes-ta" id="notesField" placeholder="Add notes, tips, variations…">' + notesVal.replace(/</g,'&lt;') + '</textarea><button class="notes-save-btn" id="saveNotesBtn">Save notes</button></div>';
-  document.getElementById('detailBody').innerHTML = '<div class="detail-full-title">' + r.title + '</div>' + photoHtml + catSection + tagsHtml + '<div class="detail-section"><div class="detail-section-header"><div class="detail-section-label">Ingredients</div><div class="detail-section-line"></div></div>' + ingHtml + '</div><div class="detail-section"><div class="detail-section-header"><div class="detail-section-label">Method</div><div class="detail-section-line"></div></div>' + methHtml + '</div>' + notesSection;
+  document.getElementById('detailBody').innerHTML = '<div class="detail-full-title">' + r.title + '</div>' + authorHtml + photoHtml + catSection + tagsHtml + '<div class="detail-section"><div class="detail-section-header"><div class="detail-section-label">Ingredients</div><div class="detail-section-line"></div></div>' + ingHtml + '</div><div class="detail-section"><div class="detail-section-header"><div class="detail-section-label">Method</div><div class="detail-section-line"></div></div>' + methHtml + '</div>' + notesSection;
   if (categories.length) {
     document.querySelectorAll('.det-cat-chip').forEach(function(chip) {
       chip.addEventListener('click', function() { this.classList.toggle('selected'); });
@@ -791,7 +804,7 @@ function saveRecipe() {
   if (!pendingRecipe) return;
   var selectedCats = [];
   document.querySelectorAll('.ext-cat-chip.selected').forEach(function(chip) { selectedCats.push(chip.dataset.cat); });
-  var recipe = { title: pendingRecipe.title, categories: selectedCats, category: selectedCats[0] || '', ingredients: pendingRecipe.ingredients, method: pendingRecipe.method, notes: '', photo: '', tags: [], id: Date.now().toString(), savedAt: new Date().toISOString() };
+  var recipe = { title: pendingRecipe.title, categories: selectedCats, category: selectedCats[0] || '', ingredients: pendingRecipe.ingredients, method: pendingRecipe.method, notes: '', photo: '', tags: [], author: '', servings: '', id: Date.now().toString(), savedAt: new Date().toISOString() };
   pendingRecipe = null;
   saveToCloud(recipe);
   // Wait for cloud to confirm before showing home screen
