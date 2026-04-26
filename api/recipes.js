@@ -1,4 +1,4 @@
-const { list, put, get, del } = require('@vercel/blob');
+const { list, put, del, getDownloadUrl } = require('@vercel/blob');
 
 module.exports = async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -8,11 +8,11 @@ module.exports = async function handler(req, res) {
 
   try {
     if (req.method === 'GET') {
-      // Get all recipes
       const { blobs } = await list({ prefix: 'recipes/' });
       const recipes = [];
       for (const blob of blobs) {
-        const response = await fetch(blob.url);
+        const url = await getDownloadUrl(blob.url);
+        const response = await fetch(url);
         const recipe = await response.json();
         recipes.push(recipe);
       }
@@ -20,17 +20,16 @@ module.exports = async function handler(req, res) {
       return res.status(200).json({ recipes });
 
     } else if (req.method === 'POST') {
-      // Save a recipe
       const recipe = req.body;
       if (!recipe || !recipe.id) return res.status(200).json({ error: 'No recipe data' });
-      const blob = await put('recipes/' + recipe.id + '.json', JSON.stringify(recipe), {
-        access: 'public',
-        contentType: 'application/json'
+      await put('recipes/' + recipe.id + '.json', JSON.stringify(recipe), {
+        access: 'private',
+        contentType: 'application/json',
+        allowOverwrite: true
       });
-      return res.status(200).json({ ok: true, url: blob.url });
+      return res.status(200).json({ ok: true });
 
     } else if (req.method === 'DELETE') {
-      // Delete a recipe
       const id = req.body && req.body.id;
       if (!id) return res.status(200).json({ error: 'No id provided' });
       const { blobs } = await list({ prefix: 'recipes/' + id });
