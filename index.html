@@ -398,7 +398,10 @@ function openEditScreen() {
     if (tas.length) tas[tas.length - 1].focus();
   });
 
-  document.getElementById('saveAllBtn').addEventListener('click', function() {
+  var saveAllBtn = document.getElementById('saveAllBtn');
+  var newSaveAllBtn = saveAllBtn.cloneNode(true);
+  saveAllBtn.parentNode.replaceChild(newSaveAllBtn, saveAllBtn);
+  newSaveAllBtn.addEventListener('click', function() {
     var r2 = null;
     for (var i = 0; i < recipes.length; i++) { if (recipes[i].id === currentRecipeId) { r2 = recipes[i]; break; } }
     if (!r2) return;
@@ -680,14 +683,14 @@ function saveRecipe() {
   var recipe = { title: pendingRecipe.title, categories: selectedCats, category: selectedCats[0] || '', ingredients: pendingRecipe.ingredients, method: pendingRecipe.method, notes: '', photo: '', id: Date.now().toString(), savedAt: new Date().toISOString() };
   pendingRecipe = null;
   saveToCloud(recipe);
-  // After saving to cloud, sync back so we get the authoritative list
+  // Wait for cloud to confirm before showing home screen
   fetch('/api/recipes').then(function(r) { return r.json(); }).then(function(data) {
     if (data.recipes && data.recipes.length) {
       recipes = data.recipes;
       localStorage.setItem('recipes', JSON.stringify(recipes));
     }
-  }).catch(function() {});
-  showScreen('homeScreen');
+    showScreen('homeScreen');
+  }).catch(function() { showScreen('homeScreen'); });
 }
 
 // Cloud sync — runs silently in background, never crashes the app
