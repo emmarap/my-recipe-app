@@ -402,6 +402,10 @@ function openEditScreen() {
   var newSaveAllBtn = saveAllBtn.cloneNode(true);
   saveAllBtn.parentNode.replaceChild(newSaveAllBtn, saveAllBtn);
   newSaveAllBtn.addEventListener('click', function() {
+    if (this.dataset.saving) return;
+    this.dataset.saving = '1';
+    var self = this;
+    setTimeout(function() { delete self.dataset.saving; }, 3000);
     var r2 = null;
     for (var i = 0; i < recipes.length; i++) { if (recipes[i].id === currentRecipeId) { r2 = recipes[i]; break; } }
     if (!r2) return;
@@ -705,6 +709,9 @@ function deleteFromCloud(id) {
   } catch(e) {}
 }
 function syncFromCloud() {
+  // Only sync if we're on the home screen to avoid overwriting in-progress edits
+  var homeVisible = !document.getElementById('homeScreen').classList.contains('hidden');
+  if (!homeVisible) return;
   try {
     fetch('/api/recipes').then(function(r) { return r.json(); }).then(function(data) {
       if (data.recipes && data.recipes.length) {
