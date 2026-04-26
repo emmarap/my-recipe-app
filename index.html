@@ -293,12 +293,14 @@ function syncCategoriesToCloud() {
 
 var cookStep = 0; // -1 = ingredients view, 0+ = method step index
 var wakeLock = null;
+var tickedIngredients = {}; // tracks ticked state by index
 
 function enterCookMode() {
   var r = null;
   for (var i = 0; i < recipes.length; i++) { if (recipes[i].id === currentRecipeId) { r = recipes[i]; break; } }
   if (!r) return;
   cookStep = -1;
+  tickedIngredients = {};
   document.getElementById('cookTitle').textContent = r.title;
   // Request wake lock to keep screen on
   try {
@@ -332,10 +334,23 @@ function renderCookScreen(r) {
     if (r.servings) body.innerHTML += '<div style="margin-top:16px;font-size:13px;color:rgba(0,0,0,0.4);font-family:Lora,serif">Serves ' + r.servings + '</div>';
     // Wire up ingredient tick
     body.querySelectorAll('.cook-ing-row').forEach(function(row) {
+      var ii = parseInt(row.dataset.ii);
+      // Restore ticked state
+      if (tickedIngredients[ii]) {
+        row.dataset.checked = '1';
+        var circle = row.querySelector('.cook-ing-check');
+        var text = row.querySelector('.cook-ing-text');
+        circle.style.background = '#4a7c59';
+        circle.style.borderColor = '#4a7c59';
+        circle.innerHTML = '<span style="color:#fff;font-size:13px;line-height:1">✓</span>';
+        text.style.textDecoration = 'line-through';
+        text.style.color = 'rgba(0,0,0,0.3)';
+      }
       row.addEventListener('click', function() {
         var checked = this.dataset.checked === '1';
         checked = !checked;
         this.dataset.checked = checked ? '1' : '0';
+        tickedIngredients[parseInt(this.dataset.ii)] = checked;
         var circle = this.querySelector('.cook-ing-check');
         var text = this.querySelector('.cook-ing-text');
         if (checked) {
@@ -417,10 +432,22 @@ document.getElementById('cookIngBtn').addEventListener('click', function() {
   if (r.servings) html += '<div style="margin-top:12px;font-size:12px;color:rgba(0,0,0,0.4)">Serves ' + r.servings + '</div>';
   document.getElementById('ingModalList').innerHTML = html;
   document.getElementById('ingModalList').querySelectorAll('.cook-ing-row').forEach(function(row) {
+    var ii = parseInt(row.dataset.ii);
+    if (tickedIngredients[ii]) {
+      row.dataset.checked = '1';
+      var circle = row.querySelector('.cook-ing-check');
+      var text = row.querySelector('.cook-ing-text');
+      circle.style.background = '#4a7c59';
+      circle.style.borderColor = '#4a7c59';
+      circle.innerHTML = '<span style="color:#fff;font-size:11px;line-height:1">✓</span>';
+      text.style.textDecoration = 'line-through';
+      text.style.color = 'rgba(0,0,0,0.3)';
+    }
     row.addEventListener('click', function() {
       var checked = this.dataset.checked === '1';
       checked = !checked;
       this.dataset.checked = checked ? '1' : '0';
+      tickedIngredients[parseInt(this.dataset.ii)] = checked;
       var circle = this.querySelector('.cook-ing-check');
       var text = this.querySelector('.cook-ing-text');
       if (checked) {
@@ -447,7 +474,14 @@ document.getElementById('cookNextBtn').addEventListener('click', function() {
   var r = null;
   for (var i = 0; i < recipes.length; i++) { if (recipes[i].id === currentRecipeId) { r = recipes[i]; break; } }
   if (!r) return;
-  if (cookStep === r.method.length - 1) {
+  // If on ingredients screen (-1), go to step 0
+  if (cookStep === -1) {
+    cookStep = 0;
+    renderCookScreen(r);
+    return;
+  }
+  // If on last step, finish
+  if (cookStep >= r.method.length - 1) {
     if (wakeLock) { try { wakeLock.release(); } catch(e) {} wakeLock = null; }
     openRecipe(currentRecipeId);
   } else {
