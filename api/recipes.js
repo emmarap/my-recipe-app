@@ -23,7 +23,7 @@ module.exports = async function handler(req, res) {
       const recipe = req.body;
       if (!recipe || !recipe.id) return res.status(200).json({ error: 'No recipe data' });
       await put('recipes/' + recipe.id + '.json', JSON.stringify(recipe), {
-        access: 'private',
+        access: 'public',
         contentType: 'application/json',
         allowOverwrite: true
       });
