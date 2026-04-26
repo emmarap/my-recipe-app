@@ -1,48 +1,57 @@
-const { list, put, get, del } = require(’@vercel/blob’);
-
 module.exports = async function handler(req, res) {
-res.setHeader(‘Access-Control-Allow-Origin’, ‘*’);
-res.setHeader(‘Access-Control-Allow-Methods’, ‘GET, POST, DELETE, OPTIONS’);
-res.setHeader(‘Access-Control-Allow-Headers’, ‘Content-Type’);
-if (req.method === ‘OPTIONS’) return res.status(200).end();
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+  if (req.method === 'OPTIONS') return res.status(200).end();
+  if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
+  var apiKey = process.env.ANTHROPIC_API_KEY;
+  if (!apiKey) return res.status(200).json({ error: 'ANTHROPIC_API_KEY not set' });
 
-try {
-if (req.method === ‘GET’) {
-// Get all recipes
-const { blobs } = await list({ prefix: ‘recipes/’ });
-const recipes = [];
-for (const blob of blobs) {
-const response = await fetch(blob.url);
-const recipe = await response.json();
-recipes.push(recipe);
-}
-recipes.sort(function(a, b) { return b.savedAt > a.savedAt ? 1 : -1; });
-return res.status(200).json({ recipes });
+  // Support both single image (legacy) and multiple images
+  var images = [];
+  if (req.body && req.body.images && Array.isArray(req.body.images)) {
+    images = req.body.images;
+  } else if (req.body && req.body.imageBase64) {
+    images = [{ imageBase64: req.body.imageBase64, mediaType: req.body.mediaType || 'image/jpeg' }];
+  }
+  if (!images.length) return res.status(200).json({ error: 'No images received' });
 
-```
-} else if (req.method === 'POST') {
-  // Save a recipe
-  const recipe = req.body;
-  if (!recipe || !recipe.id) return res.status(200).json({ error: 'No recipe data' });
-  const blob = await put('recipes/' + recipe.id + '.json', JSON.stringify(recipe), {
-    access: 'public',
-    contentType: 'application/json'
-  });
-  return res.status(200).json({ ok: true, url: blob.url });
+  try {
+    // Build content array with all images + prompt
+    var content = images.map(function(im) {
+      return { type: 'image', source: { type: 'base64', media_type: im.mediaType || 'image/jpeg', data: im.imageBase64 } };
+    });
+    var promptText = images.length > 1
+      ? 'These ' + images.length + ' images together show one recipe (e.g. ingredients in one photo, method in another). Extract the complete combined recipe. Return ONLY valid JSON, no markdown, no smart quotes:\n{"title":"Recipe name","category":"Dinner","ingredients":["ingredient 1","ingredient 2"],"method":["Step 1","Step 2"]}'
+      : 'Extract the recipe from this image. Return ONLY valid JSON, no markdown, no smart quotes:\n{"title":"Recipe name","category":"Dinner","ingredients":["ingredient 1","ingredient 2"],"method":["Step 1","Step 2"]}';
+    content.push({ type: 'text', text: promptText });
 
-} else if (req.method === 'DELETE') {
-  // Delete a recipe
-  const id = req.body && req.body.id;
-  if (!id) return res.status(200).json({ error: 'No id provided' });
-  const { blobs } = await list({ prefix: 'recipes/' + id });
-  for (const blob of blobs) { await del(blob.url); }
-  return res.status(200).json({ ok: true });
-}
+    var response = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'content-type': 'application/json',
+        'x-api-key': apiKey,
+        'anthropic-version': '2023-06-01'
+      },
+      body: JSON.stringify({
+        model: 'claude-haiku-4-5-20251001',
+        max_tokens: 1500,
+        messages: [{ role: 'user', content: content }]
+      })
+    });
 
-return res.status(405).json({ error: 'Method not allowed' });
-```
-
-} catch(err) {
-return res.status(200).json({ error: ’Server error: ’ + (err.message || String(err)) });
-}
+    var bodyText = await response.text();
+    if (!response.ok) return res.status(200).json({ error: 'Anthropic error ' + response.status + ': ' + bodyText.slice(0, 300) });
+    var data = JSON.parse(bodyText);
+    var text = (data.content || []).map(function(b) { return b.text || ''; }).join('').trim();
+    if (!text) return res.status(200).json({ error: 'Empty response' });
+    var cleaned = text.replace(/^```json\s*/i, '').replace(/^```\s*/i, '').replace(/```\s*$/i, '').trim();
+    cleaned = cleaned.replace(/[\u2018\u2019]/g, "'").replace(/[\u201C\u201D]/g, '"');
+    var match = cleaned.match(/\{[\s\S]+\}/);
+    if (!match) return res.status(200).json({ error: 'Claude said: ' + text.slice(0, 300) });
+    var recipe = JSON.parse(match[0]);
+    return res.status(200).json({ recipe: recipe });
+  } catch (err) {
+    return res.status(200).json({ error: 'Server error: ' + (err.message || String(err)) });
+  }
 };
