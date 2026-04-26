@@ -678,9 +678,15 @@ function saveRecipe() {
   var selectedCats = [];
   document.querySelectorAll('.ext-cat-chip.selected').forEach(function(chip) { selectedCats.push(chip.dataset.cat); });
   var recipe = { title: pendingRecipe.title, categories: selectedCats, category: selectedCats[0] || '', ingredients: pendingRecipe.ingredients, method: pendingRecipe.method, notes: '', photo: '', id: Date.now().toString(), savedAt: new Date().toISOString() };
-  recipes.unshift(recipe);
-  persist();
+  pendingRecipe = null;
   saveToCloud(recipe);
+  // After saving to cloud, sync back so we get the authoritative list
+  fetch('/api/recipes').then(function(r) { return r.json(); }).then(function(data) {
+    if (data.recipes && data.recipes.length) {
+      recipes = data.recipes;
+      localStorage.setItem('recipes', JSON.stringify(recipes));
+    }
+  }).catch(function() {});
   showScreen('homeScreen');
 }
 
