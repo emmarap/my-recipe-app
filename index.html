@@ -574,7 +574,10 @@ function renderList() {
     var matchQ = !q || r.title.toLowerCase().indexOf(q) !== -1 || (r.category || '').toLowerCase().indexOf(q) !== -1
       || (r.tags || []).some(function(t) { return t.toLowerCase().indexOf(q) !== -1; });
     var ingQ = document.getElementById('ingredientInput') ? document.getElementById('ingredientInput').value.toLowerCase().trim() : '';
-    var matchIng = !ingQ || (r.ingredients || []).some(function(ing) { return ing.toLowerCase().indexOf(ingQ) !== -1; });
+    var matchIng = !ingQ || (r.ingredients || []).some(function(ing) {
+      var re = new RegExp('\\b' + ingQ.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '\\b', 'i');
+      return re.test(ing);
+    });
     var matchTag = !activeTag || (r.tags || []).indexOf(activeTag) !== -1;
     return matchCat && matchQ && matchTag && matchIng;
   });
