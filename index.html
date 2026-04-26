@@ -203,6 +203,15 @@ body { font-family: 'DM Sans', sans-serif; background: #0f0e0c; color: #f0ebe3; 
 <!-- Hidden photo input — lives outside editBody so it persists -->
 <input type="file" accept="image/*" id="photoFileInput" style="display:none">
 
+<div class="modal-overlay" id="deleteModal">
+  <div class="modal-box">
+    <h3>Delete Recipe?</h3>
+    <p style="font-size:14px;color:rgba(240,235,227,0.5);margin-bottom:24px;line-height:1.5">This can't be undone.</p>
+    <button class="modal-add-btn" id="confirmDeleteBtn" style="background:rgba(220,80,60,0.8);margin-bottom:10px">Yes, delete</button>
+    <button class="modal-done-btn" id="cancelDeleteBtn">Cancel</button>
+  </div>
+</div>
+
 <div class="modal-overlay" id="catModal">
   <div class="modal-box">
     <h3>My Categories</h3>
@@ -242,7 +251,16 @@ document.getElementById('backBtn').addEventListener('click', function() { showSc
 document.getElementById('detailBackBtn').addEventListener('click', function() { showScreen('homeScreen'); });
 document.getElementById('editBackBtn').addEventListener('click', function() { openRecipe(currentRecipeId); });
 document.getElementById('searchInput').addEventListener('input', renderList);
-document.getElementById('deleteBtn').addEventListener('click', deleteCurrentRecipe);
+document.getElementById('deleteBtn').addEventListener('click', function() {
+  document.getElementById('deleteModal').classList.add('open');
+});
+document.getElementById('confirmDeleteBtn').addEventListener('click', function() {
+  document.getElementById('deleteModal').classList.remove('open');
+  deleteCurrentRecipe();
+});
+document.getElementById('cancelDeleteBtn').addEventListener('click', function() {
+  document.getElementById('deleteModal').classList.remove('open');
+});
 document.getElementById('fileInput').addEventListener('change', function() { if (this.files && this.files.length) handleFiles(this.files); });
 document.getElementById('changeInput').addEventListener('change', function() { if (this.files && this.files.length) handleFiles(this.files); });
 document.getElementById('scanBtn').addEventListener('click', scanRecipe);
