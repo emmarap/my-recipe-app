@@ -253,6 +253,17 @@ try { categories = JSON.parse(localStorage.getItem('categories') || '[]'); } cat
 function persist() {
   localStorage.setItem('recipes', JSON.stringify(recipes));
   localStorage.setItem('categories', JSON.stringify(categories));
+  syncCategoriesToCloud();
+}
+
+function syncCategoriesToCloud() {
+  try {
+    fetch('/api/categories', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ categories: categories })
+    }).catch(function() {});
+  } catch(e) {}
 }
 
 function showScreen(id) {
@@ -840,6 +851,16 @@ function syncFromCloud() {
       if (data.recipes && data.recipes.length) {
         recipes = data.recipes;
         localStorage.setItem('recipes', JSON.stringify(recipes));
+        try { renderList(); } catch(e) {}
+      }
+    }).catch(function() {});
+  } catch(e) {}
+  // Also sync categories
+  try {
+    fetch('/api/categories').then(function(r) { return r.json(); }).then(function(data) {
+      if (data.categories && data.categories.length) {
+        categories = data.categories;
+        localStorage.setItem('categories', JSON.stringify(categories));
         try { renderList(); } catch(e) {}
       }
     }).catch(function() {});
