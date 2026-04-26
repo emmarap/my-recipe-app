@@ -22,8 +22,8 @@ module.exports = async function handler(req, res) {
       return { type: 'image', source: { type: 'base64', media_type: im.mediaType || 'image/jpeg', data: im.imageBase64 } };
     });
     var promptText = images.length > 1
-      ? 'These ' + images.length + ' images together show one recipe (e.g. ingredients in one photo, method in another). Extract the complete combined recipe. Return ONLY valid JSON, no markdown, no smart quotes:\n{"title":"Recipe name","category":"Dinner","ingredients":["ingredient 1","ingredient 2"],"method":["Step 1","Step 2"]}'
-      : 'Extract the recipe from this image. Return ONLY valid JSON, no markdown, no smart quotes:\n{"title":"Recipe name","category":"Dinner","ingredients":["ingredient 1","ingredient 2"],"method":["Step 1","Step 2"]}';
+      ? 'These ' + images.length + ' images together show one recipe (e.g. ingredients in one photo, method in another). Extract the complete combined recipe. Return ONLY valid JSON, no markdown, no smart quotes:\n{"title":"Recipe name","author":"Author name or empty string","servings":"4 or empty string","category":"Dinner","ingredients":["ingredient 1","ingredient 2"],"method":["Step 1","Step 2"]}'
+      : 'Extract the recipe from this image. Return ONLY valid JSON, no markdown, no smart quotes:\n{"title":"Recipe name","author":"Author name or empty string","servings":"4 or empty string","category":"Dinner","ingredients":["ingredient 1","ingredient 2"],"method":["Step 1","Step 2"]}';
     content.push({ type: 'text', text: promptText });
 
     var response = await fetch('https://api.anthropic.com/v1/messages', {
