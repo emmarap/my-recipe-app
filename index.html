@@ -667,7 +667,10 @@ function showExtracted(r) {
   document.querySelectorAll('.ext-cat-chip').forEach(function(chip) {
     chip.addEventListener('click', function() { this.classList.toggle('selected'); });
   });
-  document.getElementById('saveBtn').addEventListener('click', saveRecipe);
+  var saveBtn = document.getElementById('saveBtn');
+  var newSaveBtn = saveBtn.cloneNode(true);
+  saveBtn.parentNode.replaceChild(newSaveBtn, saveBtn);
+  newSaveBtn.addEventListener('click', saveRecipe);
 }
 
 function saveRecipe() {
