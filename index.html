@@ -772,10 +772,6 @@ function openRecipe(id) {
   saveToCloud(r);
   document.getElementById('detailLabel').textContent = r.category || 'Recipe';
   document.getElementById('detailHeaderTitle').textContent = r.title;
-  var unitToggleHtml = '<div style="display:flex;align-items:center;gap:8px;margin-bottom:16px">' +
-    '<span style="font-size:12px;color:rgba(0,0,0,0.4)">Units:</span>' +
-    '<button id="unitToggleBtn" style="background:rgba(74,124,89,0.08);border:1px solid rgba(74,124,89,0.2);color:#4a7c59;border-radius:20px;padding:4px 12px;font-size:12px;cursor:pointer">Cup → ml</button>' +
-    '</div>';
   var authorHtml = '';
   if (r.author || r.servings) {
     authorHtml = '<div style="display:flex;gap:16px;margin-bottom:12px;flex-wrap:wrap">';
@@ -799,57 +795,9 @@ function openRecipe(id) {
     return '<span class="tag-chip" data-tag="' + t + '">' + t + '</span>';
   }).join('') + '</div>' : '';
   var notesSection = '<div class="detail-section"><div class="detail-section-header"><div class="detail-section-label">Notes</div><div class="detail-section-line"></div></div><textarea class="notes-ta" id="notesField" placeholder="Add notes, tips, variations…">' + notesVal.replace(/</g,'&lt;') + '</textarea><button class="notes-save-btn" id="saveNotesBtn">Save notes</button></div>';
-  document.getElementById('detailBody').innerHTML = '<div class="detail-full-title">' + r.title + '</div>' + unitToggleHtml + authorHtml + photoHtml + catSection + tagsHtml + '<div class="detail-section"><div class="detail-section-header"><div class="detail-section-label">Ingredients</div><div class="detail-section-line"></div></div>' + ingHtml + '</div><div class="detail-section"><div class="detail-section-header"><div class="detail-section-label">Method</div><div class="detail-section-line"></div></div>' + methHtml + '</div>' + notesSection;
+  document.getElementById('detailBody').innerHTML = '<div class="detail-full-title">' + r.title + '</div>' + authorHtml + photoHtml + catSection + tagsHtml + '<div class="detail-section"><div class="detail-section-header"><div class="detail-section-label">Ingredients</div><div class="detail-section-line"></div></div>' + ingHtml + '</div><div class="detail-section"><div class="detail-section-header"><div class="detail-section-label">Method</div><div class="detail-section-line"></div></div>' + methHtml + '</div>' + notesSection;
 
-  // Unit conversion toggle
-  var useMetric = false;
-  var conversionMap = [
-    { pattern: /(\d+(?:\.\d+)?)\s*cups?/gi, toMetric: function(n) { return Math.round(n * 240) + 'ml'; } },
-    { pattern: /(\d+(?:\.\d+)?)\s*tbsp/gi, toMetric: function(n) { return Math.round(n * 15) + 'ml'; } },
-    { pattern: /(\d+(?:\.\d+)?)\s*tablespoons?/gi, toMetric: function(n) { return Math.round(n * 15) + 'ml'; } },
-    { pattern: /(\d+(?:\.\d+)?)\s*tsp/gi, toMetric: function(n) { return Math.round(n * 5) + 'ml'; } },
-    { pattern: /(\d+(?:\.\d+)?)\s*teaspoons?/gi, toMetric: function(n) { return Math.round(n * 5) + 'ml'; } },
-    { pattern: /(\d+(?:\.\d+)?)\s*fl\.?\s*oz/gi, toMetric: function(n) { return Math.round(n * 30) + 'ml'; } },
-    { pattern: /(\d+(?:\.\d+)?)\s*pints?/gi, toMetric: function(n) { return Math.round(n * 473) + 'ml'; } },
-    { pattern: /(\d+(?:\.\d+)?)\s*quarts?/gi, toMetric: function(n) { return Math.round(n * 946) + 'ml'; } },
-  ];
-
-  function convertIngredients(ingredients, toMetric) {
-    return ingredients.map(function(ing) {
-      var result = ing;
-      conversionMap.forEach(function(conv) {
-        result = result.replace(conv.pattern, function(match, num) {
-          return toMetric ? conv.toMetric(parseFloat(num)) : match;
-        });
-      });
-      return result;
-    });
-  }
-
-  function refreshIngredients() {
-    var ings = useMetric ? convertIngredients(r.ingredients, true) : r.ingredients;
-    var ingHtml2 = ings.map(function(ing) { return '<div class="ingredient-row"><div class="ingredient-dot"></div><div class="ingredient-text">' + ing + '</div></div>'; }).join('');
-    var ingSection = document.querySelector('.detail-section');
-    if (ingSection) ingSection.querySelector('.detail-section-header').nextElementSibling && (ingSection.innerHTML = '<div class="detail-section-header"><div class="detail-section-label">Ingredients</div><div class="detail-section-line"></div></div>' + ingHtml2);
-  }
-
-  var unitBtn = document.getElementById('unitToggleBtn');
-  if (unitBtn) {
-    unitBtn.addEventListener('click', function() {
-      useMetric = !useMetric;
-      this.textContent = useMetric ? 'ml → Cup' : 'Cup → ml';
-      this.style.background = useMetric ? 'rgba(74,124,89,0.2)' : 'rgba(74,124,89,0.08)';
-      var ings = useMetric ? convertIngredients(r.ingredients, true) : r.ingredients;
-      var ingHtml2 = ings.map(function(ing) { return '<div class="ingredient-row"><div class="ingredient-dot"></div><div class="ingredient-text">' + ing + '</div></div>'; }).join('');
-      // Find and update just the ingredients section
-      var allSections = document.querySelectorAll('.detail-section');
-      if (allSections.length) {
-        allSections[0].innerHTML = '<div class="detail-section-header"><div class="detail-section-label">Ingredients</div><div class="detail-section-line"></div></div>' + ingHtml2;
-      }
-    });
-  }
-
-  document.getElementById('saveNotesBtn').addEventListener('click', function() {
+    document.getElementById('saveNotesBtn').addEventListener('click', function() {
     var notes = document.getElementById('notesField').value;
     for (var i = 0; i < recipes.length; i++) {
       if (recipes[i].id === currentRecipeId) { recipes[i].notes = notes; break; }
