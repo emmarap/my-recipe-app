@@ -395,6 +395,7 @@ function openEditScreen() {
     r2.method = [];
     document.getElementById('methList').querySelectorAll('textarea').forEach(function(ta) { if (ta.value.trim()) r2.method.push(ta.value.trim()); });
     persist();
+    saveToCloud(r2);
     openRecipe(currentRecipeId);
   });
 
@@ -532,6 +533,7 @@ function deleteCurrentRecipe() {
   if (!currentRecipeId) return;
   var newRecipes = [];
   for (var i = 0; i < recipes.length; i++) { if (recipes[i].id !== currentRecipeId) newRecipes.push(recipes[i]); }
+  deleteFromCloud(currentRecipeId);
   recipes = newRecipes;
   persist();
   showScreen('homeScreen');
@@ -657,11 +659,35 @@ function saveRecipe() {
   var recipe = { title: pendingRecipe.title, categories: selectedCats, category: selectedCats[0] || '', ingredients: pendingRecipe.ingredients, method: pendingRecipe.method, notes: '', photo: '', id: Date.now().toString(), savedAt: new Date().toISOString() };
   recipes.unshift(recipe);
   persist();
+  saveToCloud(recipe);
   showScreen('homeScreen');
 }
 
+// Cloud sync — runs silently in background, never crashes the app
+function saveToCloud(recipe) {
+  try {
+    fetch('/api/recipes', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(recipe) }).catch(function() {});
+  } catch(e) {}
+}
+function deleteFromCloud(id) {
+  try {
+    fetch('/api/recipes', { method: 'DELETE', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id: id }) }).catch(function() {});
+  } catch(e) {}
+}
+function syncFromCloud() {
+  try {
+    fetch('/api/recipes').then(function(r) { return r.json(); }).then(function(data) {
+      if (data.recipes && data.recipes.length > recipes.length) {
+        recipes = data.recipes;
+        localStorage.setItem('recipes', JSON.stringify(recipes));
+        try { renderList(); } catch(e) {}
+      }
+    }).catch(function() {});
+  } catch(e) {}
+}
+
 try { renderList(); } catch(e) { console.error(e); }
+syncFromCloud();
 </script>
 </body>
 </html>
-
