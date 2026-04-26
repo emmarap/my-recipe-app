@@ -460,22 +460,20 @@ function openManualEntry() {
       x.addEventListener('click', function() { manTags.splice(parseInt(this.dataset.ti), 1); renderManTags(); });
     });
   }
-  setTimeout(function() {
-    var manTagInput = document.getElementById('manTagInput');
-    if (manTagInput) {
-      manTagInput.addEventListener('keydown', function(e) {
-        if (e.key === 'Enter') {
-          e.preventDefault();
-          var val = this.value.trim();
-          if (!val) return;
-          if (!val.startsWith('#')) val = '#' + val;
-          if (manTags.indexOf(val) === -1) manTags.push(val);
-          this.value = '';
-          renderManTags();
-        }
-      });
-    }
-  }, 100);
+  var manTagInput = document.getElementById('manTagInput');
+  if (manTagInput) {
+    manTagInput.addEventListener('keydown', function(e) {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        var val = this.value.trim();
+        if (!val) return;
+        if (!val.startsWith('#')) val = '#' + val;
+        if (manTags.indexOf(val) === -1) manTags.push(val);
+        this.value = '';
+        renderManTags();
+      }
+    });
+  }
 
   // Wire cat chips
   body.querySelectorAll('.det-cat-chip').forEach(function(chip) {
@@ -961,7 +959,7 @@ function renderCatModal() {
   }
   var html = '';
   for (var i = 0; i < categories.length; i++) {
-    html += '<div class="modal-cat-row"><span>' + categories[i] + '</span><button class="modal-cat-del" data-i="' + i + '">×</button></div>';
+    html += '<div class="modal-cat-row"><input class="modal-cat-edit" data-i="' + i + '" value="' + categories[i] + '" style="flex:1;background:transparent;border:none;font-family:Lora,serif;font-size:14px;color:#1a1a1a;outline:none;padding:0"><button class="modal-cat-del" data-i="' + i + '">×</button></div>';
   }
   list.innerHTML = html;
   list.querySelectorAll('.modal-cat-del').forEach(function(btn) {
@@ -971,6 +969,16 @@ function renderCatModal() {
       categories.splice(idx, 1);
       persist();
       renderCatModal();
+    });
+  });
+  list.querySelectorAll('.modal-cat-edit').forEach(function(input) {
+    input.addEventListener('change', function() {
+      var idx = parseInt(this.dataset.i);
+      var newName = this.value.trim();
+      if (!newName) return;
+      if (activeCategory === categories[idx]) activeCategory = newName;
+      categories[idx] = newName;
+      persist();
     });
   });
 }
