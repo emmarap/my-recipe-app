@@ -677,7 +677,7 @@ function deleteFromCloud(id) {
 function syncFromCloud() {
   try {
     fetch('/api/recipes').then(function(r) { return r.json(); }).then(function(data) {
-      if (data.recipes && data.recipes.length > recipes.length) {
+      if (data.recipes && data.recipes.length) {
         recipes = data.recipes;
         localStorage.setItem('recipes', JSON.stringify(recipes));
         try { renderList(); } catch(e) {}
