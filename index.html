@@ -125,6 +125,11 @@ body { font-family: 'DM Sans', sans-serif; background: #0f0e0c; color: #f0ebe3; 
 .edit-notes-ta::placeholder { color: rgba(240,235,227,0.2); }
 .save-all-btn { width: 100%; background: #c9a96e; color: #0f0e0c; border: none; border-radius: 13px; padding: 17px; font-family: 'DM Sans', sans-serif; font-size: 14px; font-weight: 500; letter-spacing: 0.06em; text-transform: uppercase; cursor: pointer; margin-top: 24px; }
 .photo-upload-btn { display: inline-block; background: rgba(201,169,110,0.12); border: 1px solid rgba(201,169,110,0.25); color: #c9a96e; border-radius: 8px; padding: 8px 16px; font-family: 'DM Sans', sans-serif; font-size: 12px; cursor: pointer; margin-bottom: 8px; }
+.tag-chip { display: inline-block; background: rgba(240,235,227,0.06); border: 1px solid rgba(240,235,227,0.12); color: rgba(240,235,227,0.5); border-radius: 20px; padding: 4px 10px; font-size: 11px; cursor: pointer; margin: 3px 3px 3px 0; font-family: 'DM Sans', sans-serif; }
+.tag-chip:hover { background: rgba(240,235,227,0.1); }
+.edit-tag-input { width: 100%; background: rgba(240,235,227,0.05); border: 1px solid rgba(240,235,227,0.1); border-radius: 10px; padding: 10px 14px; color: #f0ebe3; font-family: 'DM Sans', sans-serif; font-size: 13px; outline: none; }
+.edit-tag-input:focus { border-color: rgba(201,169,110,0.3); }
+.edit-tag-input::placeholder { color: rgba(240,235,227,0.2); }
 .photo-remove-btn { display: inline-block; background: rgba(220,80,60,0.1); border: 1px solid rgba(220,80,60,0.2); color: rgba(220,80,60,0.6); border-radius: 8px; padding: 8px 16px; font-family: 'DM Sans', sans-serif; font-size: 12px; cursor: pointer; margin-bottom: 8px; margin-left: 8px; }
 </style>
 </head>
@@ -226,6 +231,7 @@ body { font-family: 'DM Sans', sans-serif; background: #0f0e0c; color: #f0ebe3; 
 var recipes = [];
 var categories = [];
 var activeCategory = 'All';
+var activeTag = null;
 var currentRecipeId = null;
 var currentImages = []; // array of {b64, mediaType}
 var pendingRecipe = null;
@@ -339,6 +345,9 @@ function openEditScreen() {
     '<div class="edit-field-label">Method</div>' +
     '<div id="methList">' + methItems + '</div>' +
     '<button class="add-item-btn" id="addMethBtn">+ Add step</button>' +
+    '<div class="edit-field-label">Tags</div>' +
+    '<div id="tagList" style="margin-bottom:8px"></div>' +
+    '<input class="edit-tag-input" id="tagInput" placeholder="Add a tag e.g. #favourites — press Enter">' +
     '<div class="edit-field-label">Notes</div>' +
     '<textarea class="edit-notes-ta" id="editNotesField" placeholder="Add notes, tips, variations…">' + safeNotes + '</textarea>' +
     '<button class="save-all-btn" id="saveAllBtn">✓ Save Recipe</button>';
@@ -352,6 +361,39 @@ function openEditScreen() {
   body.querySelectorAll('.det-cat-chip').forEach(function(chip) {
     chip.addEventListener('click', function() { this.classList.toggle('selected'); });
   });
+
+  // Render existing tags
+  function renderTagList() {
+    var tagList = document.getElementById('tagList');
+    if (!tagList) return;
+    var rTags = r.tags || [];
+    tagList.innerHTML = rTags.map(function(t, i) {
+      return '<span class="tag-chip">' + t + ' <span data-ti="' + i + '" style="cursor:pointer;opacity:0.5">×</span></span>';
+    }).join('');
+    tagList.querySelectorAll('span[data-ti]').forEach(function(x) {
+      x.addEventListener('click', function() {
+        r.tags.splice(parseInt(this.dataset.ti), 1);
+        renderTagList();
+      });
+    });
+  }
+  renderTagList();
+
+  var tagInput = document.getElementById('tagInput');
+  if (tagInput) {
+    tagInput.addEventListener('keydown', function(e) {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        var val = this.value.trim();
+        if (!val) return;
+        if (!val.startsWith('#')) val = '#' + val;
+        if (!r.tags) r.tags = [];
+        if (r.tags.indexOf(val) === -1) r.tags.push(val);
+        this.value = '';
+        renderTagList();
+      }
+    });
+  }
 
   document.getElementById('changePhotoBtn').addEventListener('click', function() {
     document.getElementById('photoFileInput').click();
@@ -434,10 +476,19 @@ function buildCategories() {
     html += '<button class="cat-btn ' + (activeCategory === categories[i] ? 'active' : '') + '" data-cat="' + categories[i] + '">' + categories[i] + '</button>';
   }
   html += '<button class="cat-add-btn" id="manageCatBtn">+ Category</button>';
+  if (activeTag) {
+    html += '<button class="cat-btn active" id="clearTagBtn" style="background:rgba(240,235,227,0.15);border-color:rgba(240,235,227,0.3);color:#f0ebe3">' + activeTag + ' ×</button>';
+  }
   bar.innerHTML = html;
   document.querySelectorAll('.cat-btn').forEach(function(btn) {
     btn.addEventListener('click', function() { activeCategory = this.dataset.cat; try { renderList(); } catch(e) { console.error(e); } });
   });
+  if (activeTag && document.getElementById('clearTagBtn')) {
+    document.getElementById('clearTagBtn').addEventListener('click', function() {
+      activeTag = null;
+      try { renderList(); } catch(e) {}
+    });
+  }
   document.getElementById('manageCatBtn').addEventListener('click', function() {
     renderCatModal();
     document.getElementById('catModal').classList.add('open');
@@ -482,8 +533,10 @@ function renderList() {
   var filtered = recipes.filter(function(r) {
     var rCatsF = Array.isArray(r.categories) ? r.categories : (r.category ? [r.category] : []);
     var matchCat = activeCategory === 'All' || rCatsF.indexOf(activeCategory) !== -1;
-    var matchQ = !q || r.title.toLowerCase().indexOf(q) !== -1 || (r.category || '').toLowerCase().indexOf(q) !== -1;
-    return matchCat && matchQ;
+    var matchQ = !q || r.title.toLowerCase().indexOf(q) !== -1 || (r.category || '').toLowerCase().indexOf(q) !== -1
+      || (r.tags || []).some(function(t) { return t.toLowerCase().indexOf(q) !== -1; });
+    var matchTag = !activeTag || (r.tags || []).indexOf(activeTag) !== -1;
+    return matchCat && matchQ && matchTag;
   });
   if (!filtered.length) {
     list.innerHTML = '<div class="empty-state"><div class="empty-icon">📖</div><div class="empty-title">' + (recipes.length ? 'No matches' : 'No recipes yet') + '</div><div class="empty-sub">' + (recipes.length ? 'Try a different category' : 'Tap + to scan your first recipe') + '</div></div>';
@@ -525,8 +578,12 @@ function openRecipe(id) {
   }).join('');
   var catSection = categories.length ? '<div style="margin-bottom:20px"><div style="font-size:10px;letter-spacing:0.2em;text-transform:uppercase;color:rgba(240,235,227,0.35);margin-bottom:10px">Categories</div><div class="cat-chips-wrap">' + detChips + '</div><button id="saveCatBtn" style="margin-top:10px;background:rgba(201,169,110,0.15);border:1px solid rgba(201,169,110,0.3);color:#c9a96e;border-radius:8px;padding:7px 16px;font-family:DM Sans,sans-serif;font-size:12px;cursor:pointer">Save categories</button></div>' : '';
   var notesVal = r.notes || '';
+  var rTags = r.tags && r.tags.length ? r.tags : [];
+  var tagsHtml = rTags.length ? '<div style="margin-bottom:20px">' + rTags.map(function(t) {
+    return '<span class="tag-chip" data-tag="' + t + '">' + t + '</span>';
+  }).join('') + '</div>' : '';
   var notesSection = '<div class="detail-section"><div class="detail-section-header"><div class="detail-section-label">Notes</div><div class="detail-section-line"></div></div><textarea class="notes-ta" id="notesField" placeholder="Add notes, tips, variations…">' + notesVal.replace(/</g,'&lt;') + '</textarea><button class="notes-save-btn" id="saveNotesBtn">Save notes</button></div>';
-  document.getElementById('detailBody').innerHTML = '<div class="detail-full-title">' + r.title + '</div>' + photoHtml + catSection + '<div class="detail-section"><div class="detail-section-header"><div class="detail-section-label">Ingredients</div><div class="detail-section-line"></div></div>' + ingHtml + '</div><div class="detail-section"><div class="detail-section-header"><div class="detail-section-label">Method</div><div class="detail-section-line"></div></div>' + methHtml + '</div>' + notesSection;
+  document.getElementById('detailBody').innerHTML = '<div class="detail-full-title">' + r.title + '</div>' + photoHtml + catSection + tagsHtml + '<div class="detail-section"><div class="detail-section-header"><div class="detail-section-label">Ingredients</div><div class="detail-section-line"></div></div>' + ingHtml + '</div><div class="detail-section"><div class="detail-section-header"><div class="detail-section-label">Method</div><div class="detail-section-line"></div></div>' + methHtml + '</div>' + notesSection;
   if (categories.length) {
     document.querySelectorAll('.det-cat-chip').forEach(function(chip) {
       chip.addEventListener('click', function() { this.classList.toggle('selected'); });
@@ -550,6 +607,13 @@ function openRecipe(id) {
     this.textContent = '✓ Saved!';
     var btn = this;
     setTimeout(function() { btn.textContent = 'Save notes'; }, 1500);
+  });
+  // Wire tag clicks
+  document.querySelectorAll('#detailBody .tag-chip[data-tag]').forEach(function(chip) {
+    chip.addEventListener('click', function() {
+      activeTag = this.dataset.tag;
+      showScreen('homeScreen');
+    });
   });
   showScreen('detailScreen');
 }
@@ -684,7 +748,7 @@ function saveRecipe() {
   if (!pendingRecipe) return;
   var selectedCats = [];
   document.querySelectorAll('.ext-cat-chip.selected').forEach(function(chip) { selectedCats.push(chip.dataset.cat); });
-  var recipe = { title: pendingRecipe.title, categories: selectedCats, category: selectedCats[0] || '', ingredients: pendingRecipe.ingredients, method: pendingRecipe.method, notes: '', photo: '', id: Date.now().toString(), savedAt: new Date().toISOString() };
+  var recipe = { title: pendingRecipe.title, categories: selectedCats, category: selectedCats[0] || '', ingredients: pendingRecipe.ingredients, method: pendingRecipe.method, notes: '', photo: '', tags: [], id: Date.now().toString(), savedAt: new Date().toISOString() };
   pendingRecipe = null;
   saveToCloud(recipe);
   // Wait for cloud to confirm before showing home screen
