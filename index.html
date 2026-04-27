@@ -1076,7 +1076,7 @@ function renderList() {
     var tagHtml = (r.tags && r.tags.length) ? r.tags.slice(0,3).map(function(t) { return '<span class="recipe-cat-tag" style="background:rgba(74,124,89,0.06);color:rgba(74,124,89,0.6);border:none">' + t + '</span>'; }).join('') : '';
     var imgHtml = r.photo
       ? '<img class="recipe-card-img" src="' + r.photo + '">'
-      : '<div class="recipe-card-no-img">📖</div>';
+      : '<img class="recipe-card-img" src="/forks.jpg">';
     var div = document.createElement('div');
     div.className = 'recipe-card';
     div.dataset.id = r.id;
