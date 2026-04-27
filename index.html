@@ -180,6 +180,10 @@ body { font-family: 'Lora', serif; background: #f8f8f6; color: #1a1a1a; }
       <div style="font-family:Cormorant Garant,serif;font-size:20px;font-weight:600;color:#1a1a1a;margin-bottom:6px">✍️ Enter manually</div>
       <div style="font-size:13px;color:rgba(0,0,0,0.4)">Type in the recipe yourself — attach a photo of the original for reference</div>
     </button>
+    <button id="chooseUrlBtn" style="background:#f8f8f6;border:1px solid rgba(0,0,0,0.1);border-radius:16px;padding:24px;text-align:left;cursor:pointer;width:100%">
+      <div style="font-family:Cormorant Garant,serif;font-size:20px;font-weight:600;color:#1a1a1a;margin-bottom:6px">🔗 Paste a URL</div>
+      <div style="font-size:13px;color:rgba(0,0,0,0.4)">Import a recipe from a website automatically</div>
+    </button>
   </div>
 </div>
 
@@ -192,6 +196,23 @@ body { font-family: 'Lora', serif; background: #f8f8f6; color: #1a1a1a; }
     </div>
   </div>
   <div class="edit-body" id="manualBody" style="flex:1;overflow-y:auto;padding:24px 24px 100px"></div>
+</div>
+
+<div class="screen hidden" id="urlScreen" style="background:#f8f8f6">
+  <div class="scan-header">
+    <button class="back-btn" id="urlBackBtn">←</button>
+    <div class="scan-header-text">
+      <div class="scan-label">Import Recipe</div>
+      <h2>Paste a URL</h2>
+    </div>
+  </div>
+  <div class="scan-body">
+    <input id="urlInput" type="url" placeholder="https://www.example.com/recipe..." style="width:100%;background:rgba(0,0,0,0.04);border:1px solid rgba(0,0,0,0.1);border-radius:12px;padding:14px 16px;font-family:Lora,serif;font-size:14px;color:#1a1a1a;outline:none;margin-bottom:16px;display:block">
+    <button class="primary-btn" id="urlScrapeBtn">✦ Import Recipe</button>
+    <div class="status-msg" id="urlStatus" style="display:none"></div>
+    <div class="error-msg" id="urlError" style="display:none"></div>
+    <div id="urlExtractedSection" style="display:none"></div>
+  </div>
 </div>
 
 <div class="screen hidden" id="scanScreen">
@@ -586,6 +607,40 @@ document.getElementById('newBackBtn').addEventListener('click', function() { sho
 document.getElementById('chooseScanBtn').addEventListener('click', function() { showScreen('scanScreen'); });
 document.getElementById('chooseManualBtn').addEventListener('click', function() { openManualEntry(); });
 document.getElementById('manualBackBtn').addEventListener('click', function() { showScreen('newScreen'); });
+document.getElementById('urlBackBtn').addEventListener('click', function() { showScreen('newScreen'); });
+document.getElementById('chooseUrlBtn').addEventListener('click', function() {
+  document.getElementById('urlInput').value = '';
+  document.getElementById('urlStatus').style.display = 'none';
+  document.getElementById('urlError').style.display = 'none';
+  document.getElementById('urlExtractedSection').style.display = 'none';
+  document.getElementById('urlExtractedSection').innerHTML = '';
+  showScreen('urlScreen');
+});
+document.getElementById('urlScrapeBtn').addEventListener('click', function() {
+  var url = document.getElementById('urlInput').value.trim();
+  if (!url) { document.getElementById('urlError').style.display = 'block'; document.getElementById('urlError').textContent = 'Please paste a URL first.'; return; }
+  var btn = this;
+  var status = document.getElementById('urlStatus');
+  var errEl = document.getElementById('urlError');
+  btn.disabled = true; btn.textContent = 'Importing…';
+  status.style.display = 'block'; status.textContent = 'Fetching recipe from ' + url.split('/')[2] + '…';
+  errEl.style.display = 'none';
+  fetch('/api/scrape', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ url: url })
+  }).then(function(r) { return r.json(); }).then(function(data) {
+    btn.disabled = false; btn.textContent = '✦ Import Recipe';
+    status.style.display = 'none';
+    if (data.error) { errEl.style.display = 'block'; errEl.textContent = '⚠️ ' + data.error; return; }
+    pendingRecipe = data.recipe;
+    showExtracted(data.recipe, 'urlExtractedSection');
+  }).catch(function() {
+    btn.disabled = false; btn.textContent = '✦ Import Recipe';
+    status.style.display = 'none';
+    errEl.style.display = 'block'; errEl.textContent = '⚠️ Network error';
+  });
+});
 document.getElementById('detailBackBtn').addEventListener('click', function() { showScreen('homeScreen'); });
 document.getElementById('editBackBtn').addEventListener('click', function() { openRecipe(currentRecipeId); });
 document.getElementById('searchInput').addEventListener('input', renderList);
@@ -1266,8 +1321,8 @@ function scanRecipe() {
   function showErr(msg) { status.style.display = 'none'; errEl.style.display = 'block'; errEl.textContent = '⚠️ ' + msg; btn.disabled = false; btn.textContent = '✦ Extract Recipe'; }
 }
 
-function showExtracted(r) {
-  var sec = document.getElementById('extractedSection');
+function showExtracted(r, containerId) {
+  var sec = document.getElementById(containerId || 'extractedSection');
   sec.style.display = 'block';
   var rCats = Array.isArray(r.categories) ? r.categories : (r.category ? [r.category] : []);
   var catChips = categories.map(function(c) {
