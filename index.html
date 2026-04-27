@@ -1146,7 +1146,7 @@ function renderList() {
     var div = document.createElement('div');
     div.className = 'recipe-card';
     div.dataset.id = r.id;
-    div.innerHTML = imgHtml + '<div class="recipe-card-body"><div class="recipe-card-title">' + r.title + '</div>' + firstCat + tagHtml + '</div>';
+    div.innerHTML = imgHtml + '<div class="recipe-card-body"><div class="recipe-card-title">' + r.title + '</div></div>';
     div.addEventListener('click', function() { openRecipe(this.dataset.id); });
     grid.appendChild(div);
   }
