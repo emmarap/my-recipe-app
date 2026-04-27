@@ -450,6 +450,8 @@ function openManualEntry() {
     '<input class="edit-title-input" id="manAuthorInput" placeholder="e.g. Nigella Lawson" style="font-size:14px;font-weight:400;font-family:Lora,serif">' +
     '<div class="edit-field-label">Servings</div>' +
     '<input class="edit-title-input" id="manServingsInput" placeholder="e.g. 4 or 4-6" style="font-size:14px;font-weight:400;font-family:Lora,serif">' +
+    '<div class="edit-field-label">Source URL</div>' +
+    '<input class="edit-title-input" id="manUrlInput" placeholder="https://..." type="url" style="font-size:14px;font-weight:400;font-family:Lora,serif">' +
     '<div class="edit-field-label">Original Recipe Photo</div>' +
     '<div id="manSourcePhotoPreview" style="margin-bottom:8px"></div>' +
     '<label class="photo-upload-btn" style="display:inline-block;cursor:pointer">📎 Attach photo<input type="file" accept="image/*" id="manSourcePhotoInput" style="display:none"></label>' +
@@ -564,6 +566,7 @@ function openManualEntry() {
     var recipe = {
       title: title,
       author: document.getElementById('manAuthorInput').value.trim(),
+      url: document.getElementById('manUrlInput') ? document.getElementById('manUrlInput').value.trim() : '',
       servings: document.getElementById('manServingsInput').value.trim(),
       categories: selectedCats,
       category: selectedCats[0] || '',
@@ -634,6 +637,7 @@ document.getElementById('urlScrapeBtn').addEventListener('click', function() {
     status.style.display = 'none';
     if (data.error) { errEl.style.display = 'block'; errEl.textContent = '⚠️ ' + data.error; return; }
     pendingRecipe = data.recipe;
+    if (!pendingRecipe.url) pendingRecipe.url = url;
     showExtracted(data.recipe, 'urlExtractedSection');
   }).catch(function() {
     btn.disabled = false; btn.textContent = '✦ Import Recipe';
@@ -1009,6 +1013,7 @@ function openEditScreen() {
     r2.title = document.getElementById('editTitleInput').value.trim() || r2.title;
     r2.author = document.getElementById('editAuthorInput') ? document.getElementById('editAuthorInput').value.trim() : (r2.author || '');
     r2.servings = document.getElementById('editServingsInput') ? document.getElementById('editServingsInput').value.trim() : (r2.servings || '');
+    r2.url = document.getElementById('editUrlInput') ? document.getElementById('editUrlInput').value.trim() : (r2.url || '');
     r2.notes = document.getElementById('editNotesField').value;
     var selected = [];
     body.querySelectorAll('.det-cat-chip.selected').forEach(function(chip) { selected.push(chip.dataset.cat); });
@@ -1154,10 +1159,11 @@ function openRecipe(id) {
   document.getElementById('detailLabel').textContent = r.category || 'Recipe';
   document.getElementById('detailHeaderTitle').textContent = r.title;
   var authorHtml = '';
-  if (r.author || r.servings) {
-    authorHtml = '<div style="display:flex;gap:16px;margin-bottom:12px;flex-wrap:wrap">';
+  if (r.author || r.servings || r.url) {
+    authorHtml = '<div style="display:flex;gap:16px;margin-bottom:12px;flex-wrap:wrap;align-items:center">';
     if (r.author) authorHtml += '<div style="font-size:12px;color:rgba(0,0,0,0.4)">By <span style="color:rgba(74,124,89,0.8);font-weight:500">' + r.author + '</span></div>';
     if (r.servings) authorHtml += '<div style="font-size:12px;color:rgba(0,0,0,0.4)">Serves <span style="font-weight:500;color:rgba(0,0,0,0.6)">' + r.servings + '</span></div>';
+    if (r.url) authorHtml += '<a href="' + r.url + '" target="_blank" style="font-size:12px;color:#4a7c59;text-decoration:none;border-bottom:1px solid rgba(74,124,89,0.3)">View original ↗</a>';
     authorHtml += '</div>';
   }
   var photoHtml = r.photo ? '<img src="' + r.photo + '" style="width:100%;max-height:280px;object-fit:cover;border-radius:14px;display:block;margin-bottom:24px">' : '';
@@ -1345,7 +1351,7 @@ function saveRecipe() {
   if (!pendingRecipe) return;
   var selectedCats = [];
   document.querySelectorAll('.ext-cat-chip.selected').forEach(function(chip) { selectedCats.push(chip.dataset.cat); });
-  var recipe = { title: pendingRecipe.title, categories: selectedCats, category: selectedCats[0] || '', ingredients: pendingRecipe.ingredients, method: pendingRecipe.method, notes: '', photo: '', tags: [], author: '', servings: '', id: Date.now().toString(), savedAt: new Date().toISOString() };
+  var recipe = { title: pendingRecipe.title, categories: selectedCats, category: selectedCats[0] || '', ingredients: pendingRecipe.ingredients, method: pendingRecipe.method, notes: '', photo: '', tags: [], author: '', servings: '', url: '', id: Date.now().toString(), savedAt: new Date().toISOString() };
   pendingRecipe = null;
   saveToCloud(recipe);
   // After saving, go straight to the recipe detail page
