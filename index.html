@@ -1342,16 +1342,18 @@ function showExtracted(r, containerId) {
     chip.addEventListener('click', function() { this.classList.toggle('selected'); });
   });
   var saveBtn = document.getElementById('saveBtn');
-  var newSaveBtn = saveBtn.cloneNode(true);
-  saveBtn.parentNode.replaceChild(newSaveBtn, saveBtn);
-  newSaveBtn.addEventListener('click', saveRecipe);
+  if (saveBtn) {
+    var newSaveBtn = saveBtn.cloneNode(true);
+    saveBtn.parentNode.replaceChild(newSaveBtn, saveBtn);
+    newSaveBtn.addEventListener('click', saveRecipe);
+  }
 }
 
 function saveRecipe() {
   if (!pendingRecipe) return;
   var selectedCats = [];
   document.querySelectorAll('.ext-cat-chip.selected').forEach(function(chip) { selectedCats.push(chip.dataset.cat); });
-  var recipe = { title: pendingRecipe.title, categories: selectedCats, category: selectedCats[0] || '', ingredients: pendingRecipe.ingredients, method: pendingRecipe.method, notes: '', photo: '', tags: [], author: '', servings: '', url: '', id: Date.now().toString(), savedAt: new Date().toISOString() };
+  var recipe = { title: pendingRecipe.title, categories: selectedCats, category: selectedCats[0] || '', ingredients: pendingRecipe.ingredients, method: pendingRecipe.method, notes: pendingRecipe.notes || '', photo: '', tags: [], author: pendingRecipe.author || '', servings: pendingRecipe.servings || '', url: pendingRecipe.url || '', id: Date.now().toString(), savedAt: new Date().toISOString() };
   pendingRecipe = null;
   saveToCloud(recipe);
   // After saving, go straight to the recipe detail page
