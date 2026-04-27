@@ -51,7 +51,7 @@ module.exports = async function handler(req, res) {
         max_tokens: 2000,
         messages: [{
           role: 'user',
-          content: 'Extract the recipe from this webpage text. Return ONLY valid JSON, no markdown, no smart quotes:\n{"title":"Recipe name","author":"Author or empty string","servings":"4 or empty string","category":"Dinner","ingredients":["ingredient 1"],"method":["Step 1"],"notes":"Any tips or notes or empty string"}\n\nWebpage text:\n' + html
+          content: 'Extract the recipe from this webpage text. If ingredients are grouped into sub-sections (e.g. Salmon, Sauce, Vegetables), prefix each ingredient with the group name in brackets like "[Salmon] 2 fillets". Return ONLY valid JSON, no markdown, no smart quotes:\n{"title":"Recipe name","author":"Author or empty string","servings":"4 or empty string","category":"Dinner","ingredients":["ingredient 1"],"method":["Step 1"],"notes":"Any tips or notes or empty string"}\n\nWebpage text:\n' + html
         }]
       })
     });
