@@ -1274,8 +1274,8 @@ function showExtracted(r) {
     return '<button class="ext-cat-chip' + (rCats.indexOf(c) !== -1 ? ' selected' : '') + '" data-cat="' + c + '">' + c + '</button>';
   }).join('');
   var catHtml = categories.length ? '<div style="margin-bottom:16px"><div class="ext-section-label" style="margin-top:0">Categories</div><div class="cat-chips-wrap">' + catChips + '</div></div>' : '';
-  var ingHtml = r.ingredients.map(function(ing) { return '<div class="ext-item">· ' + ing + '</div>'; }).join('');
-  var methHtml = r.method.map(function(s, i) { return '<div class="ext-item">' + (i + 1) + '. ' + s + '</div>'; }).join('');
+  var ingHtml = r.ingredients.map(function(ing) { return '<div class="ext-item" style="color:#1a1a1a">· ' + ing + '</div>'; }).join('');
+  var methHtml = r.method.map(function(s, i) { return '<div class="ext-item" style="color:#1a1a1a">' + (i + 1) + '. ' + s + '</div>'; }).join('');
   sec.innerHTML = '<div class="extracted-card"><div class="ext-label">Extracted Recipe</div><div class="ext-title">' + r.title + '</div>' + catHtml + '<div class="ext-section-label">Ingredients</div>' + ingHtml + '<div class="ext-section-label">Method</div>' + methHtml + '<button class="save-btn" id="saveBtn">✓ Save to My Recipes</button></div>';
   document.querySelectorAll('.ext-cat-chip').forEach(function(chip) {
     chip.addEventListener('click', function() { this.classList.toggle('selected'); });
