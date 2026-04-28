@@ -1064,9 +1064,7 @@ function openEditScreen() {
   });
 
   var saveAllBtn = document.getElementById('saveAllBtn');
-  var newSaveAllBtn = saveAllBtn.cloneNode(true);
-  saveAllBtn.parentNode.replaceChild(newSaveAllBtn, saveAllBtn);
-  newSaveAllBtn.addEventListener('click', function() {
+  saveAllBtn.addEventListener('click', function() {
     if (this.dataset.saving) return;
     this.dataset.saving = '1';
     var self = this;
