@@ -873,8 +873,23 @@ document.getElementById('photoFileInput').addEventListener('change', function() 
       cv.getContext('2d').drawImage(img, 0, 0, cv.width, cv.height);
       var r2 = null;
       for (var i = 0; i < recipes.length; i++) { if (recipes[i].id === currentRecipeId) { r2 = recipes[i]; break; } }
-      if (r2) { r2.photo = cv.toDataURL('image/jpeg', 0.6); persist(); }
-      openEditScreen();
+      if (r2) {
+        r2.photo = cv.toDataURL('image/jpeg', 0.6);
+        persist();
+        // Update preview in place without rebuilding the whole form
+        var photoSection = document.getElementById('editPhotoSection');
+        if (photoSection) {
+          photoSection.innerHTML = '<img src="' + r2.photo + '" style="width:100%;max-height:200px;object-fit:cover;border-radius:12px;display:block;margin-bottom:8px">' +
+            '<button class="photo-upload-btn" id="changePhotoBtn">📷 Change photo</button>' +
+            '<button class="photo-remove-btn" id="removePhotoBtn">Remove</button>';
+          document.getElementById('changePhotoBtn').addEventListener('click', function() { document.getElementById('photoFileInput').click(); });
+          document.getElementById('removePhotoBtn').addEventListener('click', function() {
+            r2.photo = ''; persist();
+            photoSection.innerHTML = '<button class="photo-upload-btn" id="changePhotoBtn">📷 Add photo</button>';
+            document.getElementById('changePhotoBtn').addEventListener('click', function() { document.getElementById('photoFileInput').click(); });
+          });
+        }
+      }
     };
     img.src = fr.result;
   };
@@ -904,7 +919,7 @@ function openEditScreen() {
   var safeTitle = r.title.replace(/&/g, '&amp;').replace(/"/g, '&quot;');
   var safeNotes = (r.notes || '').replace(/</g, '&lt;').replace(/&/g, '&amp;');
 
-  var photoSection = '<div class="edit-field-label">Photo</div>';
+  var photoSection = '<div class="edit-field-label">Photo</div><div id="editPhotoSection">';
   if (r.photo) {
     photoSection += '<img src="' + r.photo + '" style="width:100%;max-height:200px;object-fit:cover;border-radius:12px;display:block;margin-bottom:8px">';
     photoSection += '<button class="photo-upload-btn" id="changePhotoBtn">📷 Change photo</button>';
@@ -912,6 +927,7 @@ function openEditScreen() {
   } else {
     photoSection += '<button class="photo-upload-btn" id="changePhotoBtn">📷 Add photo</button>';
   }
+  photoSection += '</div>';
 
   var sourcePhotoEditSection = '<div class="edit-field-label">Original Recipe Photo</div>';
   if (r.sourcePhoto) {
