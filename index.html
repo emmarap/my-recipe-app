@@ -1452,7 +1452,7 @@ function saveRecipe() {
   var recipe = { title: pendingRecipe.title, categories: selectedCats, category: selectedCats[0] || '', ingredients: pendingRecipe.ingredients, method: pendingRecipe.method, notes: pendingRecipe.notes || '', photo: '', tags: [], author: pendingRecipe.author || '', servings: pendingRecipe.servings || '', url: pendingRecipe.url || '', id: Date.now().toString(), savedAt: new Date().toISOString() };
   pendingRecipe = null;
   recipes.unshift(recipe);
-  localStorage.setItem('recipes', JSON.stringify(recipes));
+  persist();
   saveToCloud(recipe);
   openRecipe(recipe.id);
 }
