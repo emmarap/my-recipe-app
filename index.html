@@ -866,14 +866,14 @@ document.getElementById('photoFileInput').addEventListener('change', function() 
   fr.onload = function() {
     var img = new Image();
     img.onload = function() {
-      var scale = Math.min(1, 800 / Math.max(img.width, img.height));
+      var scale = Math.min(1, 600 / Math.max(img.width, img.height));
       var cv = document.createElement('canvas');
       cv.width = Math.round(img.width * scale);
       cv.height = Math.round(img.height * scale);
       cv.getContext('2d').drawImage(img, 0, 0, cv.width, cv.height);
       var r2 = null;
       for (var i = 0; i < recipes.length; i++) { if (recipes[i].id === currentRecipeId) { r2 = recipes[i]; break; } }
-      if (r2) { r2.photo = cv.toDataURL('image/jpeg', 0.75); persist(); }
+      if (r2) { r2.photo = cv.toDataURL('image/jpeg', 0.6); persist(); }
       openEditScreen();
     };
     img.src = fr.result;
