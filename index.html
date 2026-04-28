@@ -73,12 +73,14 @@ body { font-family: 'Lora', serif; background: #f8f8f6; color: #1a1a1a; }
 .ext-item { font-size: 13px; color: rgba(240,235,227,0.7); line-height: 1.6; padding: 4px 0; border-bottom: 1px solid rgba(0,0,0,0.03); }
 .save-btn { width: 100%; background: #4a7c59; color: #f8f8f6; border: none; border-radius: 13px; padding: 16px; font-family: 'Lora', serif; font-size: 14px; font-weight: 500; letter-spacing: 0.06em; text-transform: uppercase; cursor: pointer; margin-top: 20px; }
 #detailScreen { background: #f8f8f6; }
-.detail-header { padding: 56px 24px 20px; display: flex; align-items: center; gap: 12px; flex-shrink: 0; border-bottom: 1px solid rgba(0,0,0,0.06); }
-.detail-header-text { flex: 1; min-width: 0; }
-.detail-label { font-size: 10px; letter-spacing: 0.2em; text-transform: uppercase; color: #4a7c59; font-weight: 500; }
-.detail-title { font-family: 'Cormorant Garant', serif; font-size: 22px; font-weight: 700; line-height: 1.2; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.edit-btn { width: 36px; height: 36px; border-radius: 50%; background: rgba(74,124,89,0.12); border: 1px solid rgba(74,124,89,0.25); cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 15px; flex-shrink: 0; }
-.delete-btn { width: 36px; height: 36px; border-radius: 50%; background: rgba(220,80,60,0.1); border: 1px solid rgba(220,80,60,0.2); cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 16px; flex-shrink: 0; }
+.detail-hero { position: relative; flex-shrink: 0; min-height: 220px; background: #4a7c59; overflow: hidden; display: flex; flex-direction: column; justify-content: space-between; }
+.detail-hero-bg { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; display: block; }
+.detail-hero-overlay { position: absolute; inset: 0; background: linear-gradient(to bottom, rgba(0,0,0,0.2) 0%, rgba(0,0,0,0.65) 100%); }
+.detail-hero-top { position: relative; display: flex; justify-content: space-between; align-items: flex-start; padding: 56px 16px 0; }
+.detail-hero-bottom { position: relative; padding: 0 20px 20px; }
+.detail-hero-btn { width: 36px; height: 36px; border-radius: 50%; background: rgba(255,255,255,0.2); border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 16px; color: #fff; flex-shrink: 0; }
+.edit-btn { width: 36px; height: 36px; border-radius: 50%; background: rgba(255,255,255,0.2); border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 15px; color: #fff; flex-shrink: 0; }
+.delete-btn { width: 36px; height: 36px; border-radius: 50%; background: rgba(255,255,255,0.15); border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 16px; color: #fff; flex-shrink: 0; }
 .detail-body { flex: 1; overflow-y: auto; padding: 24px 24px 80px; }
 .detail-body::-webkit-scrollbar { display: none; }
 .detail-full-title { font-family: 'Cormorant Garant', serif; font-size: 28px; font-weight: 700; line-height: 1.2; margin-bottom: 6px; }
@@ -243,16 +245,23 @@ body { font-family: 'Lora', serif; background: #f8f8f6; color: #1a1a1a; }
 </div>
 
 <div class="screen hidden" id="detailScreen">
-  <div class="detail-header">
-    <button class="back-btn" id="detailBackBtn">←</button>
-    <div class="detail-header-text">
-      <div class="detail-label" id="detailLabel"></div>
-      <div class="detail-title" id="detailHeaderTitle"></div>
+  <div class="detail-hero" id="detailHero">
+    <img class="detail-hero-bg" id="detailHeroBg" src="" style="display:none">
+    <div class="detail-hero-overlay"></div>
+    <div class="detail-hero-top">
+      <button class="detail-hero-btn" id="detailBackBtn">←</button>
+      <div style="display:flex;gap:8px">
+        <button class="detail-hero-btn" id="cookBtn">👨‍🍳</button>
+        <button class="edit-btn" id="favBtn">☆</button>
+        <button class="edit-btn" id="editBtn">✏️</button>
+        <button class="delete-btn" id="deleteBtn">🗑</button>
+      </div>
     </div>
-    <button class="back-btn" id="cookBtn" style="background:rgba(74,124,89,0.1);border:1px solid rgba(74,124,89,0.25);color:#4a7c59;font-size:13px;font-family:'Lora',serif;width:auto;padding:0 12px;border-radius:20px">👨‍🍳</button>
-    <button class="edit-btn" id="favBtn" style="font-size:18px">☆</button>
-    <button class="edit-btn" id="editBtn">✏️</button>
-    <button class="delete-btn" id="deleteBtn">🗑</button>
+    <div class="detail-hero-bottom">
+      <div id="detailLabel" style="font-size:10px;letter-spacing:0.2em;text-transform:uppercase;color:rgba(255,255,255,0.7);margin-bottom:4px"></div>
+      <div id="detailHeaderTitle" style="font-family:Cormorant Garant,serif;font-size:26px;font-weight:700;color:#fff;line-height:1.2"></div>
+      <div id="detailHeroMeta" style="margin-top:8px;display:flex;gap:8px;flex-wrap:wrap;align-items:center"></div>
+    </div>
   </div>
   <div class="detail-body" id="detailBody"></div>
 </div>
@@ -1204,15 +1213,19 @@ function openRecipe(id) {
   saveToCloud(r);
   document.getElementById('detailLabel').textContent = r.category || 'Recipe';
   document.getElementById('detailHeaderTitle').textContent = r.title;
+  // Hero image
+  var heroBg = document.getElementById('detailHeroBg');
+  var heroDiv = document.getElementById('detailHero');
+  if (r.photo) { heroBg.src = r.photo; heroBg.style.display = 'block'; heroDiv.style.background = '#1a1a1a'; }
+  else { heroBg.style.display = 'none'; heroDiv.style.background = '#4a7c59'; }
+  // Hero meta
+  var heroMeta = document.getElementById('detailHeroMeta');
+  heroMeta.innerHTML = '';
+  if (r.author) heroMeta.innerHTML += '<span style="font-size:11px;color:rgba(255,255,255,0.85)">By ' + r.author + '</span>';
+  if (r.servings) heroMeta.innerHTML += '<span style="font-size:11px;color:rgba(255,255,255,0.5)">·</span><span style="font-size:11px;color:rgba(255,255,255,0.85)">Serves ' + r.servings + '</span>';
+  if (r.url) heroMeta.innerHTML += '<a href="' + r.url + '" target="_blank" style="font-size:11px;color:rgba(255,255,255,0.7);text-decoration:none;border-bottom:1px solid rgba(255,255,255,0.3)">View original ↗</a>';
   var authorHtml = '';
-  if (r.author || r.servings || r.url) {
-    authorHtml = '<div style="display:flex;gap:16px;margin-bottom:12px;flex-wrap:wrap;align-items:center">';
-    if (r.author) authorHtml += '<div style="font-size:12px;color:rgba(0,0,0,0.4)">By <span style="color:rgba(74,124,89,0.8);font-weight:500">' + r.author + '</span></div>';
-    if (r.servings) authorHtml += '<div style="font-size:12px;color:rgba(0,0,0,0.4)">Serves <span style="font-weight:500;color:rgba(0,0,0,0.6)">' + r.servings + '</span></div>';
-    if (r.url) authorHtml += '<a href="' + r.url + '" target="_blank" style="font-size:12px;color:#4a7c59;text-decoration:none;border-bottom:1px solid rgba(74,124,89,0.3)">View original ↗</a>';
-    authorHtml += '</div>';
-  }
-  var photoHtml = r.photo ? '<img src="' + r.photo + '" style="width:100%;max-height:280px;object-fit:cover;border-radius:14px;display:block;margin-bottom:24px">' : '';
+  var photoHtml = '';
   var sourcePhotoHtml = r.sourcePhoto ? '<div style="margin-bottom:20px"><div style="font-size:10px;letter-spacing:0.2em;text-transform:uppercase;color:rgba(0,0,0,0.3);margin-bottom:8px">Original Recipe</div><img src="' + r.sourcePhoto + '" id="sourcePhotoThumb" style="width:100%;border-radius:10px;display:block;cursor:pointer"></div>' : '';
   var ingHtml = r.ingredients.map(function(ing) { return '<div style="display:flex;align-items:center;gap:8px;padding:5px 0;border-bottom:0.5px solid rgba(0,0,0,0.05)"><span style="width:4px;height:4px;background:#4a7c59;border-radius:50%;flex-shrink:0"></span><span style="font-size:13px;color:#1a1a1a;font-family:Lora,serif;line-height:1.4">' + ing + '</span></div>'; }).join('');
   var methHtml = r.method.map(function(s, i) { return '<div class="method-row"><div class="step-num">0' + (i + 1) + '</div><div class="step-text">' + s + '</div></div>'; }).join('');
@@ -1222,7 +1235,7 @@ function openRecipe(id) {
   var rTags = r.tags && r.tags.length ? r.tags : [];
   var tagsHtml = rTags.length ? '<div style="margin-bottom:20px">' + rTags.map(function(t) { return '<span class="tag-chip" data-tag="' + t + '">' + t + '</span>'; }).join('') + '</div>' : '';
   var notesSection = '<div class="detail-section"><div class="detail-section-header"><div class="detail-section-label">Notes</div><div class="detail-section-line"></div></div><textarea class="notes-ta" id="notesField" placeholder="Add notes, tips, variations…">' + notesVal.replace(/</g,'&lt;') + '</textarea><button class="notes-save-btn" id="saveNotesBtn">Save notes</button></div>';
-  document.getElementById('detailBody').innerHTML = '<div class="detail-full-title">' + r.title + '</div>' + authorHtml + photoHtml + sourcePhotoHtml + catSection + tagsHtml +
+  document.getElementById('detailBody').innerHTML = sourcePhotoHtml + catSection + tagsHtml +
     '<div class="detail-section"><div class="detail-section-header"><div class="detail-section-label">Ingredients</div><div class="detail-section-line"></div></div>' + ingHtml + '</div>' +
     '<div class="detail-section"><div class="detail-section-header"><div class="detail-section-label">Method</div><div class="detail-section-line"></div></div>' + methHtml + '</div>' +
     notesSection +
