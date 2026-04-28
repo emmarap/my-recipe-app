@@ -250,6 +250,7 @@ body { font-family: 'Lora', serif; background: #f8f8f6; color: #1a1a1a; }
       <div class="detail-title" id="detailHeaderTitle"></div>
     </div>
     <button class="back-btn" id="cookBtn" style="background:rgba(74,124,89,0.1);border:1px solid rgba(74,124,89,0.25);color:#4a7c59;font-size:13px;font-family:'Lora',serif;width:auto;padding:0 12px;border-radius:20px">👨‍🍳</button>
+    <button class="edit-btn" id="favBtn" style="font-size:18px">☆</button>
     <button class="edit-btn" id="editBtn">✏️</button>
     <button class="delete-btn" id="deleteBtn">🗑</button>
   </div>
@@ -627,9 +628,15 @@ function closeBurger() {
 function renderBurgerCats() {
   var list = document.getElementById('burgerCatList');
   var allActive = !activeCategory || activeCategory === 'All';
+  var favActive = activeCategory === '__favourites__';
+  var favCount = recipes.filter(function(r) { return r.favourite; }).length;
   var html = '<div class="burger-cat-item' + (allActive ? ' burger-cat-active' : '') + '" data-cat="All" style="display:flex;align-items:center;justify-content:space-between;padding:14px 24px;cursor:pointer;border-bottom:1px solid rgba(0,0,0,0.04)">' +
     '<span style="font-family:Lora,serif;font-size:15px;' + (allActive ? 'color:#4a7c59;font-weight:500' : 'color:#1a1a1a') + '">All Recipes</span>' +
     (allActive ? '<span style="color:#4a7c59;font-size:18px">✓</span>' : '') +
+    '</div>' +
+    '<div class="burger-cat-item" data-cat="__favourites__" style="display:flex;align-items:center;justify-content:space-between;padding:14px 24px;cursor:pointer;border-bottom:1px solid rgba(0,0,0,0.04)">' +
+    '<span style="font-family:Lora,serif;font-size:15px;' + (favActive ? 'color:#f0a500;font-weight:500' : 'color:#1a1a1a') + '">★ Favourites' + (favCount ? ' (' + favCount + ')' : '') + '</span>' +
+    (favActive ? '<span style="color:#f0a500;font-size:18px">✓</span>' : '') +
     '</div>';
   for (var i = 0; i < categories.length; i++) {
     var isActive = activeCategory === categories[i];
@@ -1082,7 +1089,7 @@ function buildCategories() {
     bar.style.display = 'flex';
     bar.innerHTML = '<div style="display:flex;gap:8px;padding:12px 24px;align-items:center">' +
       '<span style="font-size:11px;color:rgba(0,0,0,0.4);font-family:Lora,serif">Showing:</span>' +
-      '<button style="background:#4a7c59;color:#fff;border:none;border-radius:20px;padding:5px 12px;font-family:Lora,serif;font-size:12px;cursor:pointer" id="clearCatBtn">' + activeCategory + ' ×</button>' +
+      '<button style="background:' + (activeCategory === '__favourites__' ? '#f0a500' : '#4a7c59') + ';color:#fff;border:none;border-radius:20px;padding:5px 12px;font-family:Lora,serif;font-size:12px;cursor:pointer" id="clearCatBtn">' + (activeCategory === '__favourites__' ? '★ Favourites' : activeCategory) + ' ×</button>' +
       '</div>';
     var clearBtn = document.getElementById('clearCatBtn');
     if (clearBtn) clearBtn.addEventListener('click', function() { activeCategory = 'All'; try { renderList(); } catch(e) {} });
@@ -1152,7 +1159,8 @@ function renderList() {
   });
   var filtered = sorted.filter(function(r) {
     var rCatsF = Array.isArray(r.categories) ? r.categories : (r.category ? [r.category] : []);
-    var matchCat = activeCategory === 'All' || rCatsF.indexOf(activeCategory) !== -1;
+    var matchCat = activeCategory === 'All' || activeCategory === '__favourites__' ? true : rCatsF.indexOf(activeCategory) !== -1;
+    if (activeCategory === '__favourites__' && !r.favourite) return false;
     var matchQ = !q || r.title.toLowerCase().indexOf(q) !== -1 || (r.category || '').toLowerCase().indexOf(q) !== -1
       || (r.tags || []).some(function(t) { return t.toLowerCase().indexOf(q) !== -1; });
     var ingQ = document.getElementById('ingredientInput') ? document.getElementById('ingredientInput').value.toLowerCase().trim() : '';
@@ -1220,6 +1228,24 @@ function openRecipe(id) {
     notesSection +
     (r.sourcePhoto ? '<div class="detail-section"><div class="detail-section-header"><div class="detail-section-label">Original Recipe</div><div class="detail-section-line"></div></div><img src="' + r.sourcePhoto + '" id="sourcePhotoThumb" style="width:100%;border-radius:10px;display:block;cursor:pointer"></div>' : '');
 
+  // Wire favourite button
+  var favBtn = document.getElementById('favBtn');
+  if (favBtn) {
+    favBtn.textContent = r.favourite ? '★' : '☆';
+    favBtn.style.color = r.favourite ? '#f0a500' : '';
+    favBtn.addEventListener('click', function() {
+      for (var i = 0; i < recipes.length; i++) {
+        if (recipes[i].id === currentRecipeId) {
+          recipes[i].favourite = !recipes[i].favourite;
+          this.textContent = recipes[i].favourite ? '★' : '☆';
+          this.style.color = recipes[i].favourite ? '#f0a500' : '';
+          persist();
+          saveToCloud(recipes[i]);
+          break;
+        }
+      }
+    });
+  }
   document.getElementById('saveNotesBtn').addEventListener('click', function() {
     var notes = document.getElementById('notesField').value;
     for (var i = 0; i < recipes.length; i++) {
