@@ -600,7 +600,7 @@ function openManualEntry() {
     };
     pendingRecipe = null;
     recipes.unshift(recipe);
-    localStorage.setItem('recipes', JSON.stringify(recipes));
+    persist();
     saveToCloud(recipe);
     openRecipe(recipe.id);
   });
