@@ -1235,10 +1235,10 @@ function openRecipe(id) {
   var rTags = r.tags && r.tags.length ? r.tags : [];
   var tagsHtml = rTags.length ? '<div style="margin-bottom:20px">' + rTags.map(function(t) { return '<span class="tag-chip" data-tag="' + t + '">' + t + '</span>'; }).join('') + '</div>' : '';
   var notesSection = '<div class="detail-section"><div class="detail-section-header"><div class="detail-section-label">Notes</div><div class="detail-section-line"></div></div><textarea class="notes-ta" id="notesField" placeholder="Add notes, tips, variations…">' + notesVal.replace(/</g,'&lt;') + '</textarea><button class="notes-save-btn" id="saveNotesBtn">Save notes</button></div>';
-  document.getElementById('detailBody').innerHTML = sourcePhotoHtml + catSection + tagsHtml +
+  document.getElementById('detailBody').innerHTML = sourcePhotoHtml +
     '<div class="detail-section"><div class="detail-section-header"><div class="detail-section-label">Ingredients</div><div class="detail-section-line"></div></div>' + ingHtml + '</div>' +
     '<div class="detail-section"><div class="detail-section-header"><div class="detail-section-label">Method</div><div class="detail-section-line"></div></div>' + methHtml + '</div>' +
-    notesSection +
+    notesSection + catSection + tagsHtml +
     (r.sourcePhoto ? '<div class="detail-section"><div class="detail-section-header"><div class="detail-section-label">Original Recipe</div><div class="detail-section-line"></div></div><img src="' + r.sourcePhoto + '" id="sourcePhotoThumb" style="width:100%;border-radius:10px;display:block;cursor:pointer"></div>' : '');
 
   // Wire favourite button
