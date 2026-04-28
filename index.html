@@ -250,18 +250,18 @@ body { font-family: 'Lora', serif; background: #f8f8f6; color: #1a1a1a; }
     <div class="detail-hero-overlay"></div>
     <div class="detail-hero-top">
       <button class="detail-hero-btn" id="detailBackBtn">←</button>
-      <div style="display:flex;gap:8px">
-        <button class="detail-hero-btn" id="cookBtn">👨‍🍳</button>
-        <button class="edit-btn" id="favBtn">☆</button>
-        <button class="edit-btn" id="editBtn">✏️</button>
-        <button class="delete-btn" id="deleteBtn">🗑</button>
-      </div>
     </div>
     <div class="detail-hero-bottom">
       <div id="detailLabel" style="font-size:10px;letter-spacing:0.2em;text-transform:uppercase;color:rgba(255,255,255,0.7);margin-bottom:4px"></div>
       <div id="detailHeaderTitle" style="font-family:Cormorant Garant,serif;font-size:26px;font-weight:700;color:#fff;line-height:1.2"></div>
       <div id="detailHeroMeta" style="margin-top:8px;display:flex;gap:8px;flex-wrap:wrap;align-items:center"></div>
     </div>
+  </div>
+  <div style="display:flex;justify-content:flex-end;gap:8px;padding:12px 16px;border-bottom:1px solid rgba(0,0,0,0.06);flex-shrink:0">
+    <button class="edit-btn" id="favBtn" style="background:rgba(74,124,89,0.08);border:1px solid rgba(74,124,89,0.2);color:#1a1a1a">☆</button>
+    <button class="edit-btn" id="editBtn" style="background:rgba(74,124,89,0.08);border:1px solid rgba(74,124,89,0.2);color:#1a1a1a">✏️</button>
+    <button class="back-btn" id="cookBtn" style="background:rgba(74,124,89,0.08);border:1px solid rgba(74,124,89,0.2);color:#1a1a1a">👨‍🍳</button>
+    <button class="delete-btn" id="deleteBtn" style="background:rgba(220,80,60,0.08);border:1px solid rgba(220,80,60,0.2)">🗑</button>
   </div>
   <div class="detail-body" id="detailBody"></div>
 </div>
