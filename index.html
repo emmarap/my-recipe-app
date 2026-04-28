@@ -141,6 +141,7 @@ body { font-family: 'Lora', serif; background: #f8f8f6; color: #1a1a1a; }
       <div>
         <h1 class="home-title" id="homeTitle" style="cursor:pointer">Rapaport <em>Recipes</em></h1>
       </div>
+      <button id="burgerBtn" style="width:36px;height:36px;background:rgba(0,0,0,0.05);border:1px solid rgba(0,0,0,0.08);border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:16px;color:rgba(0,0,0,0.45);margin-right:8px">☰</button>
       <button class="export-btn" id="exportBtn" style="width:36px;height:36px;background:rgba(0,0,0,0.05);border:1px solid rgba(0,0,0,0.08);border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:16px;color:rgba(0,0,0,0.45);margin-right:8px">↓</button>
       <button class="add-btn" id="addBtn">+</button>
     </div>
@@ -158,7 +159,7 @@ body { font-family: 'Lora', serif; background: #f8f8f6; color: #1a1a1a; }
       </div>
     </div>
   </div>
-  <div class="categories" id="categoryBar"></div>
+  <div id="categoryBar" style="display:none"></div>
   <div class="recipe-list" id="recipeList"></div>
 </div>
 
@@ -282,6 +283,18 @@ body { font-family: 'Lora', serif; background: #f8f8f6; color: #1a1a1a; }
 
 <input type="file" accept="image/*" id="photoFileInput" style="display:none">
 <input type="file" accept="image/*" id="sourcePhotoFileInput" style="display:none">
+
+<div id="burgerOverlay" style="position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:60;display:none;opacity:0;transition:opacity 0.25s" onclick="closeBurger()"></div>
+<div id="burgerMenu" style="position:fixed;top:0;left:0;bottom:0;width:280px;background:#fff;z-index:61;transform:translateX(-100%);transition:transform 0.3s cubic-bezier(0.4,0,0.2,1);display:flex;flex-direction:column;padding:56px 0 40px">
+  <div style="padding:0 24px 20px;border-bottom:1px solid rgba(0,0,0,0.06)">
+    <div style="font-size:10px;letter-spacing:0.25em;text-transform:uppercase;color:#4a7c59;font-weight:500;margin-bottom:4px">Filter by</div>
+    <div style="font-family:'Cormorant Garant',serif;font-size:22px;font-weight:400">Categories</div>
+  </div>
+  <div id="burgerCatList" style="flex:1;overflow-y:auto;padding:16px 0"></div>
+  <div style="padding:16px 24px;border-top:1px solid rgba(0,0,0,0.06)">
+    <button id="burgerAddCatBtn" style="width:100%;background:rgba(74,124,89,0.08);border:1px dashed rgba(74,124,89,0.3);border-radius:12px;padding:12px;font-family:'Lora',serif;font-size:13px;color:#4a7c59;cursor:pointer">+ Add Category</button>
+  </div>
+</div>
 
 <div class="modal-overlay" id="deleteModal">
   <div class="modal-box">
@@ -583,6 +596,72 @@ function showScreen(id) {
 }
 
 document.getElementById('addBtn').addEventListener('click', function() { showScreen('newScreen'); });
+document.getElementById('burgerBtn').addEventListener('click', function() { openBurger(); });
+document.getElementById('burgerAddCatBtn').addEventListener('click', function() {
+  var val = prompt('New category name:');
+  if (!val || !val.trim() || categories.indexOf(val.trim()) !== -1) return;
+  categories.push(val.trim());
+  persist();
+  renderBurgerCats();
+});
+
+function openBurger() {
+  renderBurgerCats();
+  var overlay = document.getElementById('burgerOverlay');
+  var menu = document.getElementById('burgerMenu');
+  overlay.style.display = 'block';
+  setTimeout(function() {
+    overlay.style.opacity = '1';
+    menu.style.transform = 'translateX(0)';
+  }, 10);
+}
+
+function closeBurger() {
+  var overlay = document.getElementById('burgerOverlay');
+  var menu = document.getElementById('burgerMenu');
+  overlay.style.opacity = '0';
+  menu.style.transform = 'translateX(-100%)';
+  setTimeout(function() { overlay.style.display = 'none'; }, 280);
+}
+
+function renderBurgerCats() {
+  var list = document.getElementById('burgerCatList');
+  var allActive = !activeCategory || activeCategory === 'All';
+  var html = '<div class="burger-cat-item' + (allActive ? ' burger-cat-active' : '') + '" data-cat="All" style="display:flex;align-items:center;justify-content:space-between;padding:14px 24px;cursor:pointer;border-bottom:1px solid rgba(0,0,0,0.04)">' +
+    '<span style="font-family:Lora,serif;font-size:15px;' + (allActive ? 'color:#4a7c59;font-weight:500' : 'color:#1a1a1a') + '">All Recipes</span>' +
+    (allActive ? '<span style="color:#4a7c59;font-size:18px">✓</span>' : '') +
+    '</div>';
+  for (var i = 0; i < categories.length; i++) {
+    var isActive = activeCategory === categories[i];
+    html += '<div class="burger-cat-item" data-cat="' + categories[i] + '" data-i="' + i + '" style="display:flex;align-items:center;justify-content:space-between;padding:14px 24px;cursor:pointer;border-bottom:1px solid rgba(0,0,0,0.04)">' +
+      '<span style="font-family:Lora,serif;font-size:15px;' + (isActive ? 'color:#4a7c59;font-weight:500' : 'color:#1a1a1a') + '">' + categories[i] + '</span>' +
+      '<div style="display:flex;align-items:center;gap:12px">' +
+      (isActive ? '<span style="color:#4a7c59;font-size:18px">✓</span>' : '') +
+      '<button data-del="' + i + '" style="background:none;border:none;color:rgba(220,80,60,0.4);font-size:18px;cursor:pointer;padding:0;line-height:1">×</button>' +
+      '</div></div>';
+  }
+  list.innerHTML = html;
+  list.querySelectorAll('.burger-cat-item').forEach(function(item) {
+    item.addEventListener('click', function(e) {
+      if (e.target.dataset.del !== undefined) return;
+      activeCategory = this.dataset.cat;
+      activeTag = null;
+      closeBurger();
+      setTimeout(function() { try { renderList(); } catch(ex) {} }, 300);
+    });
+  });
+  list.querySelectorAll('button[data-del]').forEach(function(btn) {
+    btn.addEventListener('click', function(e) {
+      e.stopPropagation();
+      var idx = parseInt(this.dataset.del);
+      if (activeCategory === categories[idx]) activeCategory = 'All';
+      categories.splice(idx, 1);
+      persist();
+      renderBurgerCats();
+      try { renderList(); } catch(ex) {}
+    });
+  });
+}
 document.getElementById('backBtn').addEventListener('click', function() { showScreen('homeScreen'); });
 document.getElementById('newBackBtn').addEventListener('click', function() { showScreen('homeScreen'); });
 document.getElementById('chooseScanBtn').addEventListener('click', function() { showScreen('scanScreen'); });
@@ -997,26 +1076,28 @@ function openEditScreen() {
 }
 
 function buildCategories() {
+  // Show active filter as a pill under the search bar if not 'All'
   var bar = document.getElementById('categoryBar');
-  var html = '<button class="cat-btn ' + (activeCategory === 'All' ? 'active' : '') + '" data-cat="All">All</button>';
-  for (var i = 0; i < categories.length; i++) {
-    html += '<button class="cat-btn ' + (activeCategory === categories[i] ? 'active' : '') + '" data-cat="' + categories[i] + '">' + categories[i] + '</button>';
+  if (activeCategory && activeCategory !== 'All') {
+    bar.style.display = 'flex';
+    bar.innerHTML = '<div style="display:flex;gap:8px;padding:12px 24px;align-items:center">' +
+      '<span style="font-size:11px;color:rgba(0,0,0,0.4);font-family:Lora,serif">Showing:</span>' +
+      '<button style="background:#4a7c59;color:#fff;border:none;border-radius:20px;padding:5px 12px;font-family:Lora,serif;font-size:12px;cursor:pointer" id="clearCatBtn">' + activeCategory + ' ×</button>' +
+      '</div>';
+    var clearBtn = document.getElementById('clearCatBtn');
+    if (clearBtn) clearBtn.addEventListener('click', function() { activeCategory = 'All'; try { renderList(); } catch(e) {} });
+  } else if (activeTag) {
+    bar.style.display = 'flex';
+    bar.innerHTML = '<div style="display:flex;gap:8px;padding:12px 24px;align-items:center">' +
+      '<span style="font-size:11px;color:rgba(0,0,0,0.4);font-family:Lora,serif">Tag:</span>' +
+      '<button style="background:rgba(0,0,0,0.1);color:#1a1a1a;border:none;border-radius:20px;padding:5px 12px;font-family:Lora,serif;font-size:12px;cursor:pointer" id="clearTagBtn">' + activeTag + ' ×</button>' +
+      '</div>';
+    var clearTagBtn = document.getElementById('clearTagBtn');
+    if (clearTagBtn) clearTagBtn.addEventListener('click', function() { activeTag = null; try { renderList(); } catch(e) {} });
+  } else {
+    bar.style.display = 'none';
+    bar.innerHTML = '';
   }
-  html += '<button class="cat-add-btn" id="manageCatBtn">+ Category</button>';
-  if (activeTag) {
-    html += '<button class="cat-btn active" id="clearTagBtn" style="background:rgba(0,0,0,0.1);border-color:rgba(0,0,0,0.25);color:#1a1a1a">' + activeTag + ' ×</button>';
-  }
-  bar.innerHTML = html;
-  document.querySelectorAll('.cat-btn').forEach(function(btn) {
-    btn.addEventListener('click', function() { activeCategory = this.dataset.cat; try { renderList(); } catch(e) { console.error(e); } });
-  });
-  if (activeTag && document.getElementById('clearTagBtn')) {
-    document.getElementById('clearTagBtn').addEventListener('click', function() { activeTag = null; try { renderList(); } catch(e) {} });
-  }
-  document.getElementById('manageCatBtn').addEventListener('click', function() {
-    renderCatModal();
-    document.getElementById('catModal').classList.add('open');
-  });
 }
 
 function renderCatModal() {
