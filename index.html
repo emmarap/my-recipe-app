@@ -893,11 +893,33 @@ document.getElementById('photoFileInput').addEventListener('change', function() 
           photoSection.innerHTML = '<img src="' + r2.photo + '" style="width:100%;max-height:200px;object-fit:cover;border-radius:12px;display:block;margin-bottom:8px">' +
             '<button class="photo-upload-btn" id="changePhotoBtn">📷 Change photo</button>' +
             '<button class="photo-remove-btn" id="removePhotoBtn">Remove</button>';
-          document.getElementById('changePhotoBtn').addEventListener('click', function() { document.getElementById('photoFileInput').click(); });
+          var editAddCatBtn = document.getElementById('editAddCatBtn');
+  if (editAddCatBtn) {
+    editAddCatBtn.addEventListener('click', function() {
+      var val = prompt('New category name:');
+      if (!val || !val.trim() || categories.indexOf(val.trim()) !== -1) return;
+      categories.push(val.trim());
+      persist();
+      openEditScreen();
+    });
+  }
+
+  document.getElementById('changePhotoBtn').addEventListener('click', function() { document.getElementById('photoFileInput').click(); });
           document.getElementById('removePhotoBtn').addEventListener('click', function() {
             r2.photo = ''; persist();
             photoSection.innerHTML = '<button class="photo-upload-btn" id="changePhotoBtn">📷 Add photo</button>';
-            document.getElementById('changePhotoBtn').addEventListener('click', function() { document.getElementById('photoFileInput').click(); });
+            var editAddCatBtn = document.getElementById('editAddCatBtn');
+  if (editAddCatBtn) {
+    editAddCatBtn.addEventListener('click', function() {
+      var val = prompt('New category name:');
+      if (!val || !val.trim() || categories.indexOf(val.trim()) !== -1) return;
+      categories.push(val.trim());
+      persist();
+      openEditScreen();
+    });
+  }
+
+  document.getElementById('changePhotoBtn').addEventListener('click', function() { document.getElementById('photoFileInput').click(); });
           });
         }
       }
@@ -917,7 +939,8 @@ function openEditScreen() {
   var catChips = categories.map(function(c) {
     return '<button class="det-cat-chip' + (rCats.indexOf(c) !== -1 ? ' selected' : '') + '" data-cat="' + c + '">' + c + '</button>';
   }).join('');
-  var catSection = categories.length ? '<div class="edit-field-label">Categories</div><div class="cat-chips-wrap" style="margin-bottom:8px">' + catChips + '</div>' : '';
+  var catSection = '<div class="edit-field-label">Categories</div><div class="cat-chips-wrap" style="margin-bottom:8px">' + catChips + '</div>' +
+    '<button class="add-item-btn" id="editAddCatBtn" style="margin-bottom:4px">+ New category</button>';
 
   var ingItems = r.ingredients.map(function(ing, idx) {
     return '<div class="edit-list-item"><textarea class="edit-list-ta" rows="1">' + ing.replace(/</g, '&lt;') + '</textarea><button class="rm-btn" data-type="ing" data-i="' + idx + '">×</button></div>';
@@ -1010,6 +1033,17 @@ function openEditScreen() {
         this.value = '';
         renderTagList();
       }
+    });
+  }
+
+  var editAddCatBtn = document.getElementById('editAddCatBtn');
+  if (editAddCatBtn) {
+    editAddCatBtn.addEventListener('click', function() {
+      var val = prompt('New category name:');
+      if (!val || !val.trim() || categories.indexOf(val.trim()) !== -1) return;
+      categories.push(val.trim());
+      persist();
+      openEditScreen();
     });
   }
 
