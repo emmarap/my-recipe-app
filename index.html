@@ -356,8 +356,19 @@ try { recipes = JSON.parse(localStorage.getItem('recipes') || '[]'); } catch(e) 
 try { categories = JSON.parse(localStorage.getItem('categories') || '[]'); } catch(e) { categories = []; }
 
 function persist() {
-  localStorage.setItem('recipes', JSON.stringify(recipes));
-  localStorage.setItem('categories', JSON.stringify(categories));
+  // Strip photos before saving to localStorage to avoid quota errors
+  var recipesForStorage = recipes.map(function(r) {
+    var copy = {};
+    for (var k in r) { if (k !== 'photo' && k !== 'sourcePhoto') copy[k] = r[k]; }
+    return copy;
+  });
+  try {
+    localStorage.setItem('recipes', JSON.stringify(recipesForStorage));
+    localStorage.setItem('categories', JSON.stringify(categories));
+  } catch(e) {
+    // localStorage full - clear and try again without recipes
+    try { localStorage.removeItem('recipes'); } catch(e2) {}
+  }
   syncCategoriesToCloud();
 }
 
