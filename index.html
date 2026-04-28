@@ -139,6 +139,7 @@ body { font-family: 'Lora', serif; background: #f8f8f6; color: #1a1a1a; }
   <div class="home-header">
     <div class="home-header-top">
       <div>
+        <div class="home-label">Your Collection</div>
         <h1 class="home-title" id="homeTitle" style="cursor:pointer">Rapaport <em>Recipes</em></h1>
       </div>
       <button class="export-btn" id="exportBtn" style="width:36px;height:36px;background:rgba(0,0,0,0.05);border:1px solid rgba(0,0,0,0.08);border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:16px;color:rgba(0,0,0,0.45);margin-right:8px">↓</button>
@@ -242,22 +243,15 @@ body { font-family: 'Lora', serif; background: #f8f8f6; color: #1a1a1a; }
 </div>
 
 <div class="screen hidden" id="detailScreen">
-  <div id="detailHero" style="position:relative;flex-shrink:0;min-height:220px;background:#4a7c59;overflow:hidden">
-    <img id="detailHeroBg" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:none">
-    <div style="position:absolute;inset:0;background:linear-gradient(to bottom, rgba(0,0,0,0.25) 0%, rgba(0,0,0,0.65) 100%)"></div>
-    <div style="position:relative;display:flex;justify-content:space-between;align-items:flex-start;padding:56px 16px 12px">
-      <button class="back-btn" id="detailBackBtn" style="background:rgba(255,255,255,0.2);color:#fff;border:none">←</button>
-      <div style="display:flex;gap:8px">
-        <button id="cookBtn" style="width:36px;height:36px;border-radius:50%;background:rgba(255,255,255,0.2);border:none;color:#fff;font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center">👨‍🍳</button>
-        <button class="edit-btn" id="editBtn" style="background:rgba(255,255,255,0.2);border:none;color:#fff">✏️</button>
-        <button class="delete-btn" id="deleteBtn" style="background:rgba(255,255,255,0.15);border:none;color:#fff">🗑</button>
-      </div>
+  <div class="detail-header">
+    <button class="back-btn" id="detailBackBtn">←</button>
+    <div class="detail-header-text">
+      <div class="detail-label" id="detailLabel"></div>
+      <div class="detail-title" id="detailHeaderTitle"></div>
     </div>
-    <div style="position:relative;padding:0 20px 20px">
-      <div id="detailLabel" style="font-size:10px;letter-spacing:0.2em;text-transform:uppercase;color:rgba(255,255,255,0.7);margin-bottom:4px"></div>
-      <div id="detailHeaderTitle" style="font-family:Cormorant Garant,serif;font-size:26px;font-weight:700;color:#fff;line-height:1.2"></div>
-      <div id="detailHeroMeta" style="margin-top:8px;display:flex;gap:8px;flex-wrap:wrap;align-items:center"></div>
-    </div>
+    <button class="back-btn" id="cookBtn" style="background:rgba(74,124,89,0.1);border:1px solid rgba(74,124,89,0.25);color:#4a7c59;font-size:13px;font-family:'Lora',serif;width:auto;padding:0 12px;border-radius:20px">👨‍🍳</button>
+    <button class="edit-btn" id="editBtn">✏️</button>
+    <button class="delete-btn" id="deleteBtn">🗑</button>
   </div>
   <div class="detail-body" id="detailBody"></div>
 
@@ -277,7 +271,7 @@ body { font-family: 'Lora', serif; background: #f8f8f6; color: #1a1a1a; }
 <div class="screen hidden" id="cookScreen" style="background:#f8f8f6">
   <div style="padding:56px 24px 16px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;border-bottom:1px solid rgba(0,0,0,0.06)">
     <button class="back-btn" id="cookBackBtn">←</button>
-    <div id="cookTitle" style="font-family:Cormorant Garant,serif;font-size:18px;font-weight:600;color:#1a1a1a;text-align:center;flex:1;margin:0 12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap"></div>
+    <div id="cookTitle" style="font-family:'Cormorant Garant',serif;font-size:18px;font-weight:600;color:#1a1a1a;text-align:center;flex:1;margin:0 12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap"></div>
     <div id="cookProgress" style="font-size:12px;color:rgba(0,0,0,0.35);white-space:nowrap"></div>
   </div>
   <div id="cookBody" style="flex:1;overflow-y:auto;padding:24px"></div>
@@ -1146,7 +1140,7 @@ function renderList() {
     var div = document.createElement('div');
     div.className = 'recipe-card';
     div.dataset.id = r.id;
-    div.innerHTML = imgHtml + '<div class="recipe-card-body"><div class="recipe-card-title">' + r.title + '</div></div>';
+    div.innerHTML = imgHtml + '<div class="recipe-card-body"><div class="recipe-card-title">' + r.title + '</div>' + firstCat + tagHtml + '</div>';
     div.addEventListener('click', function() { openRecipe(this.dataset.id); });
     grid.appendChild(div);
   }
@@ -1164,21 +1158,15 @@ function openRecipe(id) {
   saveToCloud(r);
   document.getElementById('detailLabel').textContent = r.category || 'Recipe';
   document.getElementById('detailHeaderTitle').textContent = r.title;
-  // Hero background
-  var heroBg = document.getElementById('detailHeroBg');
-  var heroDiv = document.getElementById('detailHero');
-  if (r.photo) { heroBg.src = r.photo; heroBg.style.display = 'block'; heroDiv.style.background = '#1a1a1a'; }
-  else { heroBg.style.display = 'none'; heroDiv.style.background = '#4a7c59'; }
-  // Hero meta
-  var heroMeta = document.getElementById('detailHeroMeta');
-  heroMeta.innerHTML = '';
-  if (r.author) heroMeta.innerHTML += '<span style="font-size:11px;color:rgba(255,255,255,0.85)">By ' + r.author + '</span>';
-  if (r.servings) heroMeta.innerHTML += '<span style="font-size:11px;color:rgba(255,255,255,0.5)">·</span><span style="font-size:11px;color:rgba(255,255,255,0.85)">Serves ' + r.servings + '</span>';
-  var rCatH = Array.isArray(r.categories) && r.categories.length ? r.categories : (r.category ? [r.category] : []);
-  rCatH.forEach(function(c) { heroMeta.innerHTML += '<span style="font-size:10px;background:rgba(255,255,255,0.2);color:#fff;padding:2px 8px;border-radius:10px">' + c + '</span>'; });
-  if (r.url) heroMeta.innerHTML += '<a href="' + r.url + '" target="_blank" style="font-size:11px;color:rgba(255,255,255,0.7);text-decoration:none;border-bottom:1px solid rgba(255,255,255,0.3)">View original ↗</a>';
-
-  var photoHtml = '';
+  var authorHtml = '';
+  if (r.author || r.servings || r.url) {
+    authorHtml = '<div style="display:flex;gap:16px;margin-bottom:12px;flex-wrap:wrap;align-items:center">';
+    if (r.author) authorHtml += '<div style="font-size:12px;color:rgba(0,0,0,0.4)">By <span style="color:rgba(74,124,89,0.8);font-weight:500">' + r.author + '</span></div>';
+    if (r.servings) authorHtml += '<div style="font-size:12px;color:rgba(0,0,0,0.4)">Serves <span style="font-weight:500;color:rgba(0,0,0,0.6)">' + r.servings + '</span></div>';
+    if (r.url) authorHtml += '<a href="' + r.url + '" target="_blank" style="font-size:12px;color:#4a7c59;text-decoration:none;border-bottom:1px solid rgba(74,124,89,0.3)">View original ↗</a>';
+    authorHtml += '</div>';
+  }
+  var photoHtml = r.photo ? '<img src="' + r.photo + '" style="width:100%;max-height:280px;object-fit:cover;border-radius:14px;display:block;margin-bottom:24px">' : '';
   var sourcePhotoHtml = r.sourcePhoto ? '<div style="margin-bottom:20px"><div style="font-size:10px;letter-spacing:0.2em;text-transform:uppercase;color:rgba(0,0,0,0.3);margin-bottom:8px">Original Recipe</div><img src="' + r.sourcePhoto + '" id="sourcePhotoThumb" style="width:100%;border-radius:10px;display:block;cursor:pointer"></div>' : '';
   var ingHtml = r.ingredients.map(function(ing) { return '<div class="ingredient-row"><div class="ingredient-dot"></div><div class="ingredient-text">' + ing + '</div></div>'; }).join('');
   var methHtml = r.method.map(function(s, i) { return '<div class="method-row"><div class="step-num">0' + (i + 1) + '</div><div class="step-text">' + s + '</div></div>'; }).join('');
@@ -1187,7 +1175,8 @@ function openRecipe(id) {
     return '<button class="det-cat-chip' + (rCats2.indexOf(c) !== -1 ? ' selected' : '') + '" data-cat="' + c + '">' + c + '</button>';
   }).join('');
   // Categories shown as read-only tags on detail screen
-
+  var rCatTags = Array.isArray(r.categories) && r.categories.length ? r.categories : (r.category ? [r.category] : []);
+  var catSection = rCatTags.length ? '<div style="margin-bottom:16px">' + rCatTags.map(function(c) { return '<span style="display:inline-block;font-size:10px;letter-spacing:0.1em;text-transform:uppercase;color:#4a7c59;background:rgba(74,124,89,0.1);border-radius:6px;padding:3px 10px;margin-right:6px;margin-bottom:4px">' + c + '</span>'; }).join('') + '</div>' : '';
   var notesVal = r.notes || '';
   var rTags = r.tags && r.tags.length ? r.tags : [];
   var tagsHtml = rTags.length ? '<div style="margin-bottom:20px">' + rTags.map(function(t) {
@@ -1366,11 +1355,15 @@ function saveRecipe() {
   document.querySelectorAll('.ext-cat-chip.selected').forEach(function(chip) { selectedCats.push(chip.dataset.cat); });
   var recipe = { title: pendingRecipe.title, categories: selectedCats, category: selectedCats[0] || '', ingredients: pendingRecipe.ingredients, method: pendingRecipe.method, notes: pendingRecipe.notes || '', photo: '', tags: [], author: pendingRecipe.author || '', servings: pendingRecipe.servings || '', url: pendingRecipe.url || '', id: Date.now().toString(), savedAt: new Date().toISOString() };
   pendingRecipe = null;
-  // Add to local array immediately so openRecipe can find it
-  recipes.unshift(recipe);
-  persist();
   saveToCloud(recipe);
-  openRecipe(recipe.id);
+  // After saving, go straight to the recipe detail page
+  fetch('/api/recipes').then(function(r) { return r.json(); }).then(function(data) {
+    if (data.recipes && data.recipes.length) {
+      recipes = data.recipes;
+      localStorage.setItem('recipes', JSON.stringify(recipes));
+    }
+    openRecipe(recipe.id);
+  }).catch(function() { openRecipe(recipe.id); });
 }
 
 // Cloud sync — runs silently in background, never crashes the app
@@ -1414,3 +1407,5 @@ syncFromCloud();
 </script>
 </body>
 </html>
+
+
