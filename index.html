@@ -579,17 +579,11 @@ function openManualEntry() {
       id: Date.now().toString(),
       savedAt: new Date().toISOString()
     };
-    pendingRecipe = null;
-    saveToCloud(recipe);
-    fetch('/api/recipes').then(function(r) { return r.json(); }).then(function(data) {
-      if (data.recipes && data.recipes.length) {
-        recipes = data.recipes;
-        localStorage.setItem('recipes', JSON.stringify(recipes));
-      }
-      openRecipe(recipe.id);
-    }).catch(function() {
-      recipes.unshift(recipe);
-      openRecipe(recipe.id);
+   pendingRecipe = null;
+  recipes.unshift(recipe);
+  persist();
+  saveToCloud(recipe);
+  openRecipe(recipe.id);
     });
   });
 
